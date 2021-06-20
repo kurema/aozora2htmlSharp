@@ -8,7 +8,7 @@ using System.Linq;
 
 namespace SourceCodeGeneratorAozora
 {
-    class Program
+    partial class Program
     {
         static async Task Main(string[] args)
         {
@@ -25,7 +25,7 @@ namespace SourceCodeGeneratorAozora
 
             var source = new SourceFile("Aozora2Html");
 
-            var regCombined = new Regex(@"^(\w+) (\w+\??)$");
+            var regCombined = new Regex(@"^(\w+) (@?\w+\??)$");
             var regFirst = new Regex(@"^(\w+)");
             var regDef = new Regex(@"^def (\w+\??)\s*\(([^()]+)\)");
             var regDec = new Regex(@"^(@?\w+)\s*\=\s*(.+)$");
@@ -78,13 +78,14 @@ namespace SourceCodeGeneratorAozora
                 var matchCombined = regCombined.Match(line);
                 var matchStart = regFirst.Match(line);
 
-                if (structure.IsLastHash)
+                if (structure.CurrentKind == CodeStructureKind.hash)
                 {
                     var matchHash = regHashDeclare1.Match(line);
                     matchHash = matchHash.Success ? matchHash : regHashDeclare2.Match(line);
 
                     if (matchHash.Success)
                     {
+                        structure.CurrentClass.KeyWords.Add(matchHash.Groups[1].Value, structure.Last().Title);
                         await source.AddDeclareGlobalConstDictionaryEntry(matchHash.Groups[1].Value, matchHash.Groups[2].Value);
                         continue;
                     }
@@ -112,11 +113,13 @@ namespace SourceCodeGeneratorAozora
                                 if (matchDef.Success)
                                 {
                                     structure.Add(CodeStructureKind.def, matchDef.Groups[1].Value);
+                                    structure.CurrentClass?.Methods.Add(matchDef.Groups[1].Value);
                                     await source.AddMethod(matchDef.Groups[1].Value, matchDef.Groups[2].Value);
                                 }
                                 else if (matchCombined.Success)
                                 {
                                     structure.Add(CodeStructureKind.def, matchCombined.Groups[2].Value);
+                                    structure.CurrentClass?.Methods.Add(matchCombined.Groups[2].Value);
                                     await source.AddMethod(matchCombined.Groups[2].Value, "");
                                 }
                                 else
@@ -136,6 +139,10 @@ namespace SourceCodeGeneratorAozora
                                     {
                                         await source.AddDeclareGlobal(item.name, item.type, item.initial);
                                     }
+                                }
+                                else if (last?.Kind == CodeStructureKind.@case && last.Members.Count > 0)
+                                {
+                                    await source.AddBreak();
                                 }
                                 await source.AddEnd();
                                 continue;
@@ -162,6 +169,24 @@ namespace SourceCodeGeneratorAozora
                                 await source.AddIfElse();
                                 continue;
                             }
+                        case "case":
+                            {
+                                var rest = regFirst.Replace(line, "").Trim();
+                                structure.Add(CodeStructureKind.@case, "");
+                                await source.AddSwitch(rest);
+                                continue;
+                            }
+                        case "when" when structure.CurrentKind == CodeStructureKind.@case:
+                            {
+                                var key = regFirst.Replace(line, "").Trim();
+                                if (structure.Last().Members.Count > 0)
+                                {
+                                    await source.AddBreak();
+                                }
+                                structure.Last().AddMember(key, "");
+                                await source.AddCase(ConvertKeyword(key, structure));
+                            }
+                            continue;
                     }
                 }
 
@@ -194,7 +219,7 @@ namespace SourceCodeGeneratorAozora
                         }
                         else
                         {
-                            var guessedType = GuessType(varValue);
+                            var guessedType = GuessType(varValue, structure);
                             if (varName.StartsWith("@"))
                             {
                                 varName = varName.Substring(1);
@@ -204,7 +229,7 @@ namespace SourceCodeGeneratorAozora
                             }
                             {
                                 var success = structure.LastOrDefault()?.AddMember(varName, guessedType.type) ?? false;
-                                if(success) await source.AddDeclare(varName, guessedType.value, guessedType.type);
+                                if (success) await source.AddDeclare(varName, guessedType.value, guessedType.type);
                                 else await source.AddSubstitution(varName, guessedType.value);
                             }
                             continue;
@@ -261,7 +286,7 @@ namespace SourceCodeGeneratorAozora
             return sjis.GetString(result);
         }
 
-        public static (string type, string value) GuessType(string statement)
+        public static (string type, string value) GuessType(string statement, CodeStructure structure)
         {
             Match m;
             if (statement == "nil") return ("dynamic", "null");
@@ -269,205 +294,28 @@ namespace SourceCodeGeneratorAozora
             if (statement == "{}") return ("Dictionary<string,string>", "new Dictionary<string,string>()");
             if (statement == "true" || statement == "false") return ("bool", statement);
             if (Regex.IsMatch(statement, @"^\d+$")) return ("int", statement);
-            if ((m = Regex.Match(statement, @"^:(\w+)$")).Success) return ("string", $"\"{m.Groups[1].Value}\"");
+            if ((m = Regex.Match(statement, @"^:(\w+)$")).Success)
+            {
+                return ("string", ConvertKeyword(statement, structure));
+                //var keyword = m.Groups[1].Value;
+                //if (structure.CurrentClass?.KeyWords.ContainsKey(keyword) == true) return ("string", $"\"{structure.CurrentClass.KeyWords[keyword]}[\"{m.Groups[1].Value}\"]\"");
+                //else return ("string", $"\"{statement}\"");
+            }
             return ("dynamic", statement);
         }
 
-        public class CodeStructure : List<CodeStructureItem>
+        public static string ConvertKeyword(string statement, CodeStructure structure)
         {
-            public void Add(CodeStructureKind kind, string title)
+            Match m;
+            if ((m = Regex.Match(statement, @"^:(\w+)$")).Success)
             {
-                //Console.WriteLine(kind.ToString() + " " + title);
-                this.Add(new CodeStructureItem(kind, title));
+                var keyword = m.Groups[1].Value;
+                if (structure.CurrentClass?.KeyWords.ContainsKey(keyword) == true) return $"\"{structure.CurrentClass.KeyWords[statement]}[\"{m.Groups[1].Value}\"]\"";
+                else return $"\"{statement}\"";
             }
-
-            public bool IsInDef => this.Any(a => a.Kind == CodeStructureKind.def);
-            public bool IsLastHash => this.Count > 0 && this.Last().Kind == CodeStructureKind.hash;
-
-            public CodeStructureItem CurrentClass => this.LastOrDefault(a => a.Kind == CodeStructureKind.@class);
+            return statement;
         }
 
-        public record CodeStructureItem(CodeStructureKind Kind, string Title)
-        {
-            public string[] Args { get; init; }
-            public List<CodeStructureItemMember> Members { get; } = new List<CodeStructureItemMember>();
 
-            public bool AddMember(string name, string type, string initial = null)
-            {
-                if (Members.Any(a => a.name == name)) return false;
-                Members.Add(new CodeStructureItemMember(name, type, initial));
-                return true;
-            }
-        };
-
-        public record CodeStructureItemMember(string name, string type, string initial);
-
-        public enum CodeStructureKind
-        {
-            @class, def, @if, elsif, @case, end, begin, hash
-        }
-
-        public class SourceFile
-        {
-            StreamWriter streamWriter;
-            public string ClassName { get; set; }
-            public int CurrentLevel { get; private set; } = 0;
-            public const int SpacePerLevel = 4;
-
-            public SourceFile(string className)
-            {
-                streamWriter = new StreamWriter(className + ".cs", false);
-                ClassName = className;
-
-                streamWriter.WriteLine($@"using System;
-using System.Text.RegularExpressions;
-
-namespace aozora2html
-{{
-");
-                CurrentLevel++;
-            }
-
-            public async Task AddComment(string content)
-            {
-                await Add($"//{content.Replace("//", "")}");
-            }
-
-            public async Task AddIf(string condition)
-            {
-                await Add($"if ({condition})");
-                await Add("{");
-                CurrentLevel++;
-            }
-
-            public async Task AddIfElseIf(string condition)
-            {
-                await Add("}");
-                await Add($"else if ({condition})");
-                await Add("{");
-            }
-
-            public async Task AddIfElse()
-            {
-                CurrentLevel--;
-                await Add("}");
-                await Add($"else");
-                await Add("{");
-                CurrentLevel++;
-            }
-
-            public async Task AddClass(string className)
-            {
-                await Add($"public class {className}");
-                await Add("{");
-                CurrentLevel++;
-            }
-
-            public async Task AddMethod(string method, string argsText)
-            {
-                var args = string.IsNullOrWhiteSpace(argsText) ? new string[0] : new Regex(@",\s*").Split(argsText);
-                var sb = new StringBuilder();
-                if (method.EndsWith("?")) sb.Append($"public bool {method.Replace("?", "")}(");
-                else sb.Append($"public dynamic {method}(");
-                sb.Append(string.Join(", ", args.Select(a => $"dynamic {a}")));
-                sb.Append(")");
-                await Add("");
-                await Add(sb.ToString());
-                await Add(@"{");
-                CurrentLevel++;
-
-                var val = new Dictionary<string, string>()
-                {
-                    {"","" },
-
-                };
-            }
-
-            public async Task AddDeclareGlobalConstDictionaryStart(string name)
-            {
-                await Add("");
-                await Add($"public const Dictionary<string, string>() {name} = new Dictionary<string, string>()");
-                await Add($"{{");
-                CurrentLevel++;
-            }
-
-            public async Task AddDeclareGlobalConstDictionaryEntry(string key, string value)
-            {
-                await Add($"{{\"{key}\", \"{value}\"}},");
-            }
-
-            public async Task AddDeclareGlobalConstDictionaryEnd()
-            {
-                CurrentLevel--;
-                await Add("};");
-            }
-
-
-            public async Task AddDeclareGlobalChar(string name, string value, string option = "")
-            {
-                await AddDeclareGlobal(name, "char", $"'{value}'", option);
-            }
-
-            public async Task AddDeclareGlobalString(string name, string value, string option = "")
-            {
-                await AddDeclareGlobal(name, "string", $"\"{value}\"", option);
-            }
-
-            public async Task AddDeclareGlobalRegex(string name, string value, string option = "")
-            {
-                await AddDeclareGlobal(name, "Regex", $"new Regex(@\"{value}\")", option);
-            }
-
-            public async Task AddDeclareGlobalAuto(string name, string value)
-            {
-                string option = Regex.IsMatch(name, "^[A-Z]") ? "const " : "";
-                if (name.StartsWith("PAT_")) await AddDeclareGlobalRegex(name, value, option);
-                else if (value.Length == 1) await AddDeclareGlobalChar(name, value, option);
-                else await AddDeclareGlobalString(name, value, option);
-            }
-
-            public async Task AddDeclareGlobal(string name, string type, string value, string option = "")
-            {
-                if (string.IsNullOrEmpty(value)) await Add($"public {option}{type} {name};");
-                else await Add($"public {option}{type} {name} = {value};");
-            }
-
-            public async Task AddDeclareString(string name, string value)
-            {
-                await AddDeclare(name, $"\"{value}\"", "string");
-            }
-
-            public async Task AddDeclare(string name, string value, string type)
-            {
-                await Add($"{type} {name} = {value};");
-            }
-
-            public async Task AddSubstitution(string name, string value)
-            {
-                await Add($"{name} = {value};");
-            }
-
-            public async Task AddEnd()
-            {
-                CurrentLevel--;
-                await Add("}");
-            }
-
-            public async Task Add(string text)
-            {
-                await streamWriter.WriteLineAsync($"{new string(' ', SpacePerLevel * Math.Max(CurrentLevel, 0))}{text}");
-            }
-
-            public async Task Close()
-            {
-                await streamWriter.WriteLineAsync($@"
-}}
-");
-                await streamWriter.FlushAsync();
-                streamWriter.Close();
-                await streamWriter.DisposeAsync();
-                streamWriter = null;
-            }
-        }
     }
 }
