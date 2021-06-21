@@ -38,7 +38,7 @@ namespace SourceCodeGeneratorAozora
             var regHashDeclare1 = new Regex(@"^:(\w+)\s*\=\>\s*""([^""]*)""\s*,?$");
             var regHashDeclare2 = new Regex(@"^""(\w+)""\s*\=\>\s*""([^""]*)""\s*,?$");
             var regComment = new Regex("^#(.*)$");
-            var regCommentPartial = new Regex(@"#([^""]*)$");
+            var regCommentPartial = new Regex(@"#([^""/]*)$");
 
             var structure = new CodeStructure();
 
@@ -142,7 +142,7 @@ namespace SourceCodeGeneratorAozora
                                 }
                                 else if (last?.Kind == CodeStructureKind.@case && last.Members.Count > 0)
                                 {
-                                    await source.AddBreak();
+                                    await source.AddSwitchBreak();
                                 }
                                 await source.AddEnd();
                                 continue;
@@ -164,6 +164,12 @@ namespace SourceCodeGeneratorAozora
 
                                 continue;
                             }
+                        case "else" when structure.CurrentKind == CodeStructureKind.@case:
+                            {
+                                if (structure.Last().Members.Count > 0) { await source.AddSwitchBreak(); }
+                                await source.AddSwitchDefault();
+                                continue;
+                            }
                         case "else":
                             {
                                 await source.AddIfElse();
@@ -179,14 +185,29 @@ namespace SourceCodeGeneratorAozora
                         case "when" when structure.CurrentKind == CodeStructureKind.@case:
                             {
                                 var key = regFirst.Replace(line, "").Trim();
-                                if (structure.Last().Members.Count > 0)
-                                {
-                                    await source.AddBreak();
-                                }
+                                if (structure.Last().Members.Count > 0) { await source.AddSwitchBreak(); }
                                 structure.Last().AddMember(key, "");
-                                await source.AddCase(ConvertKeyword(key, structure));
+                                await source.AddSwitchCase(ConvertKeyword(key, structure));
+                                continue;
                             }
-                            continue;
+                        case "begin":
+                            {
+                                structure.Add(CodeStructureKind.begin, "");
+                                await source.AddTry();
+                                continue;
+                            }
+                        case "rescue":
+                            {
+                                //ToDo: 場合分け
+                                await source.AddCatch();
+                                continue;
+                            }
+                        case "loop":
+                            {
+                                structure.Add(CodeStructureKind.loop, "");
+                                await source.AddWhile();
+                                continue;
+                            }
                     }
                 }
 

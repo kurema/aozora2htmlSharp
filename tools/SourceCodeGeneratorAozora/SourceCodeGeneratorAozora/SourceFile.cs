@@ -25,6 +25,7 @@ namespace SourceCodeGeneratorAozora
 
                 streamWriter.WriteLine($@"using System;
 using System.Text.RegularExpressions;
+using System.Collection.Generic;
 
 namespace aozora2html
 {{
@@ -44,11 +45,29 @@ namespace aozora2html
                 CurrentLevel++;
             }
 
+            public async Task AddTry()
+            {
+                await Add("try");
+                await Add("{");
+                CurrentLevel++;
+            }
+
+            public async Task AddCatch()
+            {
+                CurrentLevel--;
+                await Add("}");
+                await Add("catch");
+                await Add("{");
+                CurrentLevel++;
+            }
+
             public async Task AddIfElseIf(string condition)
             {
+                CurrentLevel--;
                 await Add("}");
                 await Add($"else if ({condition})");
                 await Add("{");
+                CurrentLevel++;
             }
 
             public async Task AddIfElse()
@@ -85,6 +104,13 @@ namespace aozora2html
                     {"","" },
 
                 };
+            }
+
+            public async Task AddWhile(string statement = "true")
+            {
+                await Add($"while({statement})");
+                await Add("{");
+                CurrentLevel++;
             }
 
             public async Task AddDeclareGlobalConstDictionaryStart(string name)
@@ -157,16 +183,22 @@ namespace aozora2html
                 await Add("}");
             }
 
-            public async Task AddCase(string key)
+            public async Task AddSwitchCase(string key)
             {
                 await Add($"case {key}:");
                 CurrentLevel++;
             }
 
-            public async Task AddBreak()
+            public async Task AddSwitchBreak()
             {
                 CurrentLevel--;
                 await Add($"break;");
+            }
+
+            public async Task AddSwitchDefault()
+            {
+                await Add($"default:");
+                CurrentLevel++;
             }
 
 
