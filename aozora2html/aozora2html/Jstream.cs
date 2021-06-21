@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.IO;
 
-namespace Aozora2html
+namespace Aozora
 {
 
     //require "aozora2html/error"

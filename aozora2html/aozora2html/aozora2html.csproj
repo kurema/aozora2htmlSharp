@@ -1,9 +1,9 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net5.0</TargetFramework>
     <AssemblyName>Aozora2html</AssemblyName>
-    <RootNamespace>Aozora2html</RootNamespace>
+    <RootNamespace>Aozora</RootNamespace>
     <Nullable>enable</Nullable>
   </PropertyGroup>
 

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Aozora2html.Helpers
+namespace Aozora.Helpers
 {
     public interface IOutput
     {

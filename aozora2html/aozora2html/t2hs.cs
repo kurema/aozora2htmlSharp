@@ -2,7 +2,7 @@
 using System.Text.RegularExpressions;
 using System.Collections.Generic;
 
-namespace Aozora2html
+namespace Aozora
 {
 
     // -*- coding:utf-8 -*-

@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Runtime.Serialization;
 
-namespace Aozora2html.Exceptions
+namespace Aozora.Exceptions
 {
     [Serializable]
     public class AozoraException : Exception

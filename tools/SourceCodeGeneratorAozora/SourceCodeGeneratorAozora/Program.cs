@@ -14,16 +14,18 @@ namespace SourceCodeGeneratorAozora
         {
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
             var sjis = Encoding.GetEncoding("shift_jis");
+            string rbPath;
 #if DEBUG
-            using var sr = new StreamReader("t2hs.rb");
+            rbPath = "t2hs.rb";
 #else
             if (args.Length == 0) return;
-            using var sr = new StreamReader(args[0]);
+            rbPath = args[0];
 #endif
+            using var sr = new StreamReader(rbPath);
             string line;
             string lineLast = "";
 
-            var source = new SourceFile("Aozora2Html");
+            var source = new SourceFile(args.Length >= 2 ? args[1] : Path.GetFileNameWithoutExtension(rbPath));
 
             var regCombined = new Regex(@"^(\w+) (@?\w+\??)$");
             var regFirst = new Regex(@"^(\w+)");
