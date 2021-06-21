@@ -17,6 +17,7 @@ namespace Aozora
     // when finished to read IO, return a symbol :eof.
     // when found line terminator except CR+LF, exit.
     //
+    //kurema:
     // :eofシンボルなんて返しようがないので、nullを返す仕組みにしました。
     // CR+LFか否かはどちらでも良いかと。
     public class Jstream
@@ -34,6 +35,7 @@ namespace Aozora
             }
             catch (Exceptions.AozoraException)
             {
+                //kurema:
                 // 元はキャッチしてメッセージを出力後終了。
                 // dotnetで例外をそれをやるのは意味不明なので何もせず再スロー。
 
@@ -70,6 +72,7 @@ namespace Aozora
 
         public char peek_char(int pos)
         {
+            //kurema:
             //本来は\r\nを返す。C#ではcharとstringは分けた方が良いので\nにした。
             //なおファイル末尾でも\nを返すので挙動としては変。
             if (buffer?.Length > pos + buffer_positon && pos + buffer_positon >= 0) return buffer[buffer_positon];
@@ -88,19 +91,21 @@ namespace Aozora
         private void store_to_buffer()
         {
             buffer = file.ReadLine();
-            //元は\r\nじゃないと例外を吐くんですが、ここではどっちでも良いので例外を出していません。
-            //↓はきちんと例外吐く方(未テスト)。
+            //kurema:
+            // 元は\r\nじゃないと例外を吐くんですが、ここではどっちでも良いので例外を出していません。
+            // ↓はきちんと例外吐く方(未テスト)。
             //buffer = readLineCRLF(file);
             entry = true;
         }
 
         private static string readLineCRLF(System.IO.StreamReader sr)
         {
-            //参考
+            //kurema:
+            // 参考
             //https://github.com/dotnet/runtime/blob/a3f0e2bebe30fd5e82518d86cefc7895127ae474/src/libraries/System.Private.CoreLib/src/System/IO/StreamReader.cs#L787
-            //要するに\rか\nに当たるまで繰り返し、\rなら次の文字が\nかチェック。
-            //ここでは、現時点が\nで1字前が\rならreturn、\r以外なら例外、現時点が\n以外で1字前が\rなら例外。ファイルの末尾が\rの場合も例外。
-            //StreamReaderの場所がずれるという問題がある。例外キャッチ後継続するなら問題になる。
+            // 要するに\rか\nに当たるまで繰り返し、\rなら次の文字が\nかチェック。
+            // ここでは、現時点が\nで1字前が\rならreturn、\r以外なら例外、現時点が\n以外で1字前が\rなら例外。ファイルの末尾が\rの場合も例外。
+            // StreamReaderの場所がずれるという問題がある。例外キャッチ後継続するなら問題になる。
             var sb = new StringBuilder();
             var buf = new char[1];
             var bufLast = new char[1] { '\0' };

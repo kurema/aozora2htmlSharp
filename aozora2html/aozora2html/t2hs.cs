@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Text.RegularExpressions;
 using System.Collections.Generic;
+using System.Text;
 
 namespace Aozora
 {
@@ -173,8 +174,8 @@ namespace Aozora
 
         public Jstream stream;
         public Helpers.IOutput @out;
-        public List<string> buffer;
-        public dynamic ruby_buf;
+        public StringBuilder buffer;
+        public Helpers.RubyBuffer ruby_buf;
         public SectionKind section;
         public dynamic header;
         public dynamic style_stack;
@@ -190,8 +191,8 @@ namespace Aozora
         {
             stream = input;
             @out = output;
-            buffer = new List<string>();
-            //ruby_buf = RubyBuffer.new;
+            buffer = new StringBuilder();
+            ruby_buf = new Helpers.RubyBuffer();
             section = SectionKind.head;
             //header = Aozora2Html::Header.new();
             //style_stack = StyleStack.new;
@@ -202,7 +203,7 @@ namespace Aozora
             midashi_id = 0;
             terprip = true;
             noprint = null;
-            //endcharはread_charがnullを返すだけなので削除しました。
+            //kurema:endcharはread_charがnullを返すだけなので削除しました。
         }
 
         public enum SectionKind

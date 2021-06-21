@@ -8,9 +8,10 @@ namespace Aozora.Helpers
 {
     public class RubyBuffer
     {
-        //中身ほぼStringBuilderまんま。
-        //rubyではcharとstring入り混じったListを使ってるみたいだが、dotnetではそんな必要ない。
-        //全体的に何やってるか分かり辛かった。
+        //kurema:
+        // 中身ほぼStringBuilderまんま。
+        // rubyではcharとstring入り混じったListを使ってるみたいだが、dotnetではそんな必要ない。
+        // 全体的に何やってるか分かり辛かった。
 
         private StringBuilder ruby_buf;
         public bool @protected { get; set; }
@@ -82,17 +83,11 @@ namespace Aozora.Helpers
         }
 
 
-        //StringBuilderなら区別する必要はない。
+        //kurema:StringBuilderなら区別する必要はない。
         public void last_concat(string item)
         {
             push(item);
         }
-
-
-        //public bool last_is_string()
-        //{
-        //    //@ruby_buf.last.is_a?(String)
-        //}
 
         // buffer management
 
