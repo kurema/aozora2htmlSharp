@@ -27,7 +27,7 @@ namespace SourceCodeGeneratorAozora
 using System.Text.RegularExpressions;
 using System.Collections.Generic;
 
-namespace aozora2html
+namespace Aozora2html
 {{
 ");
                 CurrentLevel++;
@@ -166,7 +166,8 @@ namespace aozora2html
 
             public async Task AddDeclareGlobalRegex(string name, string value, string option = "")
             {
-                await Add($"public {option} Regex {name} => new Regex(@\"{value}\");");
+                await Add($"private {option}Regex _{name} = null;");
+                await Add($"public {option}Regex {name} => _{name} ??= new Regex(@\"{value}\");");
             }
 
             public async Task AddDeclareGlobalAuto(string name, string value)
