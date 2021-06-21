@@ -27,7 +27,7 @@ namespace SourceCodeGeneratorAozora
 using System.Text.RegularExpressions;
 using System.Collections.Generic;
 
-namespace Aozora2html
+namespace Aozora
 {{
 ");
                 CurrentLevel++;
@@ -182,6 +182,12 @@ namespace Aozora2html
             {
                 if (string.IsNullOrEmpty(value)) await Add($"public {option}{type} {name};");
                 else await Add($"public {option}{type} {name} = {value};");
+            }
+
+            public async Task AddDeclareGlobalPrivate(string name, string type, string value, string option = "")
+            {
+                if (string.IsNullOrEmpty(value)) await Add($"private {option}{type} {name};");
+                else await Add($"private {option}{type} {name} = {value};");
             }
 
             public async Task AddDeclareString(string name, string value)

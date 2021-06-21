@@ -11,4 +11,10 @@ namespace Aozora.Helpers
         void print(string words);
         void close();
     }
+
+    public class OutputDummy : IOutput
+    {
+        public void close() {}
+        public void print(string words) { }
+    }
 }

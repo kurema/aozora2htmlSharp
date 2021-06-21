@@ -16,7 +16,7 @@ namespace SourceCodeGeneratorAozora
             var sjis = Encoding.GetEncoding("shift_jis");
             string rbPath;
 #if DEBUG
-            rbPath = "t2hs.rb";
+            rbPath = "i18n.rb";
 #else
             if (args.Length == 0) return;
             rbPath = args[0];
@@ -29,7 +29,7 @@ namespace SourceCodeGeneratorAozora
 
             var regCombined = new Regex(@"^(\w+) (@?\w+\??)$");
             var regFirst = new Regex(@"^(\w+)");
-            var regDef = new Regex(@"^def (\w+\??)\s*\(([^()]+)\)");
+            var regDef = new Regex(@"^def ([\w\.]+\??)\s*\(([^()]*)\)");
             var regDec = new Regex(@"^(@?\w+)\s*\=\s*(.+)$");
             var regText = new Regex(@"^\s*""((?:[^""]*|\"")*)""\s*$");
             //["18e5"].pack("h*").force_encoding("shift_jis")
@@ -149,7 +149,7 @@ namespace SourceCodeGeneratorAozora
                                         {
                                             foreach (var item in last.Members)
                                             {
-                                                await source.AddDeclareGlobal(item.name, item.type, item.initial);
+                                                await source.AddDeclareGlobalPrivate(item.name, item.type, item.initial);
                                             }
 
                                             break;

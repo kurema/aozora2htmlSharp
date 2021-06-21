@@ -20,7 +20,7 @@ namespace Aozora.Exceptions
     [Serializable]
     public class UseCRLFException : AozoraException
     {
-        public UseCRLFException() : base("改行コードを、「CR+LF」にあらためてください") { }
+        public UseCRLFException() : base(Helpers.I18n.MSG["use_crlf"]) { }
         protected UseCRLFException(SerializationInfo info, StreamingContext context) : base(info, context) { }
     }
 }

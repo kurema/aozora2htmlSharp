@@ -178,16 +178,19 @@ namespace Aozora
         public Helpers.RubyBuffer ruby_buf;
         public SectionKind section;
         public dynamic header;
-        public dynamic style_stack;
+        public Helpers.StyleStack style_stack;
         public Dictionary<string, string> chuuki_table;
         public List<string> images;
         public List<string> indent_stack;
         public List<string> tag_stack;
         public int midashi_id;
         public bool terprip;
-        public dynamic? noprint;
+        public bool noprint;
 
-        public Aozora2Html(Jstream input, Helpers.IOutput output)
+        //kurema: 警告メッセージ用チャンネルを独自に追加しました。
+        public Helpers.IOutput warnChannel;
+
+        public Aozora2Html(Jstream input, Helpers.IOutput output, Helpers.IOutput? warnChannel = null)
         {
             stream = input;
             @out = output;
@@ -195,15 +198,16 @@ namespace Aozora
             ruby_buf = new Helpers.RubyBuffer();
             section = SectionKind.head;
             //header = Aozora2Html::Header.new();
-            //style_stack = StyleStack.new;
+            style_stack = new Helpers.StyleStack();
             chuuki_table = new Dictionary<string, string>();
             images = new List<string>();
             indent_stack = new List<string>();
             tag_stack = new List<string>();
             midashi_id = 0;
             terprip = true;
-            noprint = null;
+            noprint = false;//kurema:元は初期nil。falseで問題ないと思われる。
             //kurema:endcharはread_charがnullを返すだけなので削除しました。
+            this.warnChannel = warnChannel ?? new Helpers.OutputDummy();
         }
 
         public enum SectionKind
