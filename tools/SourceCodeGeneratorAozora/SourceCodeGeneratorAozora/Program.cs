@@ -39,6 +39,10 @@ namespace SourceCodeGeneratorAozora
             var regHashDeclare2 = new Regex(@"^""(\w+)""\s*\=\>\s*""([^""]*)""\s*,?$");
             var regComment = new Regex("^#(.*)$");
             var regCommentPartial = new Regex(@"#([^""/]*)$");
+            var regRescue = new Regex(@"^rescue\s*([^=>]*)\s*=>\s*(\w)$");
+            var regCatch = new Regex(@"^catch\(([^\)]+)\) do$");
+            var regEach = new Regex(@"(\w+)\.(?:each|each_char) do \|(\w+)\|");
+            var regIndex = new Regex(@"(\w+)\.index do \|(\w+)\|");
 
             var structure = new CodeStructure();
 
@@ -91,6 +95,8 @@ namespace SourceCodeGeneratorAozora
                     }
                     else if (line == "}")
                     {
+                        var last = structure.LastOrDefault();
+                        if (!(last is null)) structure.RemoveAt(structure.Count - 1);
                         await source.AddDeclareGlobalConstDictionaryEnd();
                         continue;
                     }
@@ -131,36 +137,59 @@ namespace SourceCodeGeneratorAozora
                             }
                         case "end":
                             {
+                                //await source.AddComment("Current Structure:" + String.Join("/", structure.Select(a => a.Kind.ToString()).ToArray()));
+
                                 var last = structure.LastOrDefault();
                                 if (!(last is null)) structure.RemoveAt(structure.Count - 1);
-                                if (last?.Kind == CodeStructureKind.@class)
+                                switch (last?.Kind)
                                 {
-                                    foreach (var item in last.Members)
-                                    {
-                                        await source.AddDeclareGlobal(item.name, item.type, item.initial);
-                                    }
-                                }
-                                else if (last?.Kind == CodeStructureKind.@case && last.Members.Count > 0)
-                                {
-                                    await source.AddSwitchBreak();
+                                    case CodeStructureKind.@class:
+                                        {
+                                            foreach (var item in last.Members)
+                                            {
+                                                await source.AddDeclareGlobal(item.name, item.type, item.initial);
+                                            }
+
+                                            break;
+                                        }
+
+                                    case CodeStructureKind.@case when last.Members.Count > 0:
+                                        await source.AddSwitchBreak();
+                                        break;
+                                    case CodeStructureKind.@catch:
+                                        await source.AddCatch(last.Title);
+                                        break;
+                                    case CodeStructureKind.ifStatement:
+                                        await source.AddEnd();
+                                        await source.AddAnonymousFuncClose();
+                                        continue;
                                 }
                                 await source.AddEnd();
                                 continue;
                             }
                         case "if":
                         case "elsif":
+                        case "unless":
                             {
                                 var condition = regFirst.Replace(line, "");
                                 condition = condition.Trim().Replace(" or ", " || ").Replace(" and ", " && ").Replace("::", ".");
                                 condition = Regex.Replace(condition, @"([\w\.]+)\?\(", "$1(");
                                 condition = Regex.Replace(condition, @"\(\s*:([^\)]+)\s*\)", @"(""$1"")");
 
-                                if (matchStart.Groups[1].Value == "if")
+                                switch (matchStart.Groups[1].Value)
                                 {
-                                    await source.AddIf(condition);
-                                    structure.Add(CodeStructureKind.@if, condition);
+                                    case "if":
+                                        await source.AddIf(condition);
+                                        structure.Add(CodeStructureKind.@if, condition);
+                                        break;
+                                    case "unless":
+                                        await source.AddIf($"!({condition})");
+                                        structure.Add(CodeStructureKind.@if, condition);
+                                        break;
+                                    case "elsif":
+                                        await source.AddIfElseIf(condition);
+                                        break;
                                 }
-                                else await source.AddIfElseIf(condition);
 
                                 continue;
                             }
@@ -198,8 +227,10 @@ namespace SourceCodeGeneratorAozora
                             }
                         case "rescue":
                             {
-                                //ToDo: 場合分け
-                                await source.AddCatch();
+                                var match = regRescue.Match(line);
+                                if (match.Success && string.IsNullOrWhiteSpace(match.Groups[1].Value)) await source.AddCatch($"Exception {match.Groups[2].Value.Trim()}");
+                                else if (match.Success) await source.AddCatch($"{ConvertCall(match.Groups[1].Value.Trim())} {match.Groups[2].Value.Trim()}");
+                                else await source.AddCatch();
                                 continue;
                             }
                         case "loop":
@@ -211,8 +242,31 @@ namespace SourceCodeGeneratorAozora
                     }
                 }
 
-                var matchDec = regDec.Match(line);
+                var matchCatch = regCatch.Match(line);
+                if (matchCatch.Success)
+                {
+                    structure.Add(CodeStructureKind.@catch, ConvertKeyword(matchCatch.Groups[1].Value, structure));
+                    await source.AddTry();
+                    continue;
+                }
 
+                var matchEach = regEach.Match(line);
+                if (matchEach.Success)
+                {
+                    structure.Add(CodeStructureKind.@foreach, "");
+                    await source.AddForeach(matchEach.Groups[2].Value, matchEach.Groups[1].Value);
+                    continue;
+                }
+                var matchIndex = regIndex.Match(line);
+                if (matchIndex.Success)
+                {
+                    structure.Add(CodeStructureKind.index, "");
+                    await source.AddComment("INDEX, FIX THIS!");
+                    await source.AddComment(line);
+                    await source.AddBrancket();
+                    continue;
+                }
+                var matchDec = regDec.Match(line);
                 if (matchDec.Success)
                 {
                     var varName = matchDec.Groups[1].Value;
@@ -223,11 +277,12 @@ namespace SourceCodeGeneratorAozora
                     var matchReg = regReg.Match(varValue);
                     var matchReg2 = regReg2.Match(varValue + lineComment);
                     var matchJikauchi = regJikauchi.Match(varValue);
+                    var matchFirst = regFirst.Match(varValue);
 
                     if (varValue == "{")
                     {
                         structure.Add(CodeStructureKind.hash, varName);
-                        await source.AddDeclareGlobalConstDictionaryStart(varName);
+                        await source.AddDeclareGlobalStaticDictionaryStart(varName);
                         continue;
                     }
                     else if (structure.IsInDef)
@@ -236,6 +291,14 @@ namespace SourceCodeGeneratorAozora
                         {
                             var varValueContent = matchText.Groups[1].Value;
                             await source.AddDeclareString(varName, varValueContent);
+                            continue;
+                        }
+                        else if (matchFirst.Success && matchFirst.Groups[1].Value == "if")
+                        {
+                            var statement = ConvertCall(regFirst.Replace(varValue, "")).Trim();
+                            structure.Add(CodeStructureKind.ifStatement, "");
+                            await source.AddAnonymousFuncCall(varName);
+                            await source.AddIf(statement);
                             continue;
                         }
                         else
@@ -337,6 +400,19 @@ namespace SourceCodeGeneratorAozora
             return statement;
         }
 
-
+        public static string ConvertCall(string word)
+        {
+            word = word.Trim();
+            word = word.Replace("::", ".");
+            word = word.Replace("?(", "(");
+            word = Regex.Replace(word, @"\?$", "");
+            var reg = new Regex(@"\.new\(");
+            if (reg.IsMatch(word))
+            {
+                reg.Replace(word, @"\(");
+                word = "new " + word;
+            }
+            return word;
+        }
     }
 }

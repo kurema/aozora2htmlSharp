@@ -25,7 +25,7 @@ namespace SourceCodeGeneratorAozora
 
                 streamWriter.WriteLine($@"using System;
 using System.Text.RegularExpressions;
-using System.Collection.Generic;
+using System.Collections.Generic;
 
 namespace aozora2html
 {{
@@ -38,9 +38,29 @@ namespace aozora2html
                 await Add($"//{content.Replace("//", "")}");
             }
 
+            public async Task AddAnonymousFuncCall(string varName)
+            {
+                string header = string.IsNullOrEmpty(varName) ? "" : $"{varName} = ";
+                await Add($"{header}new Func<dynamic>(() => {{");
+                CurrentLevel++;
+            }
+
+            public async Task AddAnonymousFuncClose()
+            {
+                await Add("}).Invoke();");
+                CurrentLevel--;
+            }
+
             public async Task AddIf(string condition)
             {
                 await Add($"if ({condition})");
+                await Add("{");
+                CurrentLevel++;
+            }
+
+            public async Task AddForeach(string varName, string from)
+            {
+                await Add($"foreach (var {varName} in {from})");
                 await Add("{");
                 CurrentLevel++;
             }
@@ -52,11 +72,12 @@ namespace aozora2html
                 CurrentLevel++;
             }
 
-            public async Task AddCatch()
+            public async Task AddCatch(string statement = null)
             {
                 CurrentLevel--;
                 await Add("}");
-                await Add("catch");
+                if (string.IsNullOrWhiteSpace(statement)) await Add("catch");
+                else await Add($"catch ({statement})");
                 await Add("{");
                 CurrentLevel++;
             }
@@ -113,10 +134,10 @@ namespace aozora2html
                 CurrentLevel++;
             }
 
-            public async Task AddDeclareGlobalConstDictionaryStart(string name)
+            public async Task AddDeclareGlobalStaticDictionaryStart(string name)
             {
                 await Add("");
-                await Add($"public const Dictionary<string, string>() {name} = new Dictionary<string, string>()");
+                await Add($"public static Dictionary<string, string> {name} = new Dictionary<string, string>()");
                 await Add($"{{");
                 CurrentLevel++;
             }
@@ -145,13 +166,13 @@ namespace aozora2html
 
             public async Task AddDeclareGlobalRegex(string name, string value, string option = "")
             {
-                await AddDeclareGlobal(name, "Regex", $"new Regex(@\"{value}\")", option);
+                await Add($"public {option} Regex {name} => new Regex(@\"{value}\");");
             }
 
             public async Task AddDeclareGlobalAuto(string name, string value)
             {
                 string option = Regex.IsMatch(name, "^[A-Z]") ? "const " : "";
-                if (name.StartsWith("PAT_")) await AddDeclareGlobalRegex(name, value, option);
+                if (name.StartsWith("PAT_")) await AddDeclareGlobalRegex(name, value, "static ");
                 else if (value.Length == 1) await AddDeclareGlobalChar(name, value, option);
                 else await AddDeclareGlobalString(name, value, option);
             }
@@ -201,6 +222,11 @@ namespace aozora2html
                 CurrentLevel++;
             }
 
+            public async Task AddBrancket()
+            {
+                await Add("{");
+                CurrentLevel++;
+            }
 
             public async Task Add(string text)
             {

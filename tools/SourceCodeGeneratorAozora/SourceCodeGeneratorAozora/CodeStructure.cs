@@ -42,7 +42,7 @@ namespace SourceCodeGeneratorAozora
 
         public enum CodeStructureKind
         {
-            @class, def, @if, elsif, @case, end, begin, hash, loop
+            @class, def, @if, elsif, @case, end, begin, hash, loop, @catch, @foreach, ifStatement, index
         }
     }
 }
