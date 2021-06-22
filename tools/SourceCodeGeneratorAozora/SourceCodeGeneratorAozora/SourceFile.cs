@@ -107,11 +107,12 @@ namespace Aozora
                 CurrentLevel++;
             }
 
-            public async Task AddMethod(string method, string argsText)
+            public async Task AddMethod(string method, string argsText, string className = null)
             {
                 var args = string.IsNullOrWhiteSpace(argsText) ? new string[0] : new Regex(@",\s*").Split(argsText);
                 var sb = new StringBuilder();
                 if (method.EndsWith("?")) sb.Append($"public bool {method.Replace("?", "")}(");
+                else if (method == "initialize" && className != null) sb.Append($"public {className}(");
                 else sb.Append($"public dynamic {method}(");
                 sb.Append(string.Join(", ", args.Select(a => $"dynamic {a}")));
                 sb.Append(")");

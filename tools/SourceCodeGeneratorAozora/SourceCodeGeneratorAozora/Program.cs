@@ -16,7 +16,7 @@ namespace SourceCodeGeneratorAozora
             var sjis = Encoding.GetEncoding("shift_jis");
             string rbPath;
 #if DEBUG
-            rbPath = "i18n.rb";
+            rbPath = "header.rb";
 #else
             if (args.Length == 0) return;
             rbPath = args[0];
@@ -122,13 +122,13 @@ namespace SourceCodeGeneratorAozora
                                 {
                                     structure.Add(CodeStructureKind.def, matchDef.Groups[1].Value);
                                     structure.CurrentClass?.Methods.Add(matchDef.Groups[1].Value);
-                                    await source.AddMethod(matchDef.Groups[1].Value, matchDef.Groups[2].Value);
+                                    await source.AddMethod(matchDef.Groups[1].Value, matchDef.Groups[2].Value, structure.CurrentClass?.Title);
                                 }
                                 else if (matchCombined.Success)
                                 {
                                     structure.Add(CodeStructureKind.def, matchCombined.Groups[2].Value);
                                     structure.CurrentClass?.Methods.Add(matchCombined.Groups[2].Value);
-                                    await source.AddMethod(matchCombined.Groups[2].Value, "");
+                                    await source.AddMethod(matchCombined.Groups[2].Value, "", structure.CurrentClass?.Title);
                                 }
                                 else
                                 {

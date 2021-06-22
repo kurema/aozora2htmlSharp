@@ -135,6 +135,7 @@ namespace Aozora
         private static Regex? _PAT_CHARSIZE = null;
         public static Regex? PAT_CHARSIZE => _PAT_CHARSIZE ??= new Regex(@"(.*)段階(..)な文字");
 
+
         public const string DYNAMIC_CONTENTS = "<div id=\"card\">\r\n<hr />\r\n<br />\r\n<a href=\"JavaScript:goLibCard();\" id=\"goAZLibCard\">●図書カード</a><script type=\"text/javascript\" src=\"../../contents.js\"></script>\r\n<script type=\"text/javascript\" src=\"../../golibcard.js\"></script>\r\n</div>";
 
         // KUNOJI = ["18e518f5"].pack("h*")
@@ -148,6 +149,10 @@ namespace Aozora
         // [class, tag]
         //COMMAND_TABLE = loader.load("../yml/command_table.yml")
         //JIS2UCS = loader.load("../yml/jis2ucs.yml")
+
+        private static Encoding? _ShiftJis;
+        public static Encoding ShiftJis => _ShiftJis ??= CodePagesEncodingProvider.Instance.GetEncoding("shift-jis", new EncoderReplacementFallback("〓"), new DecoderReplacementFallback("〓")) ?? throw new NullReferenceException();
+
 
         public static Dictionary<string, string> INDENT_TYPE = new Dictionary<string, string>()
         {
