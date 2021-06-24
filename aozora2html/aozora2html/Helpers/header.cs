@@ -1,6 +1,7 @@
 //using System;
 //using System.Text.RegularExpressions;
 //using System.Collections.Generic;
+//using System.Linq;
 
 //namespace Aozora.Helpers
 //{
@@ -22,7 +23,7 @@
 //        }
 
 
-//        public string out_header_info(Dictionary<string,string> hash, string attr, string? true_name = null)
+//        public string out_header_info(Dictionary<string, string> hash, string attr, string? true_name = null)
 //        {
 //            if (hash.ContainsKey(attr))
 //            {
@@ -36,71 +37,80 @@
 //        }
 
 
-//        public dynamic header_element_type(string text)
+//        public header_element_type_kind header_element_type(string text)
 //        {
-//            bool original = true;
 //            foreach (var ch in text)
 //            {
-//                dynamic code = ch.unpack("H*")[0];
+//                dynamic code = new Unpacked(ch);
 //                if (("00" <= code && code <= "7f") || ("8140" <= code && code <= "8258") || ("839f" <= code && code <= "8491"))
-//                    {
+//                {
 //                    continue;
 //                }
-//                    else
+//                else
 //                {
-//                    original = false;
-//                    break;
+//                    return header_element_type_kind.original;
 //                }
 //            }
-//            if (original)
+//            if (Aozora2Html.PAT_EDITOR.IsMatch(text))
 //            {
-//                //:original
+//                return header_element_type_kind.editor;
 //            }
-//            else if (Aozora2Html.PAT_EDITOR.IsMatch(text))
+//            else if (Aozora2Html.PAT_HENYAKU.IsMatch(text))
 //            {
-//                //:editor elsif string.match(PAT_HENYAKU)
-//                //:henyaku
+//                return header_element_type_kind.henyaku;
 //            }
 //            else if (Aozora2Html.PAT_TRANSLATOR.IsMatch(text))
 //            {
-//                //:translator end
+//                return header_element_type_kind.translator;
 //            }
+//            return header_element_type_kind.author;
+//        }
+
+//        public enum header_element_type_kind
+//        {
+//            editor, translator, henyaku, author, original, title, original_title, subtitle, original_subtitle
 //        }
 
 
-//            public dynamic process_person(dynamic string, dynamic header_info)
+//        public header_element_type_kind process_person(string word, Dictionary<header_element_type_kind, string> header_info)
+//        {
+//            var type = header_element_type(word);
+//            switch (type)
 //            {
-//                dynamic type = header_element_type(string);
-//                switch (type)
-//                {
-//                    case : editor header_info[:editor] = string:
-//                        break;
-//                        case :translator header_info[:translator] = string:
-//                        break;
-//                        case ":henyaku":
-//                            //header_info[:henyaku] = string
-//                        break;
-//            default:
-//                            dynamic type = :author header_info[:author] = string;
-//            break;
+//                case header_element_type_kind.editor:
+//                    header_info[header_element_type_kind.editor] = word;
+//                    break;
+//                case header_element_type_kind.translator:
+//                    header_info[header_element_type_kind.translator] = word;
+//                    break;
+//                case header_element_type_kind.henyaku:
+//                    header_info[header_element_type_kind.henyaku] = word;
+//                    break;
+//                case header_element_type_kind.author:
+//                default:
+//                    type = header_element_type_kind.author;
+//                    header_info[header_element_type_kind.author] = word;
+//                    break;
+//            }
+//            return type;
 //        }
-//        //type
-//    }
 
 
-//    public dynamic build_title(dynamic header_info)
-//    {
-//        dynamic buf = [:author, :translator, :editor, :henyaku,;
-//        //:title, :original_title,
-//        //:subtitle, :original_subtitle].map{|item| header_info[item]}.compact
-//        dynamic buf_str = buf.join(" ");
-//        //"<title>#{buf_str}</title>"
-//    }
+//        public dynamic build_title(Dictionary<header_element_type_kind, string> header_info)
+//        {
+//            var buff = new[] {
+//            header_element_type_kind.author,header_element_type_kind.translator,header_element_type_kind.editor,header_element_type_kind.henyaku,
+//            header_element_type_kind.title,header_element_type_kind.original_title,
+//            header_element_type_kind.subtitle,header_element_type_kind.original_subtitle,
+//            }.Where(a => header_info.ContainsKey(a)).Select(a => header_info[a]);
+//            string buf_str = string.Join(" ", buff);
+//            return $"<title>{buf_str}</title>";
+//        }
 
 
-//    public dynamic build_header_info()
-//    {
-//        dynamic header_info = {:title => @header[0]};
+//        public dynamic build_header_info()
+//        {
+//            dynamic header_info = {:title => @header[0]};
 //                    switch (@header.length)
 //                    {
 //                        case 2:
