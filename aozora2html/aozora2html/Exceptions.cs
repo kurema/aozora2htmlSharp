@@ -23,4 +23,11 @@ namespace Aozora.Exceptions
         public UseCRLFException() : base(Helpers.I18n.MSG["use_crlf"]) { }
         protected UseCRLFException(SerializationInfo info, StreamingContext context) : base(info, context) { }
     }
+
+    [Serializable]
+    public class AuthorTwiceException : AozoraException
+    {
+        public AuthorTwiceException() : base("parser encounted author twice") { }
+        protected AuthorTwiceException(SerializationInfo info, StreamingContext context) : base(info, context) { }
+    }
 }
