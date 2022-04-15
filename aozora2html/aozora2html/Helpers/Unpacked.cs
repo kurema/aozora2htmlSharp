@@ -66,7 +66,8 @@ namespace Aozora.Helpers
 
         private static int CompareZeroFill(byte[] a, byte[] b)
         {
-            if (a is null || b is null) throw new ArgumentNullException();
+            if (a is null) throw new ArgumentNullException(nameof(a));
+            if (b is null) throw new ArgumentNullException(nameof(b));
 
             byte getFromLeft(byte[] bytes, int index)
             {
@@ -88,7 +89,8 @@ namespace Aozora.Helpers
 
         private static int CompareBasic(byte[] a, byte[] b)
         {
-            if (a is null || b is null) throw new ArgumentNullException();
+            if (a is null) throw new ArgumentNullException(nameof(a));
+            if (b is null) throw new ArgumentNullException(nameof(b));
             if (a.Length < b.Length) return -1;
             if (a.Length > b.Length) return 1;
 

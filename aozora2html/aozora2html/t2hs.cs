@@ -154,7 +154,7 @@ namespace Aozora
         public static Encoding ShiftJis => _ShiftJis ??= CodePagesEncodingProvider.Instance.GetEncoding("shift-jis", new EncoderReplacementFallback("〓"), new DecoderReplacementFallback("〓")) ?? throw new NullReferenceException();
 
 
-        public static Dictionary<string, string> INDENT_TYPE = new Dictionary<string, string>()
+        public static readonly System.Collections.ObjectModel.ReadOnlyDictionary<string, string> INDENT_TYPE = new(new Dictionary<string, string>()
         {
             {"jisage", "字下げ"},
             {"chitsuki", "地付き"},
@@ -167,22 +167,22 @@ namespace Aozora
             {"shatai", "斜体"},
             {"dai", "大きな文字"},
             {"sho", "小さな文字"},
-        };
+        });
 
-        public static Dictionary<int, string> DAKUTEN_KATAKANA_TABLE = new Dictionary<int, string>()
+        public static readonly System.Collections.ObjectModel.ReadOnlyDictionary<int, string> DAKUTEN_KATAKANA_TABLE = new(new Dictionary<int, string>()
         {
             {2, "ワ゛"},
             {3, "ヰ゛"},
             {4, "ヱ゛"},
             {5, "ヲ゛"},
-        };
+        });
 
         public Jstream stream;
         public Helpers.IOutput @out;
         public StringBuilder buffer;
         public Helpers.RubyBuffer ruby_buf;
         public SectionKind section;
-        public dynamic header;
+        public Helpers.Header header;
         public Helpers.StyleStack style_stack;
         public Dictionary<string, string> chuuki_table;
         public List<string> images;
@@ -202,7 +202,7 @@ namespace Aozora
             buffer = new StringBuilder();
             ruby_buf = new Helpers.RubyBuffer();
             section = SectionKind.head;
-            //header = Aozora2Html::Header.new();
+            header= new Helpers.Header();
             style_stack = new Helpers.StyleStack();
             chuuki_table = new Dictionary<string, string>();
             images = new List<string>();
@@ -219,5 +219,9 @@ namespace Aozora
         {
             head, head_end, chuuki, chuuki_in, body, tail
         }
+
+        public int line_number => stream.line;
+
+        public bool block_allowed_context => style_stack.empty;
     }
 }

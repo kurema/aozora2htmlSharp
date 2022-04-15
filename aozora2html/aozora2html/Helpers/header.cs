@@ -36,19 +36,25 @@ namespace Aozora.Helpers
 
         public header_element_type_kind header_element_type(string text)
         {
+            bool original = true;
             foreach (var ch in text)
             {
-                dynamic code = new Unpacked(ch);
+                var code = new Unpacked(ch);
                 if (("00" <= code && code <= "7f") || ("8140" <= code && code <= "8258") || ("839f" <= code && code <= "8491"))
                 {
                     continue;
                 }
                 else
                 {
-                    return header_element_type_kind.original;
+                    original = false;
+                    break;
                 }
             }
-            if (Aozora2Html.PAT_EDITOR.IsMatch(text))
+            if (original)
+            {
+                return header_element_type_kind.original;
+            }
+            else if (Aozora2Html.PAT_EDITOR.IsMatch(text))
             {
                 return header_element_type_kind.editor;
             }

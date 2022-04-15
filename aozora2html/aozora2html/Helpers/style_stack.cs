@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace Aozora.Helpers
 {
-    public record Style (string command,string closingTag);
+    public record Style(string command, string closingTag);
 
     public class StyleStack
     {
@@ -24,10 +24,7 @@ namespace Aozora.Helpers
             stack.Add(new Style(command, closingTag));
         }
 
-        public bool empty()
-        {
-            return stack.Count == 0;
-        }
+        public bool empty => stack.Count == 0;
 
         public Style pop()
         {

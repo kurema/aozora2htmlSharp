@@ -30,4 +30,11 @@ namespace Aozora.Exceptions
         public AuthorTwiceException() : base("parser encounted author twice") { }
         protected AuthorTwiceException(SerializationInfo info, StreamingContext context) : base(info, context) { }
     }
+
+    [Serializable]
+    public class TagSyntaxException : AozoraException
+    {
+        public TagSyntaxException() : base(Helpers.I18n.MSG["tag_syntax_error"]) { }
+        protected TagSyntaxException(SerializationInfo info, StreamingContext context) : base(info, context) { }
+    }
 }
