@@ -188,17 +188,27 @@ public class EditorNote : Inline, IHtmlProvider
 
     public string to_html()
     {
-        return $"<span class=\"notes\">［＃{@desc}］</span>";
+        return $"<span class=\"notes\">［＃{desc}］</span>";
     }
 }
 
-//public class FontSize : Block, IHtmlProvider
-//{
-//    //kurema:下のMultilineは空なので無視で良さげ。
-//    //include Aozora2Html::Tag::Multiline
+public class FontSize : Block, IHtmlProvider
+{
+    public FontSize(Aozora2Html parser, int times, Utils.Daisho daisho) : base(parser)
+    {
+        @class = daisho.ToString() + times.ToString();
+        style = Utils.create_font_size(times, daisho);
+    }
 
-//    public string @class{ get; }
+    //kurema:下のMultilineは空なので無視で良さげ。
+    //include Aozora2Html::Tag::Multiline
 
+    public string @class { get; }
+    public string style { get; }
 
-//}
+    public string to_html()
+    {
+        return $"<div class=\"{@class}\" style=\"font-size: {style};\">";
+    }
+}
 

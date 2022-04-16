@@ -98,7 +98,7 @@ namespace Aozora.Helpers
             return type;
         }
 
-        public dynamic build_title(Dictionary<header_element_type_kind, string> header_info)
+        public string build_title(Dictionary<header_element_type_kind, string> header_info)
         {
             var buff = new[] {
             header_element_type_kind.author,header_element_type_kind.translator,header_element_type_kind.editor,header_element_type_kind.henyaku,

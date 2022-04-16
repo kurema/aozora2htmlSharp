@@ -15,12 +15,13 @@ public class Utils
     public const string ZENKAKU_NUMS = "０-９";
     public const string ZENKAKU_NUMS_FULL = "０１２３４５６７８９";
 
+    //kurema:以下はToString()でclass名に使われるので変更しないでください。
     public enum Daisho
     {
         dai, sho
     }
 
-    public static string create_font_size(dynamic times, Daisho daisho)
+    public static string create_font_size(int times, Daisho daisho)
     {
         string size = times switch
         {
