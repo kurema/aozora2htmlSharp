@@ -15,7 +15,7 @@ namespace SourceCodeGeneratorAozora
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
             var sjis = Encoding.GetEncoding("shift_jis");
             string rbPath;
-#if DEBUG
+#if DEBUG && NONE
             rbPath = "header.rb";
 #else
             if (args.Length == 0) return;

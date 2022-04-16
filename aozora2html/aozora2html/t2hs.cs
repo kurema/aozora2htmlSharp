@@ -212,7 +212,7 @@ namespace Aozora
             terprip = true;
             noprint = false;//kurema:元は初期nil。falseで問題ないと思われる。
             //kurema:endcharはread_charがnullを返すだけなので削除しました。
-            this.warnChannel = warnChannel ?? new Helpers.OutputDummy();
+            this.warnChannel = warnChannel ?? new Helpers.OutputConsole();
         }
 
         public enum SectionKind

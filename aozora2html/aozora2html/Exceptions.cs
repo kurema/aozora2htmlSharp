@@ -37,4 +37,20 @@ namespace Aozora.Exceptions
         public TagSyntaxException() : base(Helpers.I18n.MSG["tag_syntax_error"]) { }
         protected TagSyntaxException(SerializationInfo info, StreamingContext context) : base(info, context) { }
     }
+
+    [Serializable]
+    public class InvalidFontSizeException : AozoraException
+    {
+        public InvalidFontSizeException() : base(Helpers.I18n.MSG["invalid_font_size"]) { }
+        protected InvalidFontSizeException(SerializationInfo info, StreamingContext context) : base(info, context) { }
+
+    }
+
+    [Serializable]
+    public class UndefinedHeaderException : AozoraException
+    {
+        public UndefinedHeaderException() : base(Helpers.I18n.MSG["undefined_header"]) { }
+        protected UndefinedHeaderException(SerializationInfo info, StreamingContext context) : base(info, context) { }
+
+    }
 }

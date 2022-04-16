@@ -91,6 +91,17 @@ namespace Aozora.Helpers
         }
         #endregion
 
+        public static bool operator ==(Unpacked a, string b)
+        {
+            var bb = FromHexString(b);
+            return CompareBasic(a.inArray, bb) == 0;
+        }
+        public static bool operator !=(Unpacked a, string b)
+        {
+            var bb = FromHexString(b);
+            return CompareBasic(a.inArray, bb) != 0;
+        }
+
         public static bool operator <(Unpacked a, string b)
         {
             var bb = FromHexString(b);

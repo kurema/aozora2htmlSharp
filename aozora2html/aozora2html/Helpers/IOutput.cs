@@ -14,7 +14,17 @@ namespace Aozora.Helpers
 
     public class OutputDummy : IOutput
     {
-        public void close() {}
+        public void close() { }
         public void print(string words) { }
+    }
+
+    public class OutputConsole : IOutput
+    {
+        public void close() { }
+
+        public void print(string words)
+        {
+            Console.Write(words);
+        }
     }
 }

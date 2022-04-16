@@ -13,11 +13,12 @@ public class ReferenceMentioned : Inline
     //rubocop:disable Lint/MissingSuper
     public ReferenceMentioned(object? target)
     {
+        this.target = target;
         if (target is null || block_element(target)) return;
         syntax_error();
     }
 
-    public object? target { get; }
+    public object? target { get; protected set; }
 
     public static bool block_element(object elt)
     {
