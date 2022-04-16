@@ -20,6 +20,12 @@ public class ReferenceMentioned : Inline
 
     public object? target { get; protected set; }
 
+    //kurema: to_s()をto_html()に下関係で、targetが適切に変換されるように以下の関数を追加しました。
+    public string target_to_html()
+    {
+        return (target as IHtmlProvider)?.to_html() ?? target?.ToString() ?? "";
+    }
+
     public static bool block_element(object elt)
     {
         switch (elt)

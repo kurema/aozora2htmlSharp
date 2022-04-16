@@ -7,7 +7,7 @@ namespace Aozora.Helpers.Tag;
 
 public enum CharType
 {
-    Else, Katankana,
+    Else, Katankana, Kanji
 }
 
 public interface IClosable
@@ -28,36 +28,26 @@ public interface IHtmlProvider
 
 /*
 require_relative 'tag/accent'
-require_relative 'tag/gaiji'
 require_relative 'tag/embed_gaiji'
 require_relative 'tag/un_embed_gaiji'
 require_relative 'tag/oneline_indent'
 require_relative 'tag/multiline'
 require_relative 'tag/multiline_style'
-require_relative 'tag/font_size'
-require_relative 'tag/jizume'
-require_relative 'tag/keigakomi'
 require_relative 'tag/multiline_yokogumi'
 require_relative 'tag/multiline_caption'
 require_relative 'tag/multiline_midashi'
-require_relative 'tag/jisage'
 require_relative 'tag/oneline_jisage'
 require_relative 'tag/multiline_jisage'
 require_relative 'tag/oneline_chitsuki'
 require_relative 'tag/multiline_chitsuki'
 require_relative 'tag/midashi'
 require_relative 'tag/ruby'
-require_relative 'tag/kunten'
-require_relative 'tag/kaeriten'
 require_relative 'tag/okurigana'
-require_relative 'tag/inline_keigakomi'
-require_relative 'tag/inline_yokogumi'
-require_relative 'tag/inline_caption'
-require_relative 'tag/inline_font_size'
-require_relative 'tag/img'
  */
 
-//変換される青空記法class
+/// <summary>
+/// 変換される青空記法class
+/// </summary>
 public class Tag : ICharTypeProvider
 {
     //debug用
@@ -71,16 +61,20 @@ public class Tag : ICharTypeProvider
     }
 }
 
-//インラインタグ用class
-// 
-//全ての青空記法はHTML elementに変換される
-//したがって、block/inlineの区別がある
-//全ての末端青空classはどちらかのclassのサブクラスになる必要がある
+/// <summary>
+/// インラインタグ用class
+/// 
+/// 全ての青空記法はHTML elementに変換される
+/// したがって、block/inlineの区別がある
+/// 全ての末端青空classはどちらかのclassのサブクラスになる必要がある
+/// </summary>
 public class Inline : Tag { }
 
-//ブロックタグ用class
-//
-//各Tagクラスはこれを継承する
+/// <summary>
+/// ブロックタグ用class
+///
+/// 各Tagクラスはこれを継承する
+/// </summary>
 public class Block : Tag, IClosable
 {
     public Block(Aozora2Html parser) : base()
@@ -99,9 +93,11 @@ public class Indent : Block
     }
 }
 
-// 地付き記法
-//
-// 直接使わない。実際に使うのはサブクラス
+/// <summary>
+/// 地付き記法 
+/// 
+/// 直接使わない。実際に使うのはサブクラス
+/// </summary>
 public class Chitsuki : Indent, IHtmlProvider
 {
     public int length { get; }
@@ -111,13 +107,12 @@ public class Chitsuki : Indent, IHtmlProvider
         this.length = length;
     }
 
-    public string to_html()
-    {
-        return $"<div class=\"chitsuki_{length}\" style=\"text-align:right; margin-right: {length}em\">";
-    }
+    public string to_html() => $"<div class=\"chitsuki_{length}\" style=\"text-align:right; margin-right: {length}em\">";
 }
 
-//濁点つきカタカナ用
+/// <summary>
+/// 濁点つきカタカナ用
+/// </summary>
 public class DakutenKatakana : Inline, IHtmlProvider
 {
     public DakutenKatakana(int num, string katakana, string gaiji_dir)
@@ -133,18 +128,17 @@ public class DakutenKatakana : Inline, IHtmlProvider
 
     public override CharType char_type => CharType.Katankana;
 
-    //kurema:これは後で実装。
     //using StringRefinements
 
-    public string to_html()
-    {
+    public string to_html() =>
         //kurema:これはU+FF9Eで実現できるのでは？
         //kurema:まぁでもsjis変換で壊れるようなことはしない方が良いか。
-        return $"<img src=\"{gaiji_dir}/1-07/1-07-8{n}.png\" alt=\"※(濁点付き片仮名「{katakana}」、1-07-8{n})\" class=\"gaiji\" />";
-    }
+        $"<img src=\"{gaiji_dir}/1-07/1-07-8{n}.png\" alt=\"※(濁点付き片仮名「{katakana}」、1-07-8{n})\" class=\"gaiji\" />";
 }
 
-//装飾用
+/// <summary>
+/// 装飾用
+/// </summary>
 public class Decorate : ReferenceMentioned, IHtmlProvider
 {
     public string close { get; }
@@ -156,26 +150,24 @@ public class Decorate : ReferenceMentioned, IHtmlProvider
         this.open = $"<{html_tag} class=\"{html_class}\">";
     }
 
-    public string to_html()
-    {
-        return open + (target?.ToString() ?? "") + close;
-    }
+    public string to_html() => open + (target_to_html()) + close;
 }
 
-//書字方向（LTR）の指定用
+/// <summary>
+/// 書字方向（LTR）の指定用
+/// </summary>
 public class Dir : ReferenceMentioned, IHtmlProvider
 {
     public Dir(object? target) : base(target)
     {
     }
 
-    public string to_html()
-    {
-        return $"<span dir=\"ltr\">{target?.ToString() ?? ""}</span>";
-    }
+    public string to_html() => $"<span dir=\"ltr\">{target_to_html()}</span>";
 }
 
-//編集者による訂正用
+/// <summary>
+/// 編集者による訂正用
+/// </summary>
 public class EditorNote : Inline, IHtmlProvider
 {
     public string desc { get; }
@@ -186,12 +178,12 @@ public class EditorNote : Inline, IHtmlProvider
         this.desc = desc;
     }
 
-    public string to_html()
-    {
-        return $"<span class=\"notes\">［＃{desc}］</span>";
-    }
+    public string to_html() => $"<span class=\"notes\">［＃{desc}］</span>";
 }
 
+/// <summary>
+/// フォントサイズ指定用 
+/// </summary>
 public class FontSize : Block, IHtmlProvider
 {
     public FontSize(Aozora2Html parser, int times, Utils.Daisho daisho) : base(parser)
@@ -206,9 +198,184 @@ public class FontSize : Block, IHtmlProvider
     public string @class { get; }
     public string style { get; }
 
-    public string to_html()
-    {
-        return $"<div class=\"{@class}\" style=\"font-size: {style};\">";
-    }
+    public string to_html() => $"<div class=\"{@class}\" style=\"font-size: {style};\">";
 }
 
+/// <summary>
+/// 外字用
+/// </summary>
+public class Gaiji : Inline
+{
+    public override CharType char_type => CharType.Kanji;
+}
+
+/// <summary>
+/// 画像用
+/// </summary>
+public class Img : Inline, IHtmlProvider
+{
+    public Img(string filename, string css_class, string alt, string width, string height)
+    {
+        this.filename = filename ?? throw new ArgumentNullException(nameof(filename));
+        this.css_class = css_class ?? throw new ArgumentNullException(nameof(css_class));
+        this.alt = alt ?? throw new ArgumentNullException(nameof(alt));
+        this.width = width ?? throw new ArgumentNullException(nameof(width));
+        this.height = height ?? throw new ArgumentNullException(nameof(height));
+    }
+
+    public string filename { get; }
+    public string css_class { get; }
+    public string alt { get; }
+    //kurema: widthはdoubleかなintかなと思ったけど、pxとか付くかもしれないと思ってstringにしました。
+    public string width { get; }
+    public string height { get; }
+
+    public string to_html() => $"<img class=\"{css_class}\" width=\"{width}\" height=\"{height}\" src=\"{filename}\" alt=\"{alt}\" />";
+}
+
+/// <summary>
+/// インラインキャプション
+/// </summary>
+public class InlineCaption : ReferenceMentioned, IHtmlProvider
+{
+    public InlineCaption(object? target) : base(target) { }
+
+    public string to_html() => $"<span class=\"caption\">{target_to_html()}</span>";
+}
+
+/// <summary>
+/// インラインフォントサイズ指定用
+/// </summary>
+public class InlineFontSize : ReferenceMentioned, IHtmlProvider
+{
+    public string @class { get; }
+    public string style { get; }
+
+    public InlineFontSize(object? target, int times, Utils.Daisho daisho) : base(target)
+    {
+        @class = daisho.ToString() + times.ToString();
+        style = Utils.create_font_size(times, daisho);
+    }
+
+    public string to_html() => $"<span class=\"{@class}\" style=\"font-size: {style};\">{target}</span>";
+}
+
+/// <summary>
+/// インライン罫囲み用
+/// </summary>
+public class InlineKeigakomi : ReferenceMentioned, IHtmlProvider
+{
+    public InlineKeigakomi(object? target) : base(target)
+    {
+    }
+
+    public string to_html() => $"<span class=\"keigakomi\">{target_to_html()}</span>";
+}
+
+/// <summary>
+/// インライン横組み用
+/// </summary>
+public class InlineYokogumi : ReferenceMentioned, IHtmlProvider
+{
+    public InlineYokogumi(object? target) : base(target)
+    {
+    }
+
+    public string to_html() => $"<span class=\"yokogumi\">{target}</span>";
+}
+
+/// <summary>
+/// 字下げ用
+/// </summary>
+public class Jisage : Indent, IHtmlProvider
+{
+    public int width { get; }
+
+    public Jisage(Aozora2Html parser, int width) : base(parser)
+    {
+        this.width = width;
+    }
+
+    public string to_html() => $"<div class=\"jisage_{width}\" style=\"margin-left: {width}em\">";
+}
+
+/// <summary>
+/// 字詰め用
+/// </summary>
+public class Jizume : Indent, IHtmlProvider
+{
+    //kurema: 元はw。wだと分からないのでwidthにした。
+    public int width { get; }
+
+    public Jizume(Aozora2Html parser, int width) : base(parser)
+    {
+        this.width = width;
+    }
+
+    public string to_html() => $"<div class=\"jizume_{width}\" style=\"width: {width}em\">";
+}
+
+/// <summary>
+/// 訓点用
+/// </summary>
+public class Kunten : Inline
+{
+    //kurema: 次行のコメント"just remove this line"はよく分からない。
+    public override CharType char_type => CharType.Else; //just remove this line
+}
+
+/// <summary>
+/// 返り点用
+/// </summary>
+public class Kaeriten : Kunten, IHtmlProvider
+{
+    public Kaeriten(string @string)
+    {
+        this.@string = @string ?? throw new ArgumentNullException(nameof(@string));
+    }
+
+    public string @string { get; }
+
+    public string to_html() => $"<sub class=\"kaeriten\">{@string}</sub>";
+}
+
+/// <summary>
+/// 罫囲み用
+/// </summary>
+public class Keigakomi : Block, IHtmlProvider
+{
+    //kurema: intの方が正しい？
+    public double size { get; }
+
+    public Keigakomi(Aozora2Html parser, double size = 1) : base(parser)
+    {
+        this.size = size;
+    }
+
+    public string to_html() => $"<div class=\"keigakomi\" style=\"border: solid {size}px\">";
+}
+
+//kurema:未実装
+/// <summary>
+/// 見出し用
+/// </summary>
+public class Midashi : ReferenceMentioned, IHtmlProvider
+{
+    public string tag { get; }
+    public string id { get; }
+    public string @class { get; }
+
+    public Midashi(Aozora2Html parser, object? target,char size, Utils.MidashiType type) : base(target)
+    {
+        tag = Utils.create_midashi_tag(size);
+        //kurema:先にmidashi_counter.rbとかの実装が必要。
+        throw new NotImplementedException();
+        //id = parser.new_midashi_id(size);
+        @class = Utils.create_midashi_class(type, tag);
+    }
+
+    public string to_html()
+    {
+        return $"<{tag} class=\"{@class}\"><a class=\"midashi_anchor\" id=\"midashi{id}\">{target}</a></{tag}>";
+    }
+}

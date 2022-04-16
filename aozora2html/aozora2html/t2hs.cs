@@ -5,7 +5,6 @@ using System.Text;
 
 namespace Aozora
 {
-
     // -*- coding:utf-8 -*-
     // 青空文庫形式のテキストファイルを html に整形する ruby スクリプト
     //require "extensions"
@@ -27,6 +26,7 @@ namespace Aozora
     // 変換器本体
     public class Aozora2Html
     {
+        //kurema: C#では普通に出せるので下のコメントは無視してください。
         // 全角バックスラッシュが出せないから直打ち
         public const char KU = '／';
         public const char NOJI = '＼';
@@ -143,10 +143,12 @@ namespace Aozora
         // DAKUTENKUNOJI = ["18e518d818f5"].pack("h*")
         // utf8 ["fecbf82e083bfecbcb"].pack("h*")
 
+        //kurema:以下2行未実装
         //loader = Aozora2Html::YamlLoader.new(File.dirname(__FILE__))
         //ACCENT_TABLE = loader.load("../yml/accent_table.yml")
 
         // [class, tag]
+        //kurema:以下2行未実装
         //COMMAND_TABLE = loader.load("../yml/command_table.yml")
         //JIS2UCS = loader.load("../yml/jis2ucs.yml")
 

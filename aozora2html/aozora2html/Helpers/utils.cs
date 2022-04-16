@@ -5,7 +5,7 @@ using System.Collections.Generic;
 namespace Aozora.Helpers;
 // frozen_string_literal: true
 
-public class Utils
+public static class Utils
 {
     // ユーティリティ関数モジュール
     //using StringRefinements
@@ -15,7 +15,7 @@ public class Utils
     public const string ZENKAKU_NUMS = "０-９";
     public const string ZENKAKU_NUMS_FULL = "０１２３４５６７８９";
 
-    //kurema:以下はToString()でclass名に使われるので変更しないでください。
+    //kurema:以下はToString()でclass名に使われるのでパスカルケースなどに変更しないでください。
     public enum Daisho
     {
         dai, sho
@@ -65,7 +65,7 @@ public class Utils
         normal, dogyo, mado,
     }
 
-    public string create_midashi_class(MidashiType type, string tag)
+    public static string create_midashi_class(MidashiType type, string tag)
     {
         var normal_midashi_tag = new Dictionary<string, string>()
         {
@@ -99,7 +99,7 @@ public class Utils
 
     //module_function :create_midashi_class
 
-    public string convert_japanese_number(string command)
+    public static string convert_japanese_number(string command)
     {
         //kurema:dotnetにはPerlのtr///相当の機能がないっぽい。
         string tmp = Regex.Replace(command, ZENKAKU_NUMS_FULL, a => "0123456789"[ZENKAKU_NUMS_FULL.IndexOf(a.Value)].ToString());
@@ -117,7 +117,11 @@ public class Utils
         jis_gaiji, chuki, onebyte, legal
     }
 
-    public illegal_char_check_result illegal_char_check(char @char, int line, IOutput output)
+    //kurema:
+    //Rubyユーザーへの注記
+    //C#で変数名の前に付ける@は無視されます。
+    //予約語避けの為に使われます。
+    public static illegal_char_check_result illegal_char_check(char @char, int line, IOutput output)
     {
         var result = illegal_char_check(@char);
         switch (result)
@@ -148,7 +152,7 @@ public class Utils
     //
     // @return [void]
     //
-    public illegal_char_check_result illegal_char_check(char @char)
+    public static illegal_char_check_result illegal_char_check(char @char)
     {
         var code = new Unpacked(@char);
 

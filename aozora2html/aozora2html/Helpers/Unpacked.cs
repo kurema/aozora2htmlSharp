@@ -37,7 +37,6 @@ namespace Aozora.Helpers
             return result;
         }
 
-
         public static bool TryDecodeFromUtf16(string chars, ref byte[] bytes)
         {
             static int FromChar(int c)
@@ -83,8 +82,8 @@ namespace Aozora.Helpers
                 i += 2;
             }
 
-            if (byteLo == 0xFF)
-                i++;
+            //if (byteLo == 0xFF)
+            //    i++;
 
             //charsProcessed = i;
             return (byteLo | byteHi) != 0xFF;
