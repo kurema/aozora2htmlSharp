@@ -5,7 +5,19 @@ using System.Linq;
 
 namespace Aozora.Helpers
 {
-    public record Style(string command, string closingTag);
+
+    public record Style
+    {
+        public Style(string command, string closingTag)
+        {
+            this.command = command ?? throw new ArgumentNullException(nameof(command));
+            this.closingTag = closingTag ?? throw new ArgumentNullException(nameof(closingTag));
+        }
+
+        public string command { get; set; }
+
+        public string closingTag { get; set; }
+    }
 
     public class StyleStack
     {

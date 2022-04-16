@@ -36,7 +36,7 @@ namespace Aozora.Helpers
 
         // バッファの初期化。引数itemがあるときはその1要素のバッファに、
         // 引数がなければ`""`の1要素のバッファにする。
-        [System.Diagnostics.CodeAnalysis.MemberNotNull(nameof(ruby_buf))]
+        //[System.Diagnostics.CodeAnalysis.MemberNotNull(nameof(ruby_buf))]
         public void clear(string? item = null)
         {
             ruby_buf = new StringBuilder(item ?? "");
