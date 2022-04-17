@@ -53,4 +53,20 @@ namespace Aozora.Exceptions
         protected UndefinedHeaderException(SerializationInfo info, StreamingContext context) : base(info, context) { }
 
     }
+
+    [Serializable]
+    public class DontAllowTripleRubyException: AozoraException
+    {
+        public DontAllowTripleRubyException() : base(Helpers.I18n.MSG["dont_allow_triple_ruby"]) { }
+        protected DontAllowTripleRubyException(SerializationInfo info, StreamingContext context) : base(info, context) { }
+
+    }
+
+    [Serializable]
+    public class DontUseDoubleRubyException : AozoraException
+    {
+        public DontUseDoubleRubyException() : base(Helpers.I18n.MSG["dont_use_double_ruby"]) { }
+        protected DontUseDoubleRubyException(SerializationInfo info, StreamingContext context) : base(info, context) { }
+
+    }
 }

@@ -190,7 +190,7 @@ namespace Aozora
         public List<string> images;
         public List<string> indent_stack;
         public List<string> tag_stack;
-        public int midashi_id;
+        public Helpers.MidashiCounter midashi_counter;
         public bool terprip;
         public bool noprint;
 
@@ -210,7 +210,7 @@ namespace Aozora
             images = new List<string>();
             indent_stack = new List<string>();
             tag_stack = new List<string>();
-            midashi_id = 0;
+            midashi_counter = new Helpers.MidashiCounter(0);
             terprip = true;
             noprint = false;//kurema:元は初期nil。falseで問題ないと思われる。
             //kurema:endcharはread_charがnullを返すだけなので削除しました。
@@ -225,5 +225,9 @@ namespace Aozora
         public int line_number => stream.line;
 
         public bool block_allowed_context => style_stack.empty;
+
+        //kurema:下を先に実装したので少し飛んでます。
+        public int new_midashi_id(int size) => midashi_counter.generate_id(size);
+        public int new_midashi_id(char size) => midashi_counter.generate_id(size);
     }
 }

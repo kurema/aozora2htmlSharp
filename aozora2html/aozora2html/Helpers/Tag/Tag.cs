@@ -40,7 +40,6 @@ require_relative 'tag/oneline_jisage'
 require_relative 'tag/multiline_jisage'
 require_relative 'tag/oneline_chitsuki'
 require_relative 'tag/multiline_chitsuki'
-require_relative 'tag/midashi'
 require_relative 'tag/ruby'
 require_relative 'tag/okurigana'
  */
@@ -144,13 +143,18 @@ public class Decorate : ReferenceMentioned, IHtmlProvider
     public string close { get; }
     public string open { get; }
 
-    public Decorate(object target, string html_class, string html_tag) : base(target)
+    public Decorate(object? target, string html_class, string html_tag, string? openOverride, string? closeOverride) : base(target)
     {
-        this.close = $"<{html_tag}>";
-        this.open = $"<{html_tag} class=\"{html_class}\">";
+        this.close = openOverride ?? $"<{html_tag}>";
+        this.open = closeOverride ?? $"<{html_tag} class=\"{html_class}\">";
     }
 
     public string to_html() => open + (target_to_html()) + close;
+
+    public override object Clone()
+    {
+        return new Decorate(target, "", "", open, close);
+    }
 }
 
 /// <summary>
@@ -163,6 +167,11 @@ public class Dir : ReferenceMentioned, IHtmlProvider
     }
 
     public string to_html() => $"<span dir=\"ltr\">{target_to_html()}</span>";
+
+    public override object Clone()
+    {
+        return new Dir(target);
+    }
 }
 
 /// <summary>
@@ -241,6 +250,11 @@ public class InlineCaption : ReferenceMentioned, IHtmlProvider
     public InlineCaption(object? target) : base(target) { }
 
     public string to_html() => $"<span class=\"caption\">{target_to_html()}</span>";
+
+    public override object Clone()
+    {
+        return new InlineCaption(target);
+    }
 }
 
 /// <summary>
@@ -257,7 +271,18 @@ public class InlineFontSize : ReferenceMentioned, IHtmlProvider
         style = Utils.create_font_size(times, daisho);
     }
 
+    public InlineFontSize(object? target, string @class, string style) : base(target)
+    {
+        this.@class = @class;
+        this.style = style;
+    }
+
     public string to_html() => $"<span class=\"{@class}\" style=\"font-size: {style};\">{target}</span>";
+
+    public override object Clone()
+    {
+        return new InlineFontSize(target, @class, style);
+    }
 }
 
 /// <summary>
@@ -270,6 +295,11 @@ public class InlineKeigakomi : ReferenceMentioned, IHtmlProvider
     }
 
     public string to_html() => $"<span class=\"keigakomi\">{target_to_html()}</span>";
+
+    public override object Clone()
+    {
+        return new InlineKeigakomi(target);
+    }
 }
 
 /// <summary>
@@ -282,6 +312,11 @@ public class InlineYokogumi : ReferenceMentioned, IHtmlProvider
     }
 
     public string to_html() => $"<span class=\"yokogumi\">{target}</span>";
+
+    public override object Clone()
+    {
+        return new InlineYokogumi(target);
+    }
 }
 
 /// <summary>
@@ -362,20 +397,31 @@ public class Keigakomi : Block, IHtmlProvider
 public class Midashi : ReferenceMentioned, IHtmlProvider
 {
     public string tag { get; }
-    public string id { get; }
+    public int id { get; }
     public string @class { get; }
 
-    public Midashi(Aozora2Html parser, object? target,char size, Utils.MidashiType type) : base(target)
+    public Midashi(Aozora2Html parser, object? target, char size, Utils.MidashiType type) : base(target)
     {
         tag = Utils.create_midashi_tag(size);
         //kurema:先にmidashi_counter.rbとかの実装が必要。
-        throw new NotImplementedException();
-        //id = parser.new_midashi_id(size);
+        id = parser.new_midashi_id(size);
         @class = Utils.create_midashi_class(type, tag);
+    }
+
+    public Midashi(object? target, string tag, int id, string @class) : base(target)
+    {
+        this.tag = tag;
+        this.id = id;
+        this.@class = @class;
     }
 
     public string to_html()
     {
         return $"<{tag} class=\"{@class}\"><a class=\"midashi_anchor\" id=\"midashi{id}\">{target}</a></{tag}>";
+    }
+
+    public override object Clone()
+    {
+        return new Midashi(target, tag, id, @class);
     }
 }
