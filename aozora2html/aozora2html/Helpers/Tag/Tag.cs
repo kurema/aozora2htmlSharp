@@ -31,16 +31,7 @@ require_relative 'tag/accent'
 require_relative 'tag/embed_gaiji'
 require_relative 'tag/un_embed_gaiji'
 require_relative 'tag/oneline_indent'
-require_relative 'tag/multiline'
-require_relative 'tag/multiline_style'
-require_relative 'tag/multiline_yokogumi'
-require_relative 'tag/multiline_caption'
-require_relative 'tag/multiline_midashi'
 require_relative 'tag/oneline_jisage'
-require_relative 'tag/multiline_jisage'
-require_relative 'tag/oneline_chitsuki'
-require_relative 'tag/multiline_chitsuki'
-require_relative 'tag/ruby'
 require_relative 'tag/okurigana'
  */
 
@@ -145,6 +136,8 @@ public class Decorate : ReferenceMentioned, IHtmlProvider
 
     public Decorate(object? target, string html_class, string html_tag, string? openOverride, string? closeOverride) : base(target)
     {
+        if (html_tag is null) throw new ArgumentNullException(nameof(html_tag));
+        if (html_class is null) throw new ArgumentNullException(nameof(html_class));
         this.close = openOverride ?? $"<{html_tag}>";
         this.open = closeOverride ?? $"<{html_tag} class=\"{html_class}\">";
     }
@@ -184,7 +177,7 @@ public class EditorNote : Inline, IHtmlProvider
     //kurema:元はAozora2Html型のparserも引数に取っていたけど使わないっぽい。
     public EditorNote(string desc) : base()
     {
-        this.desc = desc;
+        this.desc = desc ?? throw new ArgumentNullException(nameof(desc));
     }
 
     public string to_html() => $"<span class=\"notes\">［＃{desc}］</span>";
@@ -273,8 +266,8 @@ public class InlineFontSize : ReferenceMentioned, IHtmlProvider
 
     public InlineFontSize(object? target, string @class, string style) : base(target)
     {
-        this.@class = @class;
-        this.style = style;
+        this.@class = @class ?? throw new ArgumentNullException(nameof(@class));
+        this.style = style ?? throw new ArgumentNullException(nameof(style));
     }
 
     public string to_html() => $"<span class=\"{@class}\" style=\"font-size: {style};\">{target}</span>";
@@ -390,7 +383,6 @@ public class Keigakomi : Block, IHtmlProvider
     public string to_html() => $"<div class=\"keigakomi\" style=\"border: solid {size}px\">";
 }
 
-//kurema:未実装
 /// <summary>
 /// 見出し用
 /// </summary>
@@ -403,16 +395,15 @@ public class Midashi : ReferenceMentioned, IHtmlProvider
     public Midashi(Aozora2Html parser, object? target, char size, Utils.MidashiType type) : base(target)
     {
         tag = Utils.create_midashi_tag(size);
-        //kurema:先にmidashi_counter.rbとかの実装が必要。
         id = parser.new_midashi_id(size);
         @class = Utils.create_midashi_class(type, tag);
     }
 
     public Midashi(object? target, string tag, int id, string @class) : base(target)
     {
-        this.tag = tag;
+        this.tag = tag ?? throw new ArgumentNullException(nameof(tag));
         this.id = id;
-        this.@class = @class;
+        this.@class = @class ?? throw new ArgumentNullException(nameof(@class));
     }
 
     public string to_html()
@@ -424,4 +415,19 @@ public class Midashi : ReferenceMentioned, IHtmlProvider
     {
         return new Midashi(target, tag, id, @class);
     }
+}
+
+/// <summary>
+/// 訓点送り仮名用
+/// </summary>
+public class Okurigana : Kunten, IHtmlProvider
+{
+    public Okurigana(string @string)
+    {
+        this.@string = @string ?? throw new ArgumentNullException(nameof(@string));
+    }
+
+    public string @string { get; }
+
+    public string to_html() => $"<sup class=\"okurigana\">{@string}</sup>";
 }

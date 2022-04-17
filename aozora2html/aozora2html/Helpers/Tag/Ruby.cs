@@ -60,9 +60,6 @@ public class Ruby : ReferenceMentioned, IHtmlProvider
         bool new_under_is_array = string.IsNullOrEmpty(under_ruby);
         var new_under = new_under_is_array ? new StringBuilder() : new StringBuilder(under_ruby);
 
-        //kurema:
-        //原文では">1"だけれど、「空ではない」を意味していると思うので>=に変更。不安。
-        //https://github.com/aozorahack/aozora2html/pull/101
         if (new_upper.Length >= 1 && new_under.Length >= 1)
         {
             throw new Exceptions.DontAllowTripleRubyException();
