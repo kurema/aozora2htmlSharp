@@ -7,7 +7,7 @@ namespace Aozora.Helpers.Tag;
 
 public enum CharType
 {
-    Else, Katankana, Kanji
+    Else, Katankana, Kanji, Hankaku
 }
 
 public interface IClosable
@@ -25,15 +25,6 @@ public interface IHtmlProvider
     public string to_html();
 
 }
-
-/*
-require_relative 'tag/accent'
-require_relative 'tag/embed_gaiji'
-require_relative 'tag/un_embed_gaiji'
-require_relative 'tag/oneline_indent'
-require_relative 'tag/oneline_jisage'
-require_relative 'tag/okurigana'
- */
 
 /// <summary>
 /// 変換される青空記法class
@@ -201,14 +192,6 @@ public class FontSize : Block, IHtmlProvider
     public string style { get; }
 
     public string to_html() => $"<div class=\"{@class}\" style=\"font-size: {style};\">";
-}
-
-/// <summary>
-/// 外字用
-/// </summary>
-public class Gaiji : Inline
-{
-    public override CharType char_type => CharType.Kanji;
 }
 
 /// <summary>

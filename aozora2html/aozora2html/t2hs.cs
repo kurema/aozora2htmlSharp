@@ -197,6 +197,11 @@ namespace Aozora
         //kurema: 警告メッセージ用チャンネルを独自に追加しました。
         public Helpers.IOutput warnChannel;
 
+        //kurema:本来はstatic変数。しかし、parserに属した方が扱いやすいので移しました。
+        public bool use_jisx0213_accent { get; set; } = false;
+        public bool use_jisx0214_embed_gaiji { get; set; } = false;
+        public bool use_unicode_embed_gaiji { get; set; } = false;
+
         public Aozora2Html(Jstream input, Helpers.IOutput output, Helpers.IOutput? warnChannel = null)
         {
             stream = input;
