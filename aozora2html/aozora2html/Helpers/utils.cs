@@ -209,4 +209,16 @@ public static class Utils
         return illegal_char_check_result.legal;
     }
     //module_function :illegal_char_check
+
+    public static Tag.CharType GetCharType(char character)
+    {
+        string word = character.ToString();
+        if (Aozora2Html.REGEX_HIRAGANA.IsMatch(word)) return Tag.CharType.Hiragana;
+        if (Aozora2Html.REGEX_KATAKANA.IsMatch(word)) return Tag.CharType.Katankana;
+        if (Aozora2Html.REGEX_ZENKAKU.IsMatch(word)) return Tag.CharType.Zenkaku;
+        if (Aozora2Html.REGEX_HANKAKU.IsMatch(word)) return Tag.CharType.Hankaku;
+        if (Aozora2Html.REGEX_KANJI.IsMatch(word)) return Tag.CharType.Kanji;
+        if (Regex.IsMatch(@"[.;""?!)]", word)) return Tag.CharType.HankakuTerminate;
+        return Tag.CharType.Else;
+    }
 }

@@ -7,7 +7,7 @@ namespace Aozora.Helpers.Tag;
 
 public enum CharType
 {
-    Else, Katankana, Kanji, Hankaku
+    Else, Katankana, Kanji, Hankaku, Hiragana, Zenkaku, HankakuTerminate
 }
 
 public interface IClosable
@@ -32,13 +32,19 @@ public interface IHtmlProvider
 public class Tag : ICharTypeProvider
 {
     //debug用
-    public string inspect() { return ToString() ?? ""; }
+    public string inspect() { return GetHtml(this); }
 
     public virtual CharType char_type => CharType.Else;
 
     public void syntax_error()
     {
         throw new Exceptions.TagSyntaxException();
+    }
+
+    public static string GetHtml(Tag tag)
+    {
+        if (tag is IHtmlProvider provider) return provider.to_html();
+        else return tag.ToString();
     }
 }
 
