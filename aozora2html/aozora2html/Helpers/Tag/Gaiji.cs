@@ -17,9 +17,9 @@ public class Gaiji : Inline
 /// </summary>
 public class EmbedGaiji : Gaiji, IHtmlProvider
 {
-    Aozora2Html Parser;
+    readonly Aozora2Html Parser;
 
-    public EmbedGaiji(Aozora2Html parser, string folder, string code, string name, string gaiji_dir, string unicode_num = null)
+    public EmbedGaiji(Aozora2Html parser, string folder, string? code, string name, string gaiji_dir, string? unicode_num = null)
     {
         Parser = parser ?? throw new ArgumentNullException(nameof(parser));
         this.folder = folder ?? throw new ArgumentNullException(nameof(folder));

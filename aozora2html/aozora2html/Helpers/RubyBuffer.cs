@@ -29,8 +29,11 @@ namespace Aozora.Helpers
         //attr_accessor :char_type
 
 
+#pragma warning disable CS8618 // null 非許容のフィールドには、コンストラクターの終了時に null 以外の値が入っていなければなりません。Null 許容として宣言することをご検討ください。
         public RubyBuffer(string? item = null)
+#pragma warning restore CS8618 // null 非許容のフィールドには、コンストラクターの終了時に null 以外の値が入っていなければなりません。Null 許容として宣言することをご検討ください。
         {
+            //ruby_buf = new StringBuilder();
             clear(item);
         }
 

@@ -9,7 +9,7 @@ namespace Aozora.Helpers
     public class Unpacked
     {
         public byte[] InArray { get => inArray; }
-        private byte[] inArray;
+        private readonly byte[] inArray;
 
         public Unpacked(char character)
         {
@@ -154,7 +154,7 @@ namespace Aozora.Helpers
             if (a is null) throw new ArgumentNullException(nameof(a));
             if (b is null) throw new ArgumentNullException(nameof(b));
 
-            byte getFromLeft(byte[] bytes, int index)
+            static byte getFromLeft(byte[] bytes, int index)
             {
                 if (index < 0) return 0;
                 if (bytes.Length - index - 1 < 0) return 0;
@@ -187,6 +187,16 @@ namespace Aozora.Helpers
                 if (ca > cb) return 1;
             }
             return 0;
+        }
+
+        public override bool Equals(object? obj)
+        {
+            return obj is Unpacked unpacked && unpacked == this;
+        }
+
+        public override int GetHashCode()
+        {
+            return inArray.GetHashCode();
         }
     }
 }

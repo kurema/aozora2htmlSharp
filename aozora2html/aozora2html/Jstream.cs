@@ -143,7 +143,7 @@ namespace Aozora
 
         public int line { get; set; }
         private bool entry;
-        private StreamReader file;
+        private readonly StreamReader file;
         private string? _buffer;
         private string? buffer { get => _buffer; set { _buffer = value; buffer_positon = 0; } }
         private int buffer_positon = 0;

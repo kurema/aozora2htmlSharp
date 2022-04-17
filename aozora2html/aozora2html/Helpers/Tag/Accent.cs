@@ -8,7 +8,7 @@ namespace Aozora.Helpers.Tag;
 /// </summary>
 public class Accent : Inline, IHtmlProvider
 {
-    Aozora2Html Parser;
+    readonly Aozora2Html Parser;
 
     public Accent(Aozora2Html parser, string code, string name, string gaiji_dir) : base()
     {
