@@ -6,20 +6,26 @@ using System.Text;
 
 namespace Aozora.Helpers
 {
+    /// <summary>
+    /// ルビ文字列解析用バッファ
+    /// </summary>
     public class RubyBuffer
     {
         // `｜`が来た時に真にする。ルビの親文字のガード用。
         public bool @protected { get; set; }
 
+        // バッファの初期化。`""`の1要素のバッファにする。
+        //kurema: 下のMemeberNotNullはNullable様だけど、.NetStandard 2.0では使えない。
         //[System.Diagnostics.CodeAnalysis.MemberNotNull(nameof(ruby_buf))]
         public void clear()
         {
-            ruby_buf = new List<IRubyBufferItem>();
+            ruby_buf = new List<IBufferItem>();
             @protected = false;
             char_type = null;
         }
 
-        public List<IRubyBufferItem> ruby_buf { get; private set; } = new List<IRubyBufferItem>();
+        public List<IBufferItem> ruby_buf { get; private set; } = new List<IBufferItem>();//kurema:この代入は余計。でも楽。
+        // @ruby_buf内の文字のchar_type
         public Tag.CharType? char_type = null;
 
         public RubyBuffer()
@@ -30,8 +36,8 @@ namespace Aozora.Helpers
         public bool empty => ruby_buf.Count == 0;
         public bool present => !empty;
 
-        public IRubyBufferItem[] ToArray() => ruby_buf.ToArray();
-        public IRubyBufferItem? last => ruby_buf.Count > 0 ? ruby_buf.Last() : null;
+        public IBufferItem[] ToArray() => ruby_buf.ToArray();
+        public IBufferItem? last => ruby_buf.Count > 0 ? ruby_buf.Last() : null;
 
         public int length => ruby_buf.Count;
 
@@ -42,23 +48,30 @@ namespace Aozora.Helpers
         // そうでなければバッファの末尾に新しい要素として追加する
         public void push(string value)
         {
-            if (last is RubyBufferItemString itemString) itemString.Append(value);
-            else ruby_buf.Add(new RubyBufferItemString(value));
+            if (last is BufferItemString itemString) itemString.Append(value);
+            else ruby_buf.Add(new BufferItemString(value));
+        }
+
+        public void push(char @char)
+        {
+            push(@char.ToString());
         }
 
         public void push(Tag.Tag tag)
         {
-            ruby_buf.Add(new RubyBufferItemTag(tag));
+            ruby_buf.Add(new BufferItemTag(tag));
         }
 
-        public IRubyBufferItem[] create_ruby(Aozora2Html parser, string ruby)
+        public IBufferItem[] create_ruby(string ruby)
         {
+            //kurema:
+            //`ans = +''` ってのがあるんだけど。`+''`ってのは何？分からん。
             var ans = new StringBuilder();
-            var notes = new List<IRubyBufferItem>();
+            var notes = new List<IBufferItem>();
 
             foreach (var token in ruby_buf)
             {
-                if ((token as RubyBufferItemTag)?.tag is Tag.UnEmbedGaiji gaiji)
+                if ((token as BufferItemTag)?.tag is Tag.UnEmbedGaiji gaiji)
                 {
                     ans.Append(Aozora2Html.GAIJI_MARK);
                     gaiji.escape();
@@ -70,189 +83,53 @@ namespace Aozora.Helpers
                 }
             }
 
-            notes.Insert(0, new RubyBufferItemTag(new Tag.Ruby(ans.ToString(), ruby)));
+            notes.Insert(0, new BufferItemTag(new Tag.Ruby(ans.ToString(), ruby)));
             clear();
             return notes.ToArray();
         }
 
-        //kurema:第二引数は未実装のTextBuffer
-        public void push_char(char @char)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void dump_into()
-        {
-            throw new NullReferenceException();
-        }
-
-        public interface IRubyBufferItem : Tag.IHtmlProvider
-        {
-        }
-
-        public class RubyBufferItemTag : IRubyBufferItem
-        {
-            public Tag.Tag tag { get; }
-
-            public RubyBufferItemTag(Tag.Tag tag)
-            {
-                this.tag = tag;
-            }
-
-            public string to_html()
-            {
-                return Tag.Tag.GetHtml(tag);
-            }
-        }
-
-        public class RubyBufferItemString : IRubyBufferItem
-        {
-
-            public RubyBufferItemString(string text)
-            {
-                buffer = new StringBuilder(text);
-            }
-
-            public StringBuilder buffer { get; }
-
-            public void Append(string value)
-            {
-                buffer.Append(value);
-            }
-
-            public string to_html()
-            {
-                return buffer.ToString();
-            }
-        }
-    }
-
-
-    public class RubyBuffer_old
-    {
-        //kurema:
-        // 中身ほぼStringBuilderまんま。
-        // rubyではcharとstring入り混じったListを使ってるみたいだが、dotnetではそんな必要ない。
-        // 全体的に何やってるか分かり辛かった。
-
-        //kurema:
-        // 色々おかしいので要書き直し。
-        // ruby_bufはcreate_rubyを見る限りTag.UnEmbedGaijiとか入るし判定が必要なので、StringBuilderじゃ上手くいかない。
-        // あとto_html()関係で色々おかしくなってる。
-
-        //kurema:
-        // コード参考用に新RubyBufferを実装完了するまでは放置します。
-
-        private StringBuilder ruby_buf;
-        public bool @protected { get; set; }
-        public Tag.CharType? char_type { get; set; }
-
-
-        // `｜`が来た時に真にする。ルビの親文字のガード用。
-        //attr_accessor :protected
-
-        // @ruby_buf内の文字のchar_type
-        //attr_accessor :char_type
-
-
-#pragma warning disable CS8618 // null 非許容のフィールドには、コンストラクターの終了時に null 以外の値が入っていなければなりません。Null 許容として宣言することをご検討ください。
-        public RubyBuffer_old(string? item = null)
-#pragma warning restore CS8618 // null 非許容のフィールドには、コンストラクターの終了時に null 以外の値が入っていなければなりません。Null 許容として宣言することをご検討ください。
-        {
-            //ruby_buf = new StringBuilder();
-            clear(item);
-        }
-
-        // バッファの初期化。引数itemがあるときはその1要素のバッファに、
-        // 引数がなければ`""`の1要素のバッファにする。
-        //[System.Diagnostics.CodeAnalysis.MemberNotNull(nameof(ruby_buf))]
-        public void clear(string? item = null)
-        {
-            ruby_buf = new StringBuilder(item ?? "");
-            @protected = false;
-            char_type = null;
-        }
-
-        public bool empty()
-        {
-            return ruby_buf.Length == 0;
-        }
-
-        public bool present()
-        {
-            return !empty();
-        }
-
-        public string to_a()
-        {
-            return ruby_buf.ToString();
-        }
-
-        public void each(Action<char> block)
-        {
-            foreach (var item in ruby_buf.ToString())
-            {
-                block(item);
-            }
-        }
-
-        public void push(string item)
-        {
-            ruby_buf.Append(item);
-        }
-
-        public int length()
-        {
-            return ruby_buf.Length;
-        }
-
-        //kurema:StringBuilderなら区別する必要はない。
-        public void last_concat(string item)
-        {
-            push(item);
-        }
-
-        // buffer management
-
-        public StringBuilder dump_into(StringBuilder buffer)
+        //buffer management
+        public TextBuffer dump_into(TextBuffer buffer)
         {
             if (@protected)
             {
-                ruby_buf.Insert(0, new StringBuilder(Aozora2Html.RUBY_PREFIX));
+                ruby_buf.Insert(0, new BufferItemString(Aozora2Html.RUBY_PREFIX.ToString()));
                 @protected = false;
             }
-            buffer.Append(ruby_buf.ToString());
+            var top = ruby_buf[0];
+            if(top is BufferItemString && buffer.Last() is BufferItemString lastString)
+            {
+                lastString.Append(top.to_html());
+                buffer.AddRange(ruby_buf.GetRange(1, ruby_buf.Count - 1));
+            }
+            else
+            {
+                buffer.AddRange(ruby_buf);
+            }
             clear();
             return buffer;
         }
 
-        public void push_char(char @char, StringBuilder buffer)
+
+        //kurema:第二引数は未実装のTextBuffer
+        public void push_char(char @char,TextBuffer buffer)
         {
             var ctype = Utils.GetCharType(@char);
-            if (ctype is Tag.CharType.HankakuTerminate && char_type is Tag.CharType.Hankaku)
+            if (ctype == Tag.CharType.HankakuTerminate && char_type == Tag.CharType.Hankaku)
             {
-                push(@char.ToString());
+                push(@char);
                 char_type = Tag.CharType.Else;
             }
-            else if (@protected || ((ctype is not Tag.CharType.Else) && (ctype == char_type)))
+            else if (@protected || ((ctype != Tag.CharType.Else) && (ctype == char_type)))
             {
-                push(@char.ToString());
+                push(@char);
             }
             else
             {
                 dump_into(buffer);
-                push(@char.ToString());
+                push(@char);
                 char_type = ctype;
             }
-        }
-
-        public void create_ruby(Aozora2Html parser, string ruby)
-        {
-            //kurema:
-            //`ans = +''` ってのがあるんだけど。`+''`ってのは何？分からん。
-            var ans = new StringBuilder();
-
-            throw new NotImplementedException();
         }
 
         //kurema:

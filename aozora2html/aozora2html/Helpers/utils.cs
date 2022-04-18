@@ -30,17 +30,12 @@ public static class Utils
             >= 3 => "xx-",
             _ => throw new Exceptions.InvalidFontSizeException(),
         };
-        switch (daisho)
+        size += daisho switch
         {
-            case Daisho.dai:
-                size += "large";
-                break;
-            case Daisho.sho:
-                size += "small";
-                break;
-            default:
-                throw new Exceptions.InvalidFontSizeException();
-        }
+            Daisho.dai => "large",
+            Daisho.sho => "small",
+            _ => throw new Exceptions.InvalidFontSizeException(),
+        };
         return size;
     }
 

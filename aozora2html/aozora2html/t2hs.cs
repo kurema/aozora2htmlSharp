@@ -136,15 +136,15 @@ namespace Aozora
         public static Regex? PAT_CHARSIZE => _PAT_CHARSIZE ??= new Regex(@"(.*)段階(..)な文字");
 
 
-        private static Regex _REGEX_HIRAGANA = null;
+        private static Regex? _REGEX_HIRAGANA = null;
         public static Regex REGEX_HIRAGANA => _REGEX_HIRAGANA ??= new Regex("[ぁ-んゝゞ]");
-        private static Regex _REGEX_KATAKANA = null;
+        private static Regex? _REGEX_KATAKANA = null;
         public static Regex REGEX_KATAKANA => _REGEX_KATAKANA ??= new Regex("[ァ-ンーヽヾヴ]");
-        private static Regex _REGEX_ZENKAKU = null;
+        private static Regex? _REGEX_ZENKAKU = null;
         public static Regex REGEX_ZENKAKU => _REGEX_ZENKAKU ??= new Regex("[０-９Ａ-Ｚａ-ｚΑ-Ωα-ωА-Яа-я−＆’，．]");
-        private static Regex _REGEX_HANKAKU = null;
+        private static Regex? _REGEX_HANKAKU = null;
         public static Regex REGEX_HANKAKU => _REGEX_HANKAKU ??= new Regex("[A-Za-z0-9#\\-\\&'\\,]");
-        private static Regex _REGEX_KANJI = null;
+        private static Regex? _REGEX_KANJI = null;
         public static Regex REGEX_KANJI => _REGEX_KANJI ??= new Regex("[亜-熙々※仝〆〇ヶ]");
 
         public const string DYNAMIC_CONTENTS = "<div id=\"card\">\r\n<hr />\r\n<br />\r\n<a href=\"JavaScript:goLibCard();\" id=\"goAZLibCard\">●図書カード</a><script type=\"text/javascript\" src=\"../../contents.js\"></script>\r\n<script type=\"text/javascript\" src=\"../../golibcard.js\"></script>\r\n</div>";

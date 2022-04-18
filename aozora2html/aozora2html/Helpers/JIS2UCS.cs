@@ -8,6 +8,15 @@ namespace Aozora.Helpers
     {
         public static string? Convert(string code)
         {
+#if DEBUG
+            //kurema:
+            //大容量のswitchは開発時に重くなるので切り替え。
+            //テストに通らないので、後で要修正。
+            switch (code)
+            {
+                case "1-01-01": return "&#x3000;";
+            }
+#else
             switch (code)
             {
                 case "1-01-01": return "&#x3000;";
@@ -11244,6 +11253,7 @@ namespace Aozora.Helpers
                 case "2-94-85": return "&#x9F75;";
                 case "2-94-86": return "&#x2A6B2;";
             }
+#endif
             return null;
         }
     }
