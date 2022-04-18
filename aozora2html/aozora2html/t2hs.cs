@@ -2,6 +2,7 @@
 using System.Text.RegularExpressions;
 using System.Collections.Generic;
 using System.Text;
+using System.Linq;
 
 namespace Aozora
 {
@@ -166,20 +167,24 @@ namespace Aozora
         private static Encoding? _ShiftJis;
         public static Encoding ShiftJis => _ShiftJis ??= CodePagesEncodingProvider.Instance.GetEncoding("shift-jis", new EncoderReplacementFallback("〓"), new DecoderReplacementFallback("〓")) ?? throw new NullReferenceException();
 
-
-        public static readonly System.Collections.ObjectModel.ReadOnlyDictionary<string, string> INDENT_TYPE = new(new Dictionary<string, string>()
+        public enum IndentTypeKey
         {
-            {"jisage", "字下げ"},
-            {"chitsuki", "地付き"},
-            {"midashi", "見出し"},
-            {"jizume", "字詰め"},
-            {"yokogumi", "横組み"},
-            {"keigakomi", "罫囲み"},
-            {"caption", "キャプション"},
-            {"futoji", "太字"},
-            {"shatai", "斜体"},
-            {"dai", "大きな文字"},
-            {"sho", "小さな文字"},
+            jisage, chitsuki, midashi, jizume, yokogumi, keigakomi, caption, futoji, shatai, dai, sho
+        }
+
+        public static readonly System.Collections.ObjectModel.ReadOnlyDictionary<IndentTypeKey, string> INDENT_TYPE = new(new Dictionary<IndentTypeKey, string>()
+        {
+            {IndentTypeKey.jisage, "字下げ"},
+            {IndentTypeKey.chitsuki, "地付き"},
+            {IndentTypeKey.midashi, "見出し"},
+            {IndentTypeKey.jizume, "字詰め"},
+            {IndentTypeKey.yokogumi, "横組み"},
+            {IndentTypeKey.keigakomi, "罫囲み"},
+            {IndentTypeKey.caption, "キャプション"},
+            {IndentTypeKey.futoji, "太字"},
+            {IndentTypeKey.shatai, "斜体"},
+            {IndentTypeKey.dai, "大きな文字"},
+            {IndentTypeKey.sho, "小さな文字"},
         });
 
         public static readonly System.Collections.ObjectModel.ReadOnlyDictionary<int, string> DAKUTEN_KATAKANA_TABLE = new(new Dictionary<int, string>()
@@ -190,6 +195,11 @@ namespace Aozora
             {5, "ヲ゛"},
         });
 
+        public enum chuuki_table_keys
+        {
+            chuki, kunoji, dakutenkunoji, newjis, accent,
+        }
+
         protected Jstream stream;
         protected Helpers.IOutput @out;
         protected Helpers.TextBuffer buffer;
@@ -197,7 +207,7 @@ namespace Aozora
         protected SectionKind section;//現在処理中のセクション(:head,:head_end,:chuuki,:chuuki_in,:body,:tail)
         protected Helpers.Header header;
         protected Helpers.StyleStack style_stack;//スタイルのスタック
-        protected Dictionary<string, string> chuuki_table;//最後にどの注記を出すかを保持しておく
+        protected Dictionary<chuuki_table_keys, bool> chuuki_table;//最後にどの注記を出すかを保持しておく
         protected List<string> images;//使用した外字の画像保持用
         protected List<string> indent_stack;//基本はシンボルだが、ぶらさげのときはdivタグの文字列が入る
         protected List<string> tag_stack;
@@ -210,9 +220,12 @@ namespace Aozora
         protected Helpers.IOutput warnChannel;
 
         //kurema:本来はstatic変数。しかし、parserに属した方が扱いやすいので移しました。
-        protected bool use_jisx0213_accent { get; set; } = false;
-        protected bool use_jisx0214_embed_gaiji { get; set; } = false;
-        protected bool use_unicode_embed_gaiji { get; set; } = false;
+        public bool use_jisx0213_accent { get; set; } = false;
+        public bool use_jisx0214_embed_gaiji { get; set; } = false;
+        public bool use_unicode_embed_gaiji { get; set; } = false;
+
+        //kurema:Jstream用。CRLFかのチェックをする。
+        public bool strictReturnCode { get; set; } = false;
 
         protected string gaiji_dir;
         protected string[] css_files;
@@ -226,7 +239,7 @@ namespace Aozora
             section = SectionKind.head;
             header = new Helpers.Header();
             style_stack = new Helpers.StyleStack();
-            chuuki_table = new Dictionary<string, string>();
+            chuuki_table = new Dictionary<chuuki_table_keys, bool>();
             images = new List<string>();
             indent_stack = new List<string>();
             tag_stack = new List<string>();
@@ -250,5 +263,52 @@ namespace Aozora
         //kurema:下を先に実装したので少し飛んでます。
         public int new_midashi_id(int size) => midashi_counter.generate_id(size);
         public int new_midashi_id(char size) => midashi_counter.generate_id(size);
+
+        public Helpers.IBufferItem kuten2png(string substring)
+        {
+            var desc = PAT_KUTEN.Replace(substring, "");
+            var matched = new Regex(@"([12])-(\d{1,2})-(\d{1,2})").Match("desc");
+            if (matched.Success && desc != NON_0213_GAIJI && !PAT_KUTEN_DUAL.IsMatch(desc))
+            {
+                chuuki_table[chuuki_table_keys.newjis] = true;
+                var codes = new int[] { int.Parse(matched.Groups[1].Value), int.Parse(matched.Groups[2].Value), int.Parse(matched.Groups[3].Value) };
+                var folder = string.Format("{0,1}-{1:D2}", codes[0], codes[1]);//%1d-%02d
+                var code = string.Format("{0,1}-{1:2d}-{2:2d}", codes[0], codes[1], codes[2]);//%1d-%02d-%02d
+                return new Helpers.BufferItemTag(new Helpers.Tag.EmbedGaiji(this, folder, code, desc.Replace(IGETA_MARK.ToString(), ""), gaiji_dir));
+            }
+            else
+            {
+                return new Helpers.BufferItemString(substring);
+            }
+        }
+
+        /// <summary>
+        /// コマンド文字列からモードのシンボルを取り出す
+        /// </summary>
+        /// <param name="command"></param>
+        /// <returns>[Symbol]</returns>
+        public IndentTypeKey? detect_command_mode(string command)
+        {
+            //kurema:元は正規表現。途中でもマッチするはずなので==ではなくContains。
+            if (command.Contains(INDENT_TYPE[IndentTypeKey.chitsuki] + END_MARK) || command.Contains(JISAGE_COMMAND + END_MARK))
+            {
+                return IndentTypeKey.chitsuki;
+            }
+
+            foreach (var keyValue in INDENT_TYPE)
+            {
+                if (command.Contains(keyValue.Value)) return keyValue.Key;
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// 一文字読み込む
+        /// </summary>
+        /// <returns></returns>
+        protected char? read_char() => stream.read_char();
+
+        //一行読み込む
+        //protected string? read_line()=>stream.re
     }
 }

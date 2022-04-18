@@ -13,7 +13,7 @@ namespace Aozora.Helpers
         public string Raw => _raw.ToString();
         StringBuilder _raw = new StringBuilder();//外字変換前の生テキストを残したいことがあるらしい
 
-        public TagParser(Jstream input, char endchar, Dictionary<string, string> chuuki, List<string> images, IOutput output, IOutput? warnChannel = null, string? gaiji_dir = null, string[]? css_files = null) : base(input, output, warnChannel, gaiji_dir, css_files)
+        public TagParser(Jstream input, char endchar, Dictionary<chuuki_table_keys, bool> chuuki, List<string> images, IOutput output, IOutput? warnChannel = null, string? gaiji_dir = null, string[]? css_files = null) : base(input, output, warnChannel, gaiji_dir, css_files)
         {
             section = SectionKind.tail; //末尾処理と記法内はインデントをしないので等価
             chuuki_table = chuuki;

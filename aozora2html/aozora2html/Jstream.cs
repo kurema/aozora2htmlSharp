@@ -6,6 +6,166 @@ using System.IO;
 
 namespace Aozora
 {
+    public class Jstream
+    {
+        public const char CR = '\r';
+        public const char LF = '\n';
+        public const string CRLF = "\r\n";
+
+        public bool StrictReturnCode;
+        private bool ReadAny = false;
+
+        int _line;
+        char? current_char;
+        StreamReader file;
+
+        public Jstream(StreamReader file_io, bool strictReturnCode = false)
+        {
+            _line = 0;
+            current_char = null;
+            file = file_io;
+            StrictReturnCode = strictReturnCode;
+
+            //kurema:
+            //CRLFチェックはStreamReaderでは厄介なので省略しました。具体的には巻き戻せません。
+            //その代わり、読みだし時にチェックします。(strictReturnCodeがtrueの場合)
+        }
+
+        //kurema:当たり前ですがStreamReaderにinspectはないので、これの実行結果はRubyの場合とは異なります。
+        public string inspect => $"#<jcode-stream input {file}>";
+
+        public char? read_char()
+        {
+            char? @char = IntToNullableChar(file.Read());
+            ReadAny = true;
+            if (@char == CR)
+            {
+                var char2 = IntToNullableChar(file.Peek());
+                if (char2 != LF)
+                {
+                    //kurema:\r[\n以外]
+                    if (StrictReturnCode) throw new Exceptions.UseCRLFException();
+                }
+                else
+                {
+                    //kurema:\r\n
+                    file.Read();
+                }
+                _line++;
+                current_char = LF;//kurema:現在が仮に\rだとしても、\nとして返します。
+            }
+            else if (@char == LF)
+            {
+                //kurema:\n
+                if (StrictReturnCode) throw new Exceptions.UseCRLFException();
+                _line++;
+                current_char = LF;
+            }
+            ////kurema:元々は:eofを返してましたが、nullを返すようにしたので分岐は不要になりました。
+            //else if (@char == null)
+            //{
+            //    current_char = null;
+            //}
+            else
+            {
+                current_char = @char;
+            }
+
+            return current_char;
+        }
+
+        public char? peek_char(int pos)
+        {
+            //kurema:
+            //複数文字peekはZipファイルとかだと無理です。
+            //そもそもBaseStreamを勝手にSeekしても良いの？
+            //駄目です。
+            if (!file.BaseStream.CanSeek) throw new NotSupportedException();
+            var original_pos = file.BaseStream.Position;
+            char? @char = null;
+            try
+            {
+                for(int i = 1; i < pos; i++)
+                {
+                    int result = file.Read();
+                    if (result < 0) return null;
+                }
+            }
+            finally
+            {
+                file.BaseStream.Seek(original_pos, SeekOrigin.Begin);
+            }
+            return @char;
+            
+        }
+
+        public int line
+        {
+            get
+            {
+                if (ReadAny == false) return 0;
+                else if (current_char == LF) return line;
+                else return line + 1;
+            }
+        }
+
+        private static char? IntToNullableChar(int number)
+        {
+            return number < 0 ? null : (char)number;
+        }
+
+        #region ReadLineCRLF
+        //kurema:標準で畳まれるようにregionで囲いました。
+        public static string ReadLineCRLF(StreamReader sr)
+        {
+            //kurema:
+            // 参考
+            //https://github.com/dotnet/runtime/blob/a3f0e2bebe30fd5e82518d86cefc7895127ae474/src/libraries/System.Private.CoreLib/src/System/IO/StreamReader.cs#L787
+            //要するに\rか\nに当たるまで一文字づつ読み込み、\r\n以外なら例外。
+            var sb = new StringBuilder();
+            char current = '\0';
+
+            while (true)
+            {
+                int nextResult = sr.Peek();
+                if (nextResult == -1)
+                {
+                    if (current == '\r') throw new Exceptions.UseCRLFException();//kurema:[\r][EOF]
+                    else return sb.ToString();
+                }
+                char next = (char)nextResult;
+
+                if (next == '\n')
+                {
+                    if (current == '\r')
+                    {
+                        //kurema:\r\n
+                        sr.Read();
+                        return sb.ToString();
+                    }
+                    else
+                    {
+                        //kurema:[\r以外][\n]
+                        sr.Read();
+                        throw new Exceptions.UseCRLFException();
+                    }
+                }
+                if (current == '\r')
+                {
+                    //kurema:[\r][\n以外]
+                    throw new Exceptions.UseCRLFException();
+                }
+                if (next != '\r')
+                {
+                    sb.Append(next);
+                }
+                sr.Read();
+                current = next;
+            }
+        }
+        #endregion
+    }
+
 
     //require "aozora2html/error"
     //require "aozora2html/i18n"
@@ -20,11 +180,11 @@ namespace Aozora
     //kurema:
     // :eofシンボルなんて返しようがないので、nullを返す仕組みにしました。
     // CR+LFか否かはどちらでも良いかと。
-    public class Jstream
+    public class Jstream_old
     {
         //attr_accessor :line
 
-        public Jstream(StreamReader file_io)
+        public Jstream_old(StreamReader file_io)
         {
             line = 0;
             entry = false;
@@ -96,49 +256,6 @@ namespace Aozora
             // ↓はきちんと例外吐く方(未テスト)。
             //buffer = readLineCRLF(file);
             entry = true;
-        }
-
-        private static string readLineCRLF(System.IO.StreamReader sr)
-        {
-            //kurema:
-            // 参考
-            //https://github.com/dotnet/runtime/blob/a3f0e2bebe30fd5e82518d86cefc7895127ae474/src/libraries/System.Private.CoreLib/src/System/IO/StreamReader.cs#L787
-            // 要するに\rか\nに当たるまで繰り返し、\rなら次の文字が\nかチェック。
-            // ここでは、現時点が\nで1字前が\rならreturn、\r以外なら例外、現時点が\n以外で1字前が\rなら例外。ファイルの末尾が\rの場合も例外。
-            // StreamReaderの場所がずれるという問題がある。例外キャッチ後継続するなら問題になる。
-            var sb = new StringBuilder();
-            var buf = new char[1];
-            var bufLast = new char[1] { '\0' };
-
-            while (true)
-            {
-                sr.Read(buf, 0, 1);
-                sb.Append(buf);
-
-                if (buf[0] == '\n')
-                {
-                    if (bufLast[0] == '\r')
-                    {
-                        sb.Remove(sb.Length - 2, 2);
-                        return sb.ToString();
-                    }
-                    else
-                    {
-                        throw new Exceptions.UseCRLFException();
-                        //raise Aozora2Html::Error, Aozora2Html::I18n.t(:use_crlf)
-                    }
-                }
-                if (bufLast[0] == '\r')
-                {
-                    throw new Exceptions.UseCRLFException();
-                }
-                if (sr.EndOfStream)
-                {
-                    if (buf[0] == '\r') throw new Exceptions.UseCRLFException();
-                    return sb.ToString();
-                }
-                bufLast = buf;
-            }
         }
 
         public int line { get; set; }
