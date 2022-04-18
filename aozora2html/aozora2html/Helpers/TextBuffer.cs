@@ -44,11 +44,12 @@ namespace Aozora.Helpers
         }
 
         /// <summary>
-        /// 行末で<br />を出力するべきかどうかの判別用
+        /// 行末で&lt;br /&gt;を出力するべきかどうかの判別用
         /// </summary>
         /// <returns>[true, false] Multilineの注記しか入っていなければfalse、Multilineでも空文字でもない要素が含まれていればtrue</returns>
         public bool terpri()
         {
+            //kurema: terpriは"TERminate PRInt line"を意味するLispの関数だそう。要するにConsole.WriteLine();
             bool flag = true;
             foreach(var x in this)
             {

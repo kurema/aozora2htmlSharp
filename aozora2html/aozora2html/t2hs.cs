@@ -190,37 +190,41 @@ namespace Aozora
             {5, "ヲ゛"},
         });
 
-        public Jstream stream;
-        public Helpers.IOutput @out;
-        public StringBuilder buffer;
-        public Helpers.RubyBuffer ruby_buf;
-        public SectionKind section;
-        public Helpers.Header header;
-        public Helpers.StyleStack style_stack;
-        public Dictionary<string, string> chuuki_table;
-        public List<string> images;
-        public List<string> indent_stack;
-        public List<string> tag_stack;
-        public Helpers.MidashiCounter midashi_counter;
-        public bool terprip;
-        public bool noprint;
+        protected Jstream stream;
+        protected Helpers.IOutput @out;
+        protected Helpers.TextBuffer buffer;
+        protected Helpers.RubyBuffer ruby_buf;
+        protected SectionKind section;//現在処理中のセクション(:head,:head_end,:chuuki,:chuuki_in,:body,:tail)
+        protected Helpers.Header header;
+        protected Helpers.StyleStack style_stack;//スタイルのスタック
+        protected Dictionary<string, string> chuuki_table;//最後にどの注記を出すかを保持しておく
+        protected List<string> images;//使用した外字の画像保持用
+        protected List<string> indent_stack;//基本はシンボルだが、ぶらさげのときはdivタグの文字列が入る
+        protected List<string> tag_stack;
+        protected Helpers.MidashiCounter midashi_counter;//見出しのカウンタ、見出しの種類によって増分が異なる
+        protected bool terprip;//改行制御用 (terpriはLisp由来?)
+        protected char? endchar = null;//解析終了文字、AccentParserやTagParserでは異なる
+        protected bool noprint;//行末を読み込んだとき、何も出力しないかどうかのフラグ
 
         //kurema: 警告メッセージ用チャンネルを独自に追加しました。
-        public Helpers.IOutput warnChannel;
+        protected Helpers.IOutput warnChannel;
 
         //kurema:本来はstatic変数。しかし、parserに属した方が扱いやすいので移しました。
-        public bool use_jisx0213_accent { get; set; } = false;
-        public bool use_jisx0214_embed_gaiji { get; set; } = false;
-        public bool use_unicode_embed_gaiji { get; set; } = false;
+        protected bool use_jisx0213_accent { get; set; } = false;
+        protected bool use_jisx0214_embed_gaiji { get; set; } = false;
+        protected bool use_unicode_embed_gaiji { get; set; } = false;
 
-        public Aozora2Html(Jstream input, Helpers.IOutput output, Helpers.IOutput? warnChannel = null)
+        protected string gaiji_dir;
+        protected string[] css_files;
+
+        public Aozora2Html(Jstream input, Helpers.IOutput output, Helpers.IOutput? warnChannel = null, string? gaiji_dir = null, string[]? css_files = null)
         {
             stream = input;
             @out = output;
-            buffer = new StringBuilder();
+            buffer = new Helpers.TextBuffer();
             ruby_buf = new Helpers.RubyBuffer();
             section = SectionKind.head;
-            header= new Helpers.Header();
+            header = new Helpers.Header();
             style_stack = new Helpers.StyleStack();
             chuuki_table = new Dictionary<string, string>();
             images = new List<string>();
@@ -229,8 +233,9 @@ namespace Aozora
             midashi_counter = new Helpers.MidashiCounter(0);
             terprip = true;
             noprint = false;//kurema:元は初期nil。falseで問題ないと思われる。
-            //kurema:endcharはread_charがnullを返すだけなので削除しました。
             this.warnChannel = warnChannel ?? new Helpers.OutputConsole();
+            this.gaiji_dir = gaiji_dir ?? "../../../gaiji/";
+            this.css_files = css_files ?? new[] { "../../aozora.css" };
         }
 
         public enum SectionKind
