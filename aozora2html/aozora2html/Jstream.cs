@@ -1,11 +1,17 @@
 ﻿using System;
-using System.Text.RegularExpressions;
 using System.Collections.Generic;
-using System.Text;
 using System.IO;
+using System.Text;
 
 namespace Aozora
 {
+
+    //Stream class for reading a file.
+    //
+    //It's just a wrapper class of IO to read characters.
+    //when finished to read IO, return a symbol :eof.
+    //kurema: No. It just returns null.
+    //when found line terminator except CR+LF, exit.
     public class Jstream
     {
         public const char CR = '\r';
@@ -19,12 +25,21 @@ namespace Aozora
         char? current_char;
         StreamReader file;
 
+        List<int> peekBuffer = new();
+
+        // 初期化と同時に、いったん最初の行をscanして、改行コードがCR+LFかどうか調べる。
+        // CR+LFでない場合はエラーメッセージを出力してexitする(!)
+        // 
+        // TODO: 将来的にはさすがにexitまではしないよう、仕様を変更する?
+        //kurema: ここではstrictReturnCodeした場合、例外を吐きます。Exitはしません。
         public Jstream(StreamReader file_io, bool strictReturnCode = false)
         {
             _line = 0;
             current_char = null;
             file = file_io;
             StrictReturnCode = strictReturnCode;
+
+            if (strictReturnCode) initial_test();
 
             //kurema:
             //CRLFチェックはStreamReaderでは厄介なので省略しました。具体的には巻き戻せません。
@@ -34,13 +49,44 @@ namespace Aozora
         //kurema:当たり前ですがStreamReaderにinspectはないので、これの実行結果はRubyの場合とは異なります。
         public string inspect => $"#<jcode-stream input {file}>";
 
+        private int ReadFromFile()
+        {
+            ReadAny = true;
+            if (peekBuffer.Count > 0)
+            {
+                int result = peekBuffer[0];
+                peekBuffer.RemoveAt(0);
+                return result;
+            }
+            else
+            {
+                return file.Read();
+            }
+        }
+
+        private int PeekFromFile()
+        {
+            if (peekBuffer.Count == 0) return file.Peek();
+            return peekBuffer[0];
+        }
+
+        /// <summary>
+        /// 1文字読み込んで返す
+        /// </summary>
+        /// <returns></returns>
+        /// <exception cref="Exceptions.UseCRLFException"></exception>
+        //kurema:以下のコメントはruby版のものです。こちらでは行末ではLFを、EOFならnullを返します。
+        //行末の場合は(1文字ではなく)CR+LFを返す
+        //EOFまで到達すると :eof というシンボルを返す
+        //
+        //TODO: EOFの場合はnilを返すように変更する?
         public char? read_char()
         {
-            char? @char = IntToNullableChar(file.Read());
+            var @char = ReadFromFile();
             ReadAny = true;
             if (@char == CR)
             {
-                var char2 = IntToNullableChar(file.Peek());
+                var char2 = PeekFromFile();
                 if (char2 != LF)
                 {
                     //kurema:\r[\n以外]
@@ -49,7 +95,7 @@ namespace Aozora
                 else
                 {
                     //kurema:\r\n
-                    file.Read();
+                    ReadFromFile();
                 }
                 _line++;
                 current_char = LF;//kurema:現在が仮に\rだとしても、\nとして返します。
@@ -61,44 +107,78 @@ namespace Aozora
                 _line++;
                 current_char = LF;
             }
-            ////kurema:元々は:eofを返してましたが、nullを返すようにしたので分岐は不要になりました。
-            //else if (@char == null)
-            //{
-            //    current_char = null;
-            //}
+            else if (@char == -1)
+            {
+                current_char = null;
+            }
             else
             {
-                current_char = @char;
+                current_char = (char)@char;
             }
 
             return current_char;
         }
 
+        //kurema:あってるかなぁ？
+        /// <summary>
+        /// pos個分の文字を先読みし、最後の文字を返す
+        /// </summary>
+        /// <param name="pos"></param>
+        /// <returns></returns>
+        /// <exception cref="Exceptions.UseCRLFException"></exception>
+        //kurema:以下のコメントはRuby版のものです。こちらでは単にバッファに取り込んでいます。
+        /*
+         * ファイルディスクリプタは移動しない（実行前の位置まで戻す）
+         * 行末の場合は(1文字ではなく)CR+LFを返す
+         * 行末の先に進んだ場合の挙動は未定義になる
+         */
         public char? peek_char(int pos)
         {
-            //kurema:
-            //複数文字peekはZipファイルとかだと無理です。
-            //そもそもBaseStreamを勝手にSeekしても良いの？
-            //駄目です。
-            if (!file.BaseStream.CanSeek) throw new NotSupportedException();
-            var original_pos = file.BaseStream.Position;
-            char? @char = null;
-            try
+            while (pos >= peekBuffer.Count)
             {
-                for(int i = 1; i < pos; i++)
+                int result = file.Read();
+                if (result < 0)
                 {
-                    int result = file.Read();
-                    if (result < 0) return null;
+                    if (peekBuffer.Count == 0 || peekBuffer[peekBuffer.Count - 1] != -1) peekBuffer.Add(result);
+                    return null;
                 }
+                peekBuffer.Add(result);
             }
-            finally
+            var @char = peekBuffer[pos];
+            if (@char == CR && StrictReturnCode)
             {
-                file.BaseStream.Seek(original_pos, SeekOrigin.Begin);
+                var char2 = pos + 1 < peekBuffer.Count ? peekBuffer[pos + 1] : file.Peek();
+                if (char2 != LF) throw new Exceptions.UseCRLFException();
+                @char = LF;
             }
-            return @char;
-            
+            return IntToNullableChar(@char);
         }
 
+        public void initial_test()
+        {
+            while (true)
+            {
+                int @char = file.Read();
+                peekBuffer.Add(@char);
+                if (@char < 0) return;
+                if (@char == CR)
+                {
+                    int char2 = file.Peek();
+                    if (char2 == LF) return;
+                    throw new Exceptions.UseCRLFException();
+                }
+                if (@char == LF)
+                {
+                    throw new Exceptions.UseCRLFException();
+                }
+            }
+        }
+
+        /// <summary>
+        /// 現在の行数を返す
+        /// 
+        /// 何も読み込む前は0、読み込み始めの最初の文字から\r\nまでが1、その次の文字から次の\r\nは2、……といった値になる
+        /// </summary>
         public int line
         {
             get
@@ -109,163 +189,94 @@ namespace Aozora
             }
         }
 
-        private static char? IntToNullableChar(int number)
+        /// <summary>
+        /// 指定された終端文字(1文字のStringかCRLF)まで読み込む
+        /// </summary>
+        /// <param name="endchar">[String] endchar 終端文字</param>
+        /// <returns></returns>
+        //kurema:終端文字自体は含まない。
+        public string read_to(char endchar)
         {
-            return number < 0 ? null : (char)number;
-        }
-
-        #region ReadLineCRLF
-        //kurema:標準で畳まれるようにregionで囲いました。
-        public static string ReadLineCRLF(StreamReader sr)
-        {
-            //kurema:
-            // 参考
-            //https://github.com/dotnet/runtime/blob/a3f0e2bebe30fd5e82518d86cefc7895127ae474/src/libraries/System.Private.CoreLib/src/System/IO/StreamReader.cs#L787
-            //要するに\rか\nに当たるまで一文字づつ読み込み、\r\n以外なら例外。
-            var sb = new StringBuilder();
-            char current = '\0';
-
+            var buf = new StringBuilder();
             while (true)
             {
-                int nextResult = sr.Peek();
-                if (nextResult == -1)
-                {
-                    if (current == '\r') throw new Exceptions.UseCRLFException();//kurema:[\r][EOF]
-                    else return sb.ToString();
-                }
-                char next = (char)nextResult;
-
-                if (next == '\n')
-                {
-                    if (current == '\r')
-                    {
-                        //kurema:\r\n
-                        sr.Read();
-                        return sb.ToString();
-                    }
-                    else
-                    {
-                        //kurema:[\r以外][\n]
-                        sr.Read();
-                        throw new Exceptions.UseCRLFException();
-                    }
-                }
-                if (current == '\r')
-                {
-                    //kurema:[\r][\n以外]
-                    throw new Exceptions.UseCRLFException();
-                }
-                if (next != '\r')
-                {
-                    sb.Append(next);
-                }
-                sr.Read();
-                current = next;
-            }
-        }
-        #endregion
-    }
-
-
-    //require "aozora2html/error"
-    //require "aozora2html/i18n"
-
-    //#
-    // Stream class for reading a file.
-    //
-    // It's just a wrapper class of IO to read characters.
-    // when finished to read IO, return a symbol :eof.
-    // when found line terminator except CR+LF, exit.
-    //
-    //kurema:
-    // :eofシンボルなんて返しようがないので、nullを返す仕組みにしました。
-    // CR+LFか否かはどちらでも良いかと。
-    public class Jstream_old
-    {
-        //attr_accessor :line
-
-        public Jstream_old(StreamReader file_io)
-        {
-            line = 0;
-            entry = false;
-            file = file_io;
-            try
-            {
-                store_to_buffer();
-            }
-            catch (Exceptions.AozoraException)
-            {
+                var @char = read_char();
+                if (@char == endchar) buf.ToString();
                 //kurema:
-                // 元はキャッチしてメッセージを出力後終了。
-                // dotnetで例外をそれをやるのは意味不明なので何もせず再スロー。
-
-                //Console.Error.Write(e.Message);
-                //puts e.message(1)
-                throw;
+                //これは何をやってるのか分からない。
+                //if char.is_a?(Symbol)
+                //  print endchar
+                //end
+                if (@char == null) return buf.ToString();
+                if (@char == LF) buf.Append(CRLF);
+                else buf.Append(@char);
             }
         }
 
-        public string inspect()
-        {
-            return $"#<jcode-stream input {file}>";
-        }
-
-        public char? read_char()
-        {
-            int found = buffer is null || buffer_positon >= buffer.Length ? -1 : buffer[buffer_positon];
-            buffer_positon++;
-            if (entry)
-            {
-                line++;
-                entry = false;
-            }
-            if (found != -1)
-            {
-                return Convert.ToChar(found);
-            }
-
-            store_to_buffer();
-            if (isEof) return null;
-            return '\n';
-        }
-
-
-        public char peek_char(int pos)
-        {
-            //kurema:
-            //本来は\r\nを返す。C#ではcharとstringは分けた方が良いので\nにした。
-            //なおファイル末尾でも\nを返すので挙動としては変。
-            if (buffer?.Length > pos + buffer_positon && pos + buffer_positon >= 0) return buffer[buffer_positon];
-            return '\n';
-            //@buffer[pos] || "\r\n"
-        }
-
+        /// <summary>
+        /// 1行読み込み
+        /// </summary>
+        /// <returns>[String] 読み込んだ文字列を返す</returns>
+        public string read_line() => read_to(LF);
 
         public void close()
         {
             file.Close();
+            file.Dispose();
         }
 
-        //private
+        private static char? IntToNullableChar(int number) => number < 0 ? null : (char)number;
 
-        private void store_to_buffer()
-        {
-            buffer = file.ReadLine();
-            //kurema:
-            // 元は\r\nじゃないと例外を吐くんですが、ここではどっちでも良いので例外を出していません。
-            // ↓はきちんと例外吐く方(未テスト)。
-            //buffer = readLineCRLF(file);
-            entry = true;
-        }
+        #region ReadLineCRLF
+        //kurema:標準で畳まれるようにregionで囲いました。
+        //public static string ReadLineCRLF(StreamReader sr)
+        //{
+        //    //kurema:
+        //    // 参考
+        //    //https://github.com/dotnet/runtime/blob/a3f0e2bebe30fd5e82518d86cefc7895127ae474/src/libraries/System.Private.CoreLib/src/System/IO/StreamReader.cs#L787
+        //    // 要するに\rか\nに当たるまで一文字づつ読み込み、\r\n以外なら例外。
+        //    var sb = new StringBuilder();
+        //    char current = '\0';
 
-        public int line { get; set; }
-        private bool entry;
-        private readonly StreamReader file;
-        private string? _buffer;
-        private string? buffer { get => _buffer; set { _buffer = value; buffer_positon = 0; } }
-        private int buffer_positon = 0;
-        public bool isEof => _buffer is null;
+        //    while (true)
+        //    {
+        //        int nextResult = sr.Peek();
+        //        if (nextResult == -1)
+        //        {
+        //            if (current == '\r') throw new Exceptions.UseCRLFException();//kurema:[\r][EOF]
+        //            else return sb.ToString();
+        //        }
+        //        char next = (char)nextResult;
+
+        //        if (next == '\n')
+        //        {
+        //            if (current == '\r')
+        //            {
+        //                //kurema:\r\n
+        //                sr.Read();
+        //                return sb.ToString();
+        //            }
+        //            else
+        //            {
+        //                //kurema:[\r以外][\n]
+        //                sr.Read();
+        //                throw new Exceptions.UseCRLFException();
+        //            }
+        //        }
+        //        if (current == '\r')
+        //        {
+        //            //kurema:[\r][\n以外]
+        //            throw new Exceptions.UseCRLFException();
+        //        }
+        //        if (next != '\r')
+        //        {
+        //            sb.Append(next);
+        //        }
+        //        sr.Read();
+        //        current = next;
+        //    }
+        //}
+        #endregion
     }
-
 }
 
