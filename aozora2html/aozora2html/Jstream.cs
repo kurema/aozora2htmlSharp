@@ -195,19 +195,24 @@ namespace Aozora
         /// <param name="endchar">[String] endchar 終端文字</param>
         /// <returns></returns>
         //kurema:終端文字自体は含まない。
-        public string read_to(char endchar)
+        public string? read_to(char endchar)
         {
             var buf = new StringBuilder();
             while (true)
             {
                 var @char = read_char();
-                if (@char == endchar) buf.ToString();
+                if (@char == endchar) return buf.ToString();
                 //kurema:
                 //これは何をやってるのか分からない。
                 //if char.is_a?(Symbol)
                 //  print endchar
                 //end
-                if (@char == null) return buf.ToString();
+                if (@char == null)
+                {
+                    var result = buf.ToString();
+                    if (string.IsNullOrEmpty(result)) return null;
+                    return result;
+                }
                 if (@char == LF) buf.Append(CRLF);
                 else buf.Append(@char);
             }
@@ -217,7 +222,7 @@ namespace Aozora
         /// 1行読み込み
         /// </summary>
         /// <returns>[String] 読み込んだ文字列を返す</returns>
-        public string read_line() => read_to(LF);
+        public string? read_line() => read_to(LF);
 
         public void close()
         {

@@ -43,7 +43,6 @@ namespace Aozora.Exceptions
     {
         public InvalidFontSizeException() : base(Helpers.I18n.MSG["invalid_font_size"]) { }
         protected InvalidFontSizeException(SerializationInfo info, StreamingContext context) : base(info, context) { }
-
     }
 
     [Serializable]
@@ -51,15 +50,13 @@ namespace Aozora.Exceptions
     {
         public UndefinedHeaderException() : base(Helpers.I18n.MSG["undefined_header"]) { }
         protected UndefinedHeaderException(SerializationInfo info, StreamingContext context) : base(info, context) { }
-
     }
 
     [Serializable]
-    public class DontAllowTripleRubyException: AozoraException
+    public class DontAllowTripleRubyException : AozoraException
     {
         public DontAllowTripleRubyException() : base(Helpers.I18n.MSG["dont_allow_triple_ruby"]) { }
         protected DontAllowTripleRubyException(SerializationInfo info, StreamingContext context) : base(info, context) { }
-
     }
 
     [Serializable]
@@ -67,6 +64,20 @@ namespace Aozora.Exceptions
     {
         public DontUseDoubleRubyException() : base(Helpers.I18n.MSG["dont_use_double_ruby"]) { }
         protected DontUseDoubleRubyException(SerializationInfo info, StreamingContext context) : base(info, context) { }
-
     }
+
+    [Serializable]
+    public class TerminateInStyleException : AozoraException
+    {
+        public TerminateInStyleException(string arg1) : base(string.Format(Helpers.I18n.MSG["TerminateInStyleException"], arg1)) { }
+        protected TerminateInStyleException(SerializationInfo info, StreamingContext context) : base(info, context) { }
+    }
+
+    [Serializable]
+    public class InvalidClosingException : AozoraException
+    {
+        public InvalidClosingException(string arg1) : base(string.Format(Helpers.I18n.MSG["invalid_closing"], arg1)) { }
+        protected InvalidClosingException(SerializationInfo info, StreamingContext context) : base(info, context) { }
+    }
+
 }

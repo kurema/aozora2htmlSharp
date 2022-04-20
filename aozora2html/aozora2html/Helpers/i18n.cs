@@ -22,7 +22,7 @@ namespace Aozora.Helpers
                 {"warn_jis_gaiji", "警告({0}行目):JIS外字「{1}」が使われています"},
                 {"dont_crlf_in_style", "{0}中に改行されました。改行をまたぐ要素にはブロック表記を用いてください"},
                 {"terminate_in_style", "{0}中に本文が終了しました"},
-                {"invalid_closing", "{0}を閉じようとしましたが、{1}中ではありません"},
+                {"invalid_closing", "{0}を閉じようとしましたが、{0}中ではありません"},
                 {"invalid_nesting", "{0}を終了しようとしましたが、{1}中です"},
                 {"dont_use_double_ruby", "同じ箇所に2つのルビはつけられません"},
                 {"dont_allow_triple_ruby", "1つの単語に3つのルビはつけられません"},

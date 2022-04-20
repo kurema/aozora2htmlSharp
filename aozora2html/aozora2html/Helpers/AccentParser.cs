@@ -9,7 +9,7 @@ namespace Aozora.Helpers
         protected bool closed = false; //改行での強制撤退チェックフラグ
         protected bool encount_accent = false;
 
-        public AccentParser(Jstream input, char endchar, Dictionary<chuuki_table_keys, bool> chuuki, List<string> images, IOutput output, IOutput? warnChannel = null, string? gaiji_dir = null, string[]? css_files = null) : base(input, output, warnChannel, gaiji_dir, css_files)
+        public AccentParser(Jstream input, char? endchar, Dictionary<chuuki_table_keys, bool> chuuki, List<string> images, IOutput output, IOutput? warnChannel = null, string? gaiji_dir = null, string[]? css_files = null) : base(input, output, warnChannel, gaiji_dir, css_files)
         {
             chuuki_table = chuuki;
             this.endchar = endchar; //改行は越えられない <br />を出力していられない

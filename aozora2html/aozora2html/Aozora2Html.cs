@@ -167,9 +167,11 @@ namespace Aozora
         private static Encoding? _ShiftJis;
         public static Encoding ShiftJis => _ShiftJis ??= CodePagesEncodingProvider.Instance.GetEncoding("shift-jis", new EncoderReplacementFallback("〓"), new DecoderReplacementFallback("〓")) ?? throw new NullReferenceException();
 
+        //kurema:以下はconvert_indent_type();がそのままToString();を返すので変更しないでください。
         public enum IndentTypeKey
         {
-            jisage, chitsuki, midashi, jizume, yokogumi, keigakomi, caption, futoji, shatai, dai, sho
+            jisage, chitsuki, midashi, jizume, yokogumi, keigakomi, caption, futoji, shatai, dai, sho,
+            daisho//kurema:indent_stack用。
         }
 
         public static readonly System.Collections.ObjectModel.ReadOnlyDictionary<IndentTypeKey, string> INDENT_TYPE = new(new Dictionary<IndentTypeKey, string>()
@@ -209,8 +211,8 @@ namespace Aozora
         protected Helpers.StyleStack style_stack;//スタイルのスタック
         protected Dictionary<chuuki_table_keys, bool> chuuki_table;//最後にどの注記を出すかを保持しておく
         protected List<string> images;//使用した外字の画像保持用
-        protected List<string> indent_stack;//基本はシンボルだが、ぶらさげのときはdivタグの文字列が入る
-        protected List<string> tag_stack;
+        protected Stack<Helpers.IIndentStackItem> indent_stack;//基本はシンボルだが、ぶらさげのときはdivタグの文字列が入る
+        protected Stack<string> tag_stack;
         protected Helpers.MidashiCounter midashi_counter;//見出しのカウンタ、見出しの種類によって増分が異なる
         protected bool terprip;//改行制御用 (terpriはLisp由来?)
         protected char? endchar = null;//解析終了文字、AccentParserやTagParserでは異なる
@@ -231,16 +233,16 @@ namespace Aozora
         {
             stream = input;
             @out = output;
-            buffer = new Helpers.TextBuffer();
-            ruby_buf = new Helpers.RubyBuffer();
+            buffer = new();
+            ruby_buf = new();
             section = SectionKind.head;
-            header = new Helpers.Header();
-            style_stack = new Helpers.StyleStack();
-            chuuki_table = new Dictionary<chuuki_table_keys, bool>();
-            images = new List<string>();
-            indent_stack = new List<string>();
-            tag_stack = new List<string>();
-            midashi_counter = new Helpers.MidashiCounter(0);
+            header = new();
+            style_stack = new();
+            chuuki_table = new();
+            images = new();
+            indent_stack = new();
+            tag_stack = new();
+            midashi_counter = new(0);
             terprip = true;
             noprint = false;//kurema:元は初期nil。falseで問題ないと思われる。
             this.warnChannel = warnChannel ?? new Helpers.OutputConsole();
@@ -306,6 +308,154 @@ namespace Aozora
         protected char? read_char() => stream.read_char();
 
         //一行読み込む
-        //protected string? read_line()=>stream.re
+        protected string read_line() => stream.read_line();
+
+        protected Helpers.AccentParser read_accent()
+        {
+            throw new NotImplementedException();
+            //return new Helpers.AccentParser(stream, ACCENT_END, chuuki_table, images, @out, warnChannel, gaiji_dir, css_files).process;
+        }
+
+        protected Helpers.TagParser read_to_nest(char? endchar)
+        {
+            throw new NotImplementedException();
+            //return new Helpers.TagParser(stream, endchar, chuuki_table, images, @out, gaiji_dir: gaiji_dir).process();
+        }
+
+        protected void finalize()
+        {
+            throw new NotImplementedException();
+            //hyoki();
+            dynamic_contents();
+            @out.print("</body>\r\n</html>\r\n");
+        }
+
+        protected void dynamic_contents()
+        {
+            @out.print(DYNAMIC_CONTENTS);
+        }
+
+        protected void close()
+        {
+            stream.close();
+            @out.close();
+        }
+
+        /// <summary>
+        /// 記法のシンボル名から文字列へ変換する
+        /// シンボルが見つからなければそのまま返す
+        /// </summary>
+        /// <param name="type"></param>
+        /// <returns></returns>
+        protected string convert_indent_type(Helpers.IIndentStackItem type)
+        {
+            switch (type)
+            {
+                case Helpers.IndentStackItemString typeString:
+                    return typeString.Content;
+                case Helpers.IndentStackItemIndentTypeKey typeIndentTypeKey:
+                    return convert_indent_type(typeIndentTypeKey.Content);
+                default:
+                    throw new Exception();
+            }
+        }
+
+        protected string convert_indent_type(IndentTypeKey type)
+        {
+            return INDENT_TYPE.ContainsKey(type) ? INDENT_TYPE[type] : type.ToString();
+        }
+
+        protected string? check_close_match(IndentTypeKey type)
+        {
+            IndentTypeKey ind;
+            if (indent_stack.Count == 0)
+            {
+                throw new IndexOutOfRangeException();
+            }
+            if (indent_stack.Last() is Helpers.IndentStackItemString)
+            {
+                noprint = true;
+                ind = IndentTypeKey.jisage;
+            }
+            else if (indent_stack.Last() is Helpers.IndentStackItemIndentTypeKey lastKey)
+            {
+                ind = lastKey.Content;
+            }
+            else
+            {
+                throw new Exception($"Unexpected type for {nameof(indent_stack)} item.");
+            }
+            if (ind == type) return null;
+            else return convert_indent_type(ind);
+        }
+
+        public void implicit_close(IndentTypeKey type)
+        {
+            if (indent_stack.Count == 0) return;
+
+            if (check_close_match(type) != null)
+            {
+                //ok, nested multiline tags, go ahead
+            }
+            else
+            {
+                //not nested, please close
+                indent_stack.Pop();
+                if (tag_stack.Count > 0)
+                {
+                    var tag = tag_stack.Pop();
+                    push_chars(tag);
+                }
+            }
+        }
+
+        /// <summary>
+        /// 本文が終わってよいかチェックし、終わっていなければ例外をあげる
+        /// </summary>
+        public void ensure_close()
+        {
+            var n = indent_stack.LastOrDefault();
+            if (n is null) return;
+
+            throw new Exceptions.TerminateInStyleException(convert_indent_type(n));
+        }
+
+        //kurema:
+        //使うので先に実装。
+        //C#なので元とは結構違う実装方法。何が来るかまだ調査不足だけど後で良い。
+        public void push_chars(string text)
+        {
+            foreach (var item in text) push_char(item);
+        }
+
+        public void push_chars(Helpers.IBufferItem item)
+        {
+            push_chars(item.to_html());
+        }
+
+        public void push_chars(IEnumerable<Helpers.IBufferItem> bufferItems)
+        {
+            foreach (var item in bufferItems) push_chars(item);
+        }
+
+        public void push_char(char @char)
+        {
+            ruby_buf.push_char(@char, buffer);
+        }
+
+        public void explicit_close(IndentTypeKey type)
+        {
+            var n = check_close_match(type);
+            if (n is not null) throw new Exceptions.InvalidClosingException(n);
+
+            if (tag_stack.Count == 0) return;
+            var tag = tag_stack.Pop();
+            push_chars(tag);
+        }
+
+        public void parse()
+        {
+            throw new NotImplementedException();
+        }
     }
 }
