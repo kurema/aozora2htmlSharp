@@ -224,9 +224,6 @@ namespace Aozora
         public bool use_jisx0214_embed_gaiji { get; set; } = false;
         public bool use_unicode_embed_gaiji { get; set; } = false;
 
-        //kurema:Jstream用。CRLFかのチェックをする。
-        public bool strictReturnCode { get; set; } = false;
-
         protected string gaiji_dir;
         protected string[] css_files;
 

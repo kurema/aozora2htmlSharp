@@ -5,6 +5,6 @@ use utf8;
 
 while(<STDIN>){
   if( $_ =~ /^:([^:]+):\s+\"([^\"]+)\"/){
-    print "case \"$1\": return \"$2\"; break;\n";
+    print "case \"$1\": return \"$2\";\n";
   }
 }

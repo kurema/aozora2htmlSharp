@@ -184,8 +184,8 @@ namespace Aozora
             get
             {
                 if (ReadAny == false) return 0;
-                else if (current_char == LF) return line;
-                else return line + 1;
+                else if (current_char == LF) return _line;
+                else return _line + 1;
             }
         }
 
