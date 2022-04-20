@@ -236,7 +236,7 @@ namespace Aozora
             buffer = new();
             ruby_buf = new();
             section = SectionKind.head;
-            header = new();
+            header = new(css_files);
             style_stack = new();
             chuuki_table = new();
             images = new();
@@ -308,9 +308,9 @@ namespace Aozora
         protected char? read_char() => stream.read_char();
 
         //一行読み込む
-        protected string read_line() => stream.read_line();
+        protected string? read_line() => stream.read_line();
 
-        protected Helpers.AccentParser read_accent()
+        protected char read_accent()
         {
             throw new NotImplementedException();
             //return new Helpers.AccentParser(stream, ACCENT_END, chuuki_table, images, @out, warnChannel, gaiji_dir, css_files).process;
@@ -456,6 +456,147 @@ namespace Aozora
         public void parse()
         {
             throw new NotImplementedException();
+        }
+
+        public void judge_chuuki()
+        {
+            //注記が入るかどうかチェック
+            int i = 0;
+            while (true)
+            {
+                switch (stream.peek_char(i))
+                {
+                    case '-': i++; break;
+                    case '\n':
+                        section = i == 0 ? SectionKind.body : SectionKind.chuuki;
+                        return;
+                    default:
+                        section = SectionKind.body;
+                        @out.print("<br />\r\n");
+                        return;
+                }
+            }
+        }
+
+        public void parse_header()
+        {
+            var @string = read_line();
+            // refine from Tomita 09/06/14
+            if (string.IsNullOrEmpty(@string))
+            {
+                //空行がくれば、そこでヘッダー終了とみなす
+                section = SectionKind.head_end;
+                @out.print(header.to_html());
+            }
+            else
+            {
+                @string = @string!.Replace(RUBY_PREFIX.ToString(), string.Empty);
+                @string = PAT_RUBY.Replace(@string, string.Empty);
+                header.push(@string);
+            }
+        }
+
+        public void parse_chuuki()
+        {
+            var @string = read_line();
+            if (!Regex.IsMatch(@string, @"^-+$")) return;
+
+            switch (section)
+            {
+                case SectionKind.chuuki:
+                    section = SectionKind.chuuki_in;
+                    break;
+                case SectionKind.body:
+                    section = SectionKind.body;
+                    break;
+            }
+        }
+
+        /// <summary>
+        /// 本体解析部
+        /// 
+        /// 1文字ずつ読み込み、dispatchして@buffer,@ruby_bufへしまう
+        /// 改行コードに当たったら溜め込んだものをgeneral_outputする
+        /// </summary>
+        /// <exception cref="NotImplementedException"></exception>
+        /// <exception cref="Exception"></exception>
+        public void parse_body()
+        {
+            var @char = read_char();
+            bool check = true;
+
+            switch (@char)
+            {
+                case ACCENT_BEGIN:
+                    check = false;
+                    @char = read_accent();
+                    break;
+                case GAIJI_MARK:
+                //@char = dispatch_gaiji();
+                //break;
+                case COMMAND_BEGIN:
+                //@char = dispatch_aozora_command();
+                //break;
+                case KU:
+                //assign_kunoji();
+                //break;
+                case RUBY_BEGIN_MARK:
+                //@char = apply_ruby();
+                //break;
+                default:
+                    //kurema:TEIHON_MARK[0]は定数じゃないので普通に条件分岐で。
+                    if (@char == TEIHON_MARK[0])
+                    {
+                        //if (buffer.Count == 0) ending_check();
+                    }
+                    break;
+            }
+
+            switch (@char)
+            {
+                case '\n':
+                    //general_output();
+                    break;
+                case RUBY_PREFIX:
+                    ruby_buf.dump_into(buffer);
+                    ruby_buf.@protected = true;
+                    break;
+                case null:
+                    //noop
+                    break;
+                default:
+                    if (@char == endchar)
+                    {
+                        //suddenly finished the file
+                        warnChannel.print(string.Format(Helpers.I18n.MSG["warn_unexpected_terminator"], line_number));
+                        throw new Exception("terminate");//kurema:要修正。そもそも例外で大域脱出したくない。
+                    }
+                    if (check)
+                    {
+                        Helpers.Utils.illegal_char_check(@char.Value, line_number, warnChannel);
+                    }
+                    push_chars(escape_special_chars(@char.Value));
+                    break;
+            }
+            throw new NotImplementedException();
+        }
+
+        //Original Aozora2Html#push_chars does not convert "'" into '&#39;'; it's old behaivor of CGI.escapeHTML().
+        public string escape_special_chars(string text)
+        {
+            return Regex.Replace(text, @"[&"" <>]", a => escape_special_chars(a.Value[0]));
+        }
+
+        public string escape_special_chars(char @char)
+        {
+            switch (@char)
+            {
+                case '&': return "&amp;";
+                case '"': return "&quot;";
+                case '<': return "&lt;";
+                case '>': return "&gt;";
+                default: return @char.ToString();
+            }
         }
     }
 }

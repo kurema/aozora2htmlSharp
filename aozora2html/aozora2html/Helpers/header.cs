@@ -10,10 +10,12 @@ namespace Aozora.Helpers
     public class Header
     {
         private List<string> header;
+        private string[] css_files;
 
-        public Header()
+        public Header(string[]? css_files)
         {
             header = new List<string>();
+            this.css_files = css_files ?? new string[0];
         }
 
         public void push(string line)
@@ -174,7 +176,7 @@ namespace Aozora.Helpers
             return header_info;
         }
 
-        public string to_html(string[] css_files)
+        public string to_html()
         {
             var header_info = build_header_info();
 
