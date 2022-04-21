@@ -3,13 +3,14 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Collections.Generic;
 using System.Text;
+using System.Collections;
 
 namespace Aozora.Helpers
 {
     /// <summary>
     /// ルビ文字列解析用バッファ
     /// </summary>
-    public class RubyBuffer
+    public class RubyBuffer:IList<IBufferItem>
     {
         // `｜`が来た時に真にする。ルビの親文字のガード用。
         public bool @protected { get; set; }
@@ -40,6 +41,12 @@ namespace Aozora.Helpers
         public IBufferItem? last => ruby_buf.Count > 0 ? ruby_buf.Last() : null;
 
         public int length => ruby_buf.Count;
+
+        public int Count => ((ICollection<IBufferItem>)ruby_buf).Count;
+
+        public bool IsReadOnly => ((ICollection<IBufferItem>)ruby_buf).IsReadOnly;
+
+        public IBufferItem this[int index] { get => ((IList<IBufferItem>)ruby_buf)[index]; set => ((IList<IBufferItem>)ruby_buf)[index] = value; }
 
 
         // バッファ末尾にitemを追加する
@@ -131,6 +138,58 @@ namespace Aozora.Helpers
                 char_type = ctype;
             }
         }
+
+        #region IList
+        public int IndexOf(IBufferItem item)
+        {
+            return ((IList<IBufferItem>)ruby_buf).IndexOf(item);
+        }
+
+        public void Insert(int index, IBufferItem item)
+        {
+            ((IList<IBufferItem>)ruby_buf).Insert(index, item);
+        }
+
+        public void RemoveAt(int index)
+        {
+            ((IList<IBufferItem>)ruby_buf).RemoveAt(index);
+        }
+
+        public void Add(IBufferItem item)
+        {
+            ((ICollection<IBufferItem>)ruby_buf).Add(item);
+        }
+
+        public void Clear()
+        {
+            ((ICollection<IBufferItem>)ruby_buf).Clear();
+        }
+
+        public bool Contains(IBufferItem item)
+        {
+            return ((ICollection<IBufferItem>)ruby_buf).Contains(item);
+        }
+
+        public void CopyTo(IBufferItem[] array, int arrayIndex)
+        {
+            ((ICollection<IBufferItem>)ruby_buf).CopyTo(array, arrayIndex);
+        }
+
+        public bool Remove(IBufferItem item)
+        {
+            return ((ICollection<IBufferItem>)ruby_buf).Remove(item);
+        }
+
+        public IEnumerator<IBufferItem> GetEnumerator()
+        {
+            return ((IEnumerable<IBufferItem>)ruby_buf).GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return ((IEnumerable)ruby_buf).GetEnumerator();
+        }
+        #endregion
 
         //kurema:
         //char_type()は省略。元々例外発生しないし。

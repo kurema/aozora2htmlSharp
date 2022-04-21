@@ -45,14 +45,14 @@ namespace Aozora.Helpers
             return result;
         }
 
-        public Style last()
+        public Style? last()
         {
-            return stack.Last();
+            return stack.LastOrDefault();
         }
 
-        public string last_command()
+        public string? last_command()
         {
-            return stack.Last().command;
+            return stack.LastOrDefault()?.command;
         }
 
         private List<Style> stack;

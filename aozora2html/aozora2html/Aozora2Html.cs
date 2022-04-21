@@ -420,29 +420,6 @@ namespace Aozora
             throw new Exceptions.TerminateInStyleException(convert_indent_type(n));
         }
 
-        //kurema:
-        //使うので先に実装。
-        //C#なので元とは結構違う実装方法。何が来るかまだ調査不足だけど後で良い。
-        public void push_chars(string text)
-        {
-            foreach (var item in text) push_char(item);
-        }
-
-        public void push_chars(Helpers.IBufferItem item)
-        {
-            push_chars(item.to_html());
-        }
-
-        public void push_chars(IEnumerable<Helpers.IBufferItem> bufferItems)
-        {
-            foreach (var item in bufferItems) push_chars(item);
-        }
-
-        public void push_char(char @char)
-        {
-            ruby_buf.push_char(@char, buffer);
-        }
-
         public void explicit_close(IndentTypeKey type)
         {
             var n = check_close_match(type);
@@ -569,7 +546,7 @@ namespace Aozora
                     {
                         //suddenly finished the file
                         warnChannel.print(string.Format(Helpers.I18n.MSG["warn_unexpected_terminator"], line_number));
-                        throw new Exception("terminate");//kurema:要修正。そもそも例外で大域脱出したくない。
+                        throw new Exceptions.TerminateException();//kurema:例外で大域脱出したくない…。
                     }
                     if (check)
                     {
@@ -597,6 +574,258 @@ namespace Aozora
                 case '>': return "&gt;";
                 default: return @char.ToString();
             }
+        }
+
+        /// <summary>
+        /// 本文が終了したかどうかチェックする
+        /// </summary>
+        public void ending_check()
+        {
+            //`底本：`でフッタ(:tail)に遷移
+            if (stream.peek_char(0) != TEIHON_MARK[1] || stream.peek_char(1) != TEIHON_MARK[2]) return;
+
+            section = SectionKind.tail;
+            ensure_close();
+            @out.print("</div>\r\n<div class=\"bibliographical_information\">\r\n<hr />\r\n<br />\r\n");
+        }
+
+        //kurema:
+        //C#なので元とは結構違う実装方法。何が来るかまだ調査不足だけど後で良い。
+        public void push_chars(string text)
+        {
+            foreach (var item in text) push_char(item);
+        }
+
+        public void push_chars(Helpers.IBufferItem item)
+        {
+            push_chars(item.to_html());
+        }
+
+        public void push_chars(IEnumerable<Helpers.IBufferItem> bufferItems)
+        {
+            foreach (var item in bufferItems) push_chars(item);
+        }
+
+        public void push_char(char @char)
+        {
+            ruby_buf.push_char(@char, buffer);
+        }
+
+        /// <summary>
+        /// 読み込んだ行の出力を行う
+        /// 
+        /// parserが改行文字を読み込んだら呼ばれる。
+        /// 最終的に@ruby_bufと@bufferは初期化する
+        /// </summary>
+        /// <exception cref="Exceptions.DontCrlfInStyleException"></exception>
+        //@return [void]
+        public void general_output()
+        {
+            if (style_stack.last() is not null)
+            {
+                throw new Exceptions.DontCrlfInStyleException(style_stack.last_command() ?? "");
+            }
+
+            //bufferにインデントタグだけがあったら改行しない！
+            if (noprint)
+            {
+                noprint = false;
+                return;
+            }
+            ruby_buf.dump_into(buffer);
+            var buf = buffer;
+            buffer = new Helpers.TextBuffer();
+            var tail = new List<string>();
+
+            var indent_type = buf.blank_type();
+            var terpripLocal = buf.terpri() && terprip;
+            terprip = true;
+
+            if (indent_stack.LastOrDefault() is not null and Helpers.IndentStackItemString lastString && indent_type == Helpers.TextBuffer.blank_type_result.@false)//kurema:indentの場合は含まない？
+            {
+                @out.print(lastString.Content);
+            }
+
+            foreach (var s in buf)
+            {
+                if (s is Helpers.BufferItemTag stag)
+                {
+                    if (stag.tag is Helpers.Tag.IOnelineIndent stagOI)
+                    {
+                        tail.Insert(0, stagOI.close_tag());
+                    }
+                    else if (stag.tag is Helpers.Tag.UnEmbedGaiji stagUEG && !stagUEG.escaped)
+                    {
+                        //消してあった※を復活させて
+                        @out.print(GAIJI_MARK.ToString());
+                    }
+                }
+                @out.print(s.to_html());
+            }
+
+            //最後はCRLFを出力する
+            if (indent_stack.LastOrDefault() is Helpers.BufferItemString)
+            {
+                //ぶら下げindent
+                //tail always active
+
+                //kurema:
+                //元は
+                //@out.print tail.map(&:to_s).join
+                //to_s必要？
+                @out.print(string.Join("", tail?.ToArray() ?? new string[0]));
+                if (indent_type == Helpers.TextBuffer.blank_type_result.inline) @out.print("\r\n");
+                else if (indent_type == Helpers.TextBuffer.blank_type_result.@true && terpripLocal) @out.print("<br />\r\n");
+                else @out.print("</div>\r\n");
+            }
+            else if (tail.Count == 0 && terpripLocal)
+            {
+                @out.print("<br />\r\n");
+            }
+            else
+            {
+                @out.print(string.Join("", tail?.ToArray() ?? new string[0]));
+                @out.print("\r\n");
+            }
+        }
+
+        /// <summary>
+        /// 前方参照の発見 Ruby,style重ねがけ等々のため、要素の配列で返す
+        /// 
+        /// 前方参照は`○○［＃「○○」に傍点］`、`吹喋［＃「喋」に「ママ」の注記］`といった表記
+        /// </summary>
+        /// <param name="string"></param>
+        /// <returns></returns>
+        //@return [TextBuffer|false]
+        //kurema:元々はfalseを返していた場面でnullを返しています。タプルにするのも変なので。
+        public Helpers.TextBuffer? search_front_reference(string @string)
+        {
+            if (string.IsNullOrEmpty(@string)) return null;
+            IList<Helpers.IBufferItem> searching_buf = ruby_buf.present ? ruby_buf : buffer;
+            var last_string = searching_buf.LastOrDefault();
+            switch (last_string)
+            {
+                case Helpers.BufferItemString last_string_string:
+                    if (last_string_string.Length == 0)
+                    {
+                        searching_buf.RemoveAt(searching_buf.Count - 1);
+                        return search_front_reference(@string);
+                    }
+                    else if (last_string_string.to_html().EndsWith(@string))
+                    //else if (new Regex($"{Regex.Escape(@string)}$").IsMatch(last_string_string.to_html()))
+                    //kurema:
+                    //元はコレだけどあってる？
+                    //elsif last_string.match?(Regexp.new("#{Regexp.quote(string)}$"))
+                    {
+                        //完全一致
+                        //start = match.begin(0)
+                        //tail = match.end(0)
+                        //last_string[start,tail-start] = ""
+                        searching_buf.RemoveAt(searching_buf.Count - 1);
+                        searching_buf.Add(new Helpers.BufferItemString(new Regex($"{Regex.Escape(@string)}$").Replace(last_string_string.to_html(), "")));
+                        return new Helpers.TextBuffer(@string);
+                    }
+                    else if (@string.EndsWith(last_string_string.to_html()))
+                    {
+                        //部分一致
+                        //kurema:元は再帰対策でlast_stringと同じものをtmpに置いてたっぽい。
+                        searching_buf.RemoveAt(searching_buf.Count - 1);
+                        var found = search_front_reference(new Regex($"{Regex.Escape(last_string_string.to_html())}$").Replace(@string, ""));//kurema:不安
+                        if (found != null)
+                        {
+                            found.Add(last_string);
+                            return found;
+                        }
+                        else
+                        {
+                            searching_buf.Add(last_string);
+                            return null;
+                        }
+                    }
+                    break;
+                case Helpers.BufferItemTag last_string_tag when last_string_tag.tag is Helpers.Tag.ReferenceMentioned referenceMentioned:
+                    var inner = referenceMentioned.target_string;
+                    if (inner == @string)
+                    {
+                        //完全一致
+                        searching_buf.RemoveAt(searching_buf.Count - 1);
+                        return new Helpers.TextBuffer(new[] { last_string_tag });
+                    }
+                    else if (@string.EndsWith(inner))
+                    {
+                        //部分一致
+                        var found = search_front_reference(new Regex($"{Regex.Escape(inner)}$").Replace(@string, ""));
+                        if (found != null)
+                        {
+                            found.Add(last_string);
+                            return found;
+                        }
+                        else
+                        {
+                            searching_buf.Add(last_string);
+                            return null;
+                        }
+
+                    }
+                    break;
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// 発見した前方参照を元に戻す
+        /// 
+        /// @ruby_bufがあれば@ruby_bufに、なければ@bufferにpushする
+        /// バッファの最後と各要素が文字列ならconcatし、どちらが文字列でなければ（concatできないので）pushする
+        /// </summary>
+        /// <param name="reference"></param>
+        //@return [void]
+        public void recovery_front_reference(Helpers.TextBuffer reference)
+        {
+            foreach (var elt in reference)
+            {
+                //if @ruby_buf.protected
+                if (ruby_buf.present)
+                {
+                    ruby_buf.Add(elt);
+                }
+                else if (buffer.LastOrDefault() is Helpers.BufferItemString buffer_last_string)
+                {
+                    if (elt is Helpers.BufferItemString elt_string)
+                    {
+                        buffer_last_string.Append(elt_string.to_html());
+                    }
+                    else
+                    {
+                        buffer.Add(elt);
+                    }
+                }
+                else //rubocop:disable Lint/DuplicateBranch
+                {
+                    ruby_buf.Add(elt);
+                }
+            }
+        }
+
+        public Helpers.Tag.UnEmbedGaiji? escape_gaiji(string command)
+        {
+            var match = PAT_GAIJI.Match(command);
+            if (!match.Success || match.Groups.Count < 3) return null;
+            var _whole = match.Groups[0].Value;
+            var kanji = match.Groups[1].Value;
+            var line = match.Groups[2].Value;
+
+            var tmp = images.FirstOrDefault(a => a.StartsWith(kanji));
+            var index = images.IndexOf(tmp);
+            if(tmp is not null)
+            {
+                images[index] += line;
+            }
+            else
+            {
+                images.Add(kanji + line);
+            }
+            return new Helpers.Tag.UnEmbedGaiji(command);
         }
     }
 }

@@ -12,10 +12,22 @@ namespace Aozora.Helpers
     /// </summary>
     public class TextBuffer : List<IBufferItem>, Tag.IHtmlProvider
     {
+        public TextBuffer()
+        {
+        }
+
+        public TextBuffer(IEnumerable<IBufferItem> collection) : base(collection)
+        {
+        }
+
+        public TextBuffer(string text) : base(new IBufferItem[] { new BufferItemString(text) })
+        {
+        }
+
         public string to_html()
         {
             var result = new StringBuilder();
-            foreach(var item in this)
+            foreach (var item in this)
             {
                 result.Append(item.to_html());
             }
@@ -51,15 +63,15 @@ namespace Aozora.Helpers
         {
             //kurema: terpriは"TERminate PRInt line"を意味するLispの関数だそう。要するにConsole.WriteLine();
             bool flag = true;
-            foreach(var x in this)
+            foreach (var x in this)
             {
                 switch (x)
                 {
                     case BufferItemTag tag when tag.tag is Tag.IMultiline:
                         flag = false;
                         break;
-                    case BufferItemString @string when @string.Length == 0:break;
-                    default:return true;
+                    case BufferItemString @string when @string.Length == 0: break;
+                    default: return true;
                 }
             }
             return flag;
