@@ -24,15 +24,14 @@ namespace Aozora.Helpers
             return midashi_id;
         }
 
-        public int generate_id(char size)
+        public int generate_id(string size)
         {
-            var inc = size switch
-            {
-                Aozora2Html.SIZE_SMALL => 1,
-                Aozora2Html.SIZE_MIDDLE => 10,
-                Aozora2Html.SIZE_LARGE => 100,
-                _ => throw new Exceptions.UndefinedHeaderException(),
-            };
+            int inc;
+            if (size.Contains(Aozora2Html.SIZE_SMALL.ToString())) inc = 1;
+            else if (size.Contains(Aozora2Html.SIZE_MIDDLE.ToString())) inc = 10;
+            else if (size.Contains(Aozora2Html.SIZE_LARGE.ToString())) inc = 100;
+            else throw new Exceptions.UndefinedHeaderException();
+
             midashi_id += inc;
             return midashi_id;
         }

@@ -41,15 +41,12 @@ public static class Utils
 
     //module_function :create_font_size
 
-    public static string create_midashi_tag(char size)
+    public static string create_midashi_tag(string size)
     {
-        return size switch
-        {
-            Aozora2Html.SIZE_SMALL => "h5",
-            Aozora2Html.SIZE_MIDDLE => "h4",
-            Aozora2Html.SIZE_LARGE => "h3",
-            _ => throw new Exceptions.UndefinedHeaderException()
-        };
+        if (size.Contains(Aozora2Html.SIZE_SMALL.ToString())) return "h5";
+        else if (size.Contains(Aozora2Html.SIZE_MIDDLE.ToString())) return "h4";
+        else if (size.Contains(Aozora2Html.SIZE_LARGE.ToString())) return "h3";
+        else throw new Exceptions.UndefinedHeaderException();
     }
 
     //module_function :create_midashi_tag

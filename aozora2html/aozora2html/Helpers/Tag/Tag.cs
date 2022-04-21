@@ -381,7 +381,7 @@ public class Midashi : ReferenceMentioned, IHtmlProvider
     public int id { get; }
     public string @class { get; }
 
-    public Midashi(Aozora2Html parser, object? target, char size, Utils.MidashiType type) : base(target)
+    public Midashi(Aozora2Html parser, object? target, string size, Utils.MidashiType type) : base(target)
     {
         tag = Utils.create_midashi_tag(size);
         id = parser.new_midashi_id(size);

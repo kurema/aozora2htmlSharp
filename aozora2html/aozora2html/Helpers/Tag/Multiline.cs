@@ -53,7 +53,7 @@ public class MultilineMidashi : Block, IHtmlProvider, IMultiline
     public int id { get; }
     public string @class { get; }
 
-    public MultilineMidashi(Aozora2Html parser, char size, Utils.MidashiType type) : base(parser)
+    public MultilineMidashi(Aozora2Html parser, string size, Utils.MidashiType type) : base(parser)
     {
         tag = Utils.create_midashi_tag(size);
         id = parser.new_midashi_id(size);

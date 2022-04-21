@@ -262,7 +262,7 @@ namespace Aozora
 
         //kurema:下を先に実装したので少し飛んでます。
         public int new_midashi_id(int size) => midashi_counter.generate_id(size);
-        public int new_midashi_id(char size) => midashi_counter.generate_id(size);
+        public int new_midashi_id(string size) => midashi_counter.generate_id(size);
 
         public Helpers.IBufferItem kuten2png(string substring)
         {
@@ -925,6 +925,140 @@ namespace Aozora
             {
                 buffer.Insert(0, new BufferItemTag(new Helpers.Tag.OnelineJisage(this, jisage_width(command) ?? 0)));
                 return null;
+            }
+        }
+
+        public void apply_warichu(string command)
+        {
+            if (command.Contains(END_MARK))
+            {
+                if (stream.peek_char(0) != PAREN_END_MARK)
+                {
+                    push_char(PAREN_END_MARK);
+                }
+                push_chars("</span>");
+            }
+            else
+            {
+                var check = ruby_buf.LastOrDefault();
+
+                //NOTE: Do not remove duplicates!
+                //rubocop:disable Style/IdenticalConditionalBranches
+                if (check is BufferItemString itemString && itemString.to_html().EndsWith(PAREN_BEGIN_MARK.ToString()))
+                {
+                    push_chars("<span class=\"warichu\">");
+                }
+                else
+                {
+                    push_chars("<span class=\"warichu\">");
+                    push_char(PAREN_BEGIN_MARK);
+                }
+                //rubocop:enable Style/IdenticalConditionalBranches
+            }
+        }
+
+        public int chitsuki_length(string command)
+        {
+            command = Utils.convert_japanese_number(command);
+            var matched = PAT_JI_LEN.Match(command);
+            if (matched.Success && int.TryParse(matched.Groups[1].Value, out int result))
+            {
+                return result;
+            }
+            else
+            {
+                return 0;
+            }
+        }
+
+        public Helpers.Tag.Tag? apply_chitsuki(string @string, bool multiline = false)
+        {
+            if (@string.Contains(CLOSE_MARK + INDENT_TYPE[IndentTypeKey.chitsuki] + END_MARK) ||
+                @string.Contains(CLOSE_MARK + JISAGE_COMMAND + END_MARK))
+            {
+                explicit_close(IndentTypeKey.chitsuki);
+                indent_stack.Pop();
+                return null;
+            }
+            else
+            {
+                var len = chitsuki_length(@string);
+                if (multiline)
+                {
+                    //複数行指定
+                    implicit_close(IndentTypeKey.chitsuki);
+                    indent_stack.Push(new IndentStackItemIndentTypeKey(IndentTypeKey.chitsuki));
+                    return new Helpers.Tag.MultilineChitsuki(this, len);
+                }
+                else
+                {
+                    //1行のみ
+                    return new Helpers.Tag.OnelineChitsuki(this, len);
+                }
+            }
+        }
+
+        public Helpers.Tag.MultilineMidashi apply_midashi(string command)
+        {
+            indent_stack.Push(new IndentStackItemIndentTypeKey(IndentTypeKey.midashi));
+            Utils.MidashiType midashi_type = Utils.MidashiType.normal;
+            if (command.Contains(DOGYO_MARK))
+            {
+                midashi_type = Utils.MidashiType.dogyo;
+            }
+            else if (command.Contains(MADO_MARK))
+            {
+                midashi_type = Utils.MidashiType.mado;
+            }
+            else
+            {
+                midashi_type = Utils.MidashiType.normal;
+                terprip = false;
+            }
+            return new Helpers.Tag.MultilineMidashi(this, command, midashi_type);
+        }
+
+        public Helpers.Tag.MultilineYokogumi apply_yokogumi()
+        {
+            indent_stack.Push(new IndentStackItemIndentTypeKey(IndentTypeKey.yokogumi));
+            return new Helpers.Tag.MultilineYokogumi(this);
+        }
+
+        public Helpers.Tag.Keigakomi apply_keigakomi()
+        {
+            indent_stack.Push(new IndentStackItemIndentTypeKey(IndentTypeKey.keigakomi));
+            return new Helpers.Tag.Keigakomi(this);
+        }
+
+        public Helpers.Tag.MultilineCaption apply_caption()
+        {
+            indent_stack.Push(new IndentStackItemIndentTypeKey(IndentTypeKey.caption));
+            return new Helpers.Tag.MultilineCaption(this);
+        }
+
+        public Helpers.Tag.Jizume? apply_jizume(string command)
+        {
+            var matched = Regex.Match(Utils.convert_japanese_number(command), @$"(\d*)(?:{INDENT_TYPE[IndentTypeKey.jizume]})");
+            if (!matched.Success || matched.Groups.Count < 2 || !int.TryParse(matched.Groups[1].Value, out int w)) return null;
+            indent_stack.Push(new IndentStackItemIndentTypeKey(IndentTypeKey.jizume));
+            return new Helpers.Tag.Jizume(this, w);
+        }
+
+        public void push_block_tag(Helpers.Tag.Block tag,IList<string> closing)
+        {
+            push_chars(new BufferItemTag(tag));
+            closing.Add(tag.close_tag());
+        }
+
+        public IndentTypeKey detect_style_size(string style)
+        {
+            if (style.Contains("小"))
+            {
+                return IndentTypeKey.sho;
+            }
+            else
+            {
+                return IndentTypeKey.dai;
             }
         }
     }
