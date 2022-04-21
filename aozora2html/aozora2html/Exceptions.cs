@@ -152,7 +152,7 @@ namespace Aozora.Exceptions
     [Serializable]
     public class WarnUnexpectedTerminatorException : AozoraException
     {
-        public WarnUnexpectedTerminatorException(int arg1, string arg2) : base(string.Format(Helpers.I18n.MSG["warn_unexpected_terminator"], arg1)) { }
+        public WarnUnexpectedTerminatorException(int arg1) : base(string.Format(Helpers.I18n.MSG["warn_unexpected_terminator"], arg1)) { }
         protected WarnUnexpectedTerminatorException(SerializationInfo info, StreamingContext context) : base(info, context) { }
     }
 

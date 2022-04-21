@@ -23,9 +23,8 @@ namespace Aozora
 
         int _line;
         char? current_char;
-        StreamReader file;
-
-        List<int> peekBuffer = new();
+        readonly StreamReader file;
+        readonly List<int> peekBuffer = new();
 
         // 初期化と同時に、いったん最初の行をscanして、改行コードがCR+LFかどうか調べる。
         // CR+LFでない場合はエラーメッセージを出力してexitする(!)

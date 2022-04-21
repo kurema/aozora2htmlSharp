@@ -3,6 +3,7 @@ using System.Text.RegularExpressions;
 using System.Collections.Generic;
 using System.Text;
 using System.Linq;
+using Aozora.Helpers;
 
 namespace Aozora
 {
@@ -316,7 +317,7 @@ namespace Aozora
             //return new Helpers.AccentParser(stream, ACCENT_END, chuuki_table, images, @out, warnChannel, gaiji_dir, css_files).process;
         }
 
-        protected Helpers.TagParser read_to_nest(char? endchar)
+        protected (string, string) read_to_nest(char? endchar)
         {
             throw new NotImplementedException();
             //return new Helpers.TagParser(stream, endchar, chuuki_table, images, @out, gaiji_dir: gaiji_dir).process();
@@ -347,23 +348,14 @@ namespace Aozora
         /// </summary>
         /// <param name="type"></param>
         /// <returns></returns>
-        protected string convert_indent_type(Helpers.IIndentStackItem type)
+        protected string convert_indent_type(Helpers.IIndentStackItem type) => type switch
         {
-            switch (type)
-            {
-                case Helpers.IndentStackItemString typeString:
-                    return typeString.Content;
-                case Helpers.IndentStackItemIndentTypeKey typeIndentTypeKey:
-                    return convert_indent_type(typeIndentTypeKey.Content);
-                default:
-                    throw new Exception();
-            }
-        }
+            Helpers.IndentStackItemString typeString => typeString.Content,
+            Helpers.IndentStackItemIndentTypeKey typeIndentTypeKey => convert_indent_type(typeIndentTypeKey.Content),
+            _ => throw new Exception(),
+        };
 
-        protected string convert_indent_type(IndentTypeKey type)
-        {
-            return INDENT_TYPE.ContainsKey(type) ? INDENT_TYPE[type] : type.ToString();
-        }
+        protected string convert_indent_type(IndentTypeKey type) => INDENT_TYPE.ContainsKey(type) ? INDENT_TYPE[type] : type.ToString();
 
         protected string? check_close_match(IndentTypeKey type)
         {
@@ -389,13 +381,15 @@ namespace Aozora
             else return convert_indent_type(ind);
         }
 
-        public void implicit_close(IndentTypeKey type)
+        public bool implicit_close(IndentTypeKey type)
         {
-            if (indent_stack.Count == 0) return;
+            //kurema:apply_burasage()を見ると返り値bool扱いが良いっぽいけど、かなり妙。
+            if (indent_stack.Count == 0) return false;
 
             if (check_close_match(type) != null)
             {
                 //ok, nested multiline tags, go ahead
+                return false;
             }
             else
             {
@@ -406,6 +400,7 @@ namespace Aozora
                     var tag = tag_stack.Pop();
                     push_chars(tag);
                 }
+                return true;
             }
         }
 
@@ -545,12 +540,12 @@ namespace Aozora
                     if (@char == endchar)
                     {
                         //suddenly finished the file
-                        warnChannel.print(string.Format(Helpers.I18n.MSG["warn_unexpected_terminator"], line_number));
+                        warnChannel.print(string.Format(I18n.MSG["warn_unexpected_terminator"], line_number));
                         throw new Exceptions.TerminateException();//kurema:例外で大域脱出したくない…。
                     }
                     if (check)
                     {
-                        Helpers.Utils.illegal_char_check(@char.Value, line_number, warnChannel);
+                        Utils.illegal_char_check(@char.Value, line_number, warnChannel);
                     }
                     push_chars(escape_special_chars(@char.Value));
                     break;
@@ -564,17 +559,14 @@ namespace Aozora
             return Regex.Replace(text, @"[&"" <>]", a => escape_special_chars(a.Value[0]));
         }
 
-        public string escape_special_chars(char @char)
+        public string escape_special_chars(char @char) => @char switch
         {
-            switch (@char)
-            {
-                case '&': return "&amp;";
-                case '"': return "&quot;";
-                case '<': return "&lt;";
-                case '>': return "&gt;";
-                default: return @char.ToString();
-            }
-        }
+            '&' => "&amp;",
+            '"' => "&quot;",
+            '<' => "&lt;",
+            '>' => "&gt;",
+            _ => @char.ToString(),
+        };
 
         /// <summary>
         /// 本文が終了したかどうかチェックする
@@ -641,7 +633,7 @@ namespace Aozora
             var terpripLocal = buf.terpri() && terprip;
             terprip = true;
 
-            if (indent_stack.LastOrDefault() is not null and Helpers.IndentStackItemString lastString && indent_type == Helpers.TextBuffer.blank_type_result.@false)//kurema:indentの場合は含まない？
+            if (indent_stack.LastOrDefault() is not null and Helpers.IndentStackItemString lastString && indent_type == TextBuffer.blank_type_result.@false)//kurema:indentの場合は含まない？
             {
                 @out.print(lastString.Content);
             }
@@ -674,8 +666,8 @@ namespace Aozora
                 //@out.print tail.map(&:to_s).join
                 //to_s必要？
                 @out.print(string.Join("", tail?.ToArray() ?? new string[0]));
-                if (indent_type == Helpers.TextBuffer.blank_type_result.inline) @out.print("\r\n");
-                else if (indent_type == Helpers.TextBuffer.blank_type_result.@true && terpripLocal) @out.print("<br />\r\n");
+                if (indent_type == TextBuffer.blank_type_result.inline) @out.print("\r\n");
+                else if (indent_type == TextBuffer.blank_type_result.@true && terpripLocal) @out.print("<br />\r\n");
                 else @out.print("</div>\r\n");
             }
             else if (tail.Count == 0 && terpripLocal)
@@ -768,6 +760,7 @@ namespace Aozora
 
                     }
                     break;
+                default: return null;
             }
             return null;
         }
@@ -811,13 +804,12 @@ namespace Aozora
         {
             var match = PAT_GAIJI.Match(command);
             if (!match.Success || match.Groups.Count < 3) return null;
-            var _whole = match.Groups[0].Value;
             var kanji = match.Groups[1].Value;
             var line = match.Groups[2].Value;
 
             var tmp = images.FirstOrDefault(a => a.StartsWith(kanji));
             var index = images.IndexOf(tmp);
-            if(tmp is not null)
+            if (tmp is not null)
             {
                 images[index] += line;
             }
@@ -826,6 +818,114 @@ namespace Aozora
                 images.Add(kanji + line);
             }
             return new Helpers.Tag.UnEmbedGaiji(command);
+        }
+
+        public Helpers.IBufferItem dispatch_gaiji()
+        {
+            //「※」の次が「［」でなければ外字ではない
+            if (stream.peek_char(0) != COMMAND_BEGIN) return new Helpers.BufferItemString(GAIJI_MARK.ToString());
+
+            //「［」を読み捨てる
+            read_char();
+            //embed?
+            var (command, _) = read_to_nest(COMMAND_END);
+            var try_emb = kuten2png(command);
+            if (try_emb is Helpers.BufferItemString try_emb_string && try_emb_string.to_html() == command) return new Helpers.BufferItemString(try_emb_string.to_html());
+
+            var matched = Regex.Match(command, @"U\+([0-9A-F]{4,5})");
+            if (matched.Success && use_unicode_embed_gaiji)
+            {
+                var unicode_num = matched.Groups[1].Value;
+                return new Helpers.BufferItemTag(new Helpers.Tag.EmbedGaiji(this, null, null, command, gaiji_dir, unicode_num));
+            }
+            else
+            {
+                //Unemb
+                return new Helpers.BufferItemTag(escape_gaiji(command) ?? throw new ArgumentNullException());
+            }
+        }
+
+        /// <summary>
+        /// 注記記法の場合分け
+        /// </summary>
+        /// <exception cref="NotImplementedException"></exception>
+        public void dispatch_aozora_command()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void apply_burasage(string command)
+        {
+            if (implicit_close(IndentTypeKey.jisage))//kurema:implicit_close()は別にbool返してないっぽいけど…
+            {
+                terprip = false;
+                general_output();
+            }
+            noprint = true; //always no print
+            command = Utils.convert_japanese_number(command);
+            string? tag;
+            if (command.Contains(TENTSUKI_COMMAND))
+            {
+                var matched = PAT_ORIKAESHI_JISAGE.Match(command);
+                if (!matched.Success || matched.Groups.Count < 2) throw new Exception();
+                var width = matched.Groups[1].Value;
+                tag = $"<div class=\"burasage\" style=\"margin-left: {width}em; text-indent: -{width}em;\">";
+            }
+            else
+            {
+                var matched = PAT_ORIKAESHI_JISAGE2.Match(command);
+                if (!matched.Success || matched.Groups.Count < 3) throw new Exception();
+                var (left, indent) = (matched.Groups[1].Value, matched.Groups[2].Value);
+                var left2 = int.Parse(left) - int.Parse(indent);
+                tag = $"<div class=\"burasage\" style=\"margin-left: {indent}em; text-indent: {left2}em;\">";
+            }
+            indent_stack.Push(new Helpers.IndentStackItemString(tag));
+            tag_stack.Push(string.Empty); //dummy
+            //kurema:nil返す理由は謎。
+            //nil
+        }
+
+        public int? jisage_width(string command)
+        {
+            var matched = new Regex(@$"(\d*)(?:{JISAGE_COMMAND})").Match(Utils.convert_japanese_number(command));
+            if (!matched.Success || matched.Groups.Count < 1) return null;
+            if (int.TryParse(matched.Groups[1].Value, out int num))
+            {
+                return num;
+            }
+            return null;
+        }
+
+        public Helpers.Tag.Tag? apply_jisage(string command)
+        {
+            if (command.Contains(MADE_MARK) | command.Contains(END_MARK))
+            {
+                //字下げ終わり
+                explicit_close(IndentTypeKey.jisage);
+                indent_stack.Pop();
+                return null;
+            }
+            else if (command.Contains(ONELINE_COMMAND))
+            {
+                //1行だけ
+                buffer.Insert(0, new BufferItemTag(new Helpers.Tag.OnelineJisage(this, jisage_width(command) ?? 0)));
+                return null;
+            }
+            else if ((buffer.Count == 0) && (stream.peek_char(0) == '\n'))
+            {
+                //commandのみ
+                terprip = false;
+                implicit_close(IndentTypeKey.jisage);
+                //adhook hack
+                noprint = false;
+                indent_stack.Push(new IndentStackItemIndentTypeKey(IndentTypeKey.jisage));
+                return new Helpers.Tag.MultilineJisage(this, jisage_width(command) ?? 0);
+            }
+            else //rubocop:disable Lint/DuplicateBranch
+            {
+                buffer.Insert(0, new BufferItemTag(new Helpers.Tag.OnelineJisage(this, jisage_width(command) ?? 0)));
+                return null;
+            }
         }
     }
 }

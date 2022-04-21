@@ -9,8 +9,8 @@ namespace Aozora.Helpers
     // encoding: utf-8
     public class Header
     {
-        private List<string> header;
-        private string[] css_files;
+        private readonly List<string> header;
+        private readonly string[] css_files;
 
         public Header(string[]? css_files)
         {

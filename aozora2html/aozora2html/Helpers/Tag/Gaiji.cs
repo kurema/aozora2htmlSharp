@@ -19,10 +19,10 @@ public class EmbedGaiji : Gaiji, IHtmlProvider
 {
     readonly Aozora2Html Parser;
 
-    public EmbedGaiji(Aozora2Html parser, string folder, string? code, string name, string gaiji_dir, string? unicode_num = null)
+    public EmbedGaiji(Aozora2Html parser, string? folder, string? code, string name, string gaiji_dir, string? unicode_num = null)
     {
         Parser = parser ?? throw new ArgumentNullException(nameof(parser));
-        this.folder = folder ?? throw new ArgumentNullException(nameof(folder));
+        this.folder = folder ?? "";
         this.code = code;
         this.name = name ?? throw new ArgumentNullException(nameof(name));
         this.unicode = unicode_num;
