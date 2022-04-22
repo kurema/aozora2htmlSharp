@@ -55,7 +55,7 @@ namespace Aozora.Helpers
             return stack.LastOrDefault()?.command;
         }
 
-        private List<Style> stack;
+        private readonly List<Style> stack;
     }
 }
 

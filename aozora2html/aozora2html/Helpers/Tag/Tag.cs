@@ -131,7 +131,7 @@ public class Decorate : ReferenceMentioned, IHtmlProvider
     public string close { get; }
     public string open { get; }
 
-    public Decorate(object? target, string html_class, string html_tag, string? openOverride, string? closeOverride) : base(target)
+    public Decorate(object? target, string html_class, string html_tag, string? openOverride = null, string? closeOverride = null) : base(target)
     {
         if (html_tag is null) throw new ArgumentNullException(nameof(html_tag));
         if (html_class is null) throw new ArgumentNullException(nameof(html_class));
