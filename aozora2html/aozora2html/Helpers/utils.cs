@@ -15,13 +15,7 @@ public static class Utils
     public const string ZENKAKU_NUMS = "０-９";
     public const string ZENKAKU_NUMS_FULL = "０１２３４５６７８９";
 
-    //kurema:以下はToString()でclass名に使われるのでパスカルケースなどに変更しないでください。
-    public enum Daisho
-    {
-        dai, sho
-    }
-
-    public static string create_font_size(int times, Daisho daisho)
+    public static string create_font_size(int times, Aozora2Html.IndentTypeKey daisho)
     {
         string size = times switch
         {
@@ -32,8 +26,8 @@ public static class Utils
         };
         size += daisho switch
         {
-            Daisho.dai => "large",
-            Daisho.sho => "small",
+            Aozora2Html.IndentTypeKey.dai => "large",
+            Aozora2Html.IndentTypeKey.sho => "small",
             _ => throw new Exceptions.InvalidFontSizeException(),
         };
         return size;

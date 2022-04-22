@@ -135,7 +135,7 @@ namespace Aozora
         private static Regex? _PAT_BOUKI = null;
         public static Regex PAT_BOUKI => _PAT_BOUKI ??= new Regex(@"「(.)」の傍記");
         private static Regex? _PAT_CHARSIZE = null;
-        public static Regex? PAT_CHARSIZE => _PAT_CHARSIZE ??= new Regex(@"(.*)段階(..)な文字");
+        public static Regex PAT_CHARSIZE => _PAT_CHARSIZE ??= new Regex(@"(.*)段階(..)な文字");
 
 
         private static Regex? _REGEX_HIRAGANA = null;
@@ -147,7 +147,13 @@ namespace Aozora
         private static Regex? _REGEX_HANKAKU = null;
         public static Regex REGEX_HANKAKU => _REGEX_HANKAKU ??= new Regex("[A-Za-z0-9#\\-\\&'\\,]");
         private static Regex? _REGEX_KANJI = null;
-        public static Regex REGEX_KANJI => _REGEX_KANJI ??= new Regex("[亜-熙々※仝〆〇ヶ]");
+
+        //kurema:https://dobon.net/vb/dotnet/string/ishiragana.html
+        //public static Regex REGEX_KANJI => _REGEX_KANJI ??= new Regex("[亜-熙々※仝〆〇ヶ]");//kurema:これは流石にUnicodeでは怪しい。
+        public static Regex REGEX_KANJI => _REGEX_KANJI ??= new Regex(
+            @"[々※仝〆〇ヶ\p{IsCJKUnifiedIdeographs}\p{IsCJKCompatibilityIdeographs}\p{IsCJKUnifiedIdeographsExtensionA}]|" +
+            @"[\uD840-\uD869][\uDC00-\uDFFF]|\uD869[\uDC00-\uDEDF]");//kurema:JIS文字だけならここまでは必要ない。
+
 
         public const string DYNAMIC_CONTENTS = "<div id=\"card\">\r\n<hr />\r\n<br />\r\n<a href=\"JavaScript:goLibCard();\" id=\"goAZLibCard\">●図書カード</a><script type=\"text/javascript\" src=\"../../contents.js\"></script>\r\n<script type=\"text/javascript\" src=\"../../golibcard.js\"></script>\r\n</div>";
 
@@ -1044,7 +1050,7 @@ namespace Aozora
             return new Helpers.Tag.Jizume(this, w);
         }
 
-        public void push_block_tag(Helpers.Tag.Block tag,IList<string> closing)
+        public void push_block_tag(Helpers.Tag.Block tag, IList<string> closing)
         {
             push_chars(new BufferItemTag(tag));
             closing.Add(tag.close_tag());
@@ -1060,6 +1066,172 @@ namespace Aozora
             {
                 return IndentTypeKey.dai;
             }
+        }
+
+        public bool exec_inline_start_command(string command)
+        {
+            switch (command)
+            {
+                case CHUUKI_COMMAND:
+                    style_stack.push(command, "</ruby>");
+                    push_chars("<ruby><rb>");
+                    return true;
+                case TCY_COMMAND:
+                    style_stack.push(command, "</span>");
+                    push_chars("<span dir=\"ltr\">");
+                    return true;
+                case KEIGAKOMI_COMMAND:
+                    style_stack.push(command, "</span>");
+                    push_chars("<span class=\"keigakomi\">");
+                    return true;
+                case YOKOGUMI_COMMAND:
+                    style_stack.push(command, "</span>");
+                    push_chars("<span class=\"yokogumi\">");
+                    return true;
+                case CAPTION_COMMAND:
+                    style_stack.push(command, "</span>");
+                    push_chars("<span class=\"caption\">");
+                    return true;
+                case WARIGAKI_COMMAND:
+                    style_stack.push(command, "</span>");
+                    push_chars("<span class=\"warigaki\">");
+                    return true;
+                case OMIDASHI_COMMAND:
+                    style_stack.push(command, "</a></h3>");
+                    terprip = false;
+                    push_chars($"<h3 class=\"o-midashi\"><a class=\"midashi_anchor\" id=\"midashi{midashi_counter.generate_id(100)}\">");
+                    return true;
+                case NAKAMIDASHI_COMMAND:
+                    style_stack.push(command, "</a></h4>");
+                    terprip = false;
+                    push_chars($"<h4 class=\"naka-midashi\"><a class=\"midashi_anchor\" id=\"midashi{midashi_counter.generate_id(10)}\">");
+                    return true;
+                case KOMIDASHI_COMMAND:
+                    style_stack.push(command, "</a></h5>");
+                    terprip = false;
+                    push_chars($"<h5 class=\"ko-midashi\"><a class=\"midashi_anchor\" id=\"midashi{midashi_counter.generate_id(1)}\">");
+                    return true;
+                case DOGYO_OMIDASHI_COMMAND:
+                    style_stack.push(command, "</a></h3>");
+                    terprip = false;
+                    push_chars($"<h3 class=\"dogyo-o-midashi\"><a class=\"midashi_anchor\" id=\"midashi{midashi_counter.generate_id(100)}\">");
+                    return true;
+                case DOGYO_NAKAMIDASHI_COMMAND:
+                    style_stack.push(command, "</a></h4>");
+                    terprip = false;
+                    push_chars($"<h4 class=\"dogyo-naka-midashi\"><a class=\"midashi_anchor\" id=\"midashi{midashi_counter.generate_id(10)}\">");
+                    return true;
+                case DOGYO_KOMIDASHI_COMMAND:
+                    style_stack.push(command, "</a></h5>");
+                    terprip = false;
+                    push_chars($"<h5 class=\"dogyo-ko-midashi\"><a class=\"midashi_anchor\" id=\"midashi#{@midashi_counter.generate_id(1)}\">");
+                    return true;
+                case MADO_OMIDASHI_COMMAND:
+                    style_stack.push(command, "</a></h3>");
+                    terprip = false;
+                    push_chars($"<h3 class=\"mado-o-midashi\"><a class=\"midashi_anchor\" id=\"midashi{midashi_counter.generate_id(100)}\">");
+                    return true;
+                case MADO_NAKAMIDASHI_COMMAND:
+                    style_stack.push(command, "</a></h4>");
+                    terprip = false;
+                    push_chars($"<h4 class=\"mado-naka-midashi\"><a class=\"midashi_anchor\" id=\"midashi{midashi_counter.generate_id(10)}\">");
+                    return true;
+                case MADO_KOMIDASHI_COMMAND:
+                    style_stack.push(command, "</a></h5>");
+                    terprip = false;
+                    push_chars($"<h5 class=\"mado-ko-midashi\"><a class=\"midashi_anchor\" id=\"midashi{midashi_counter.generate_id(1)}\">");
+                    return true;
+                default:
+                    var matchedCharSize = PAT_CHARSIZE.Match(command);
+                    if (matchedCharSize.Success)
+                    {
+                        style_stack.push(command, "</span>");
+                        var nest = matchedCharSize.Groups[1].Value;
+                        var style = matchedCharSize.Groups[2].Value;
+                        var times = int.Parse(Utils.convert_japanese_number(nest));
+                        var daisho = detect_style_size(style);
+                        var html_class = daisho.ToString() + times.ToString();
+                        var size = Utils.create_font_size(times, daisho);
+                        push_chars($"<span class=\"{html_class}\" style=\"font-size: {size};\">");
+                        return true;
+                    }
+                    else
+                    {
+                        //Decoration
+                        var key = command;
+                        var matchedDirection = PAT_DIRECTION.Match(command);
+                        var filter = (string x) => x;
+                        if (matchedDirection.Success)
+                        {
+                            var dir = matchedDirection.Groups[1].Value;
+                            var com = matchedDirection.Groups[2].Value;
+                            //renew command
+                            key = com;
+                            if (command.Contains(TEN_MARK))
+                            {
+                                if (dir == LEFT_MARK.ToString() || dir == UNDER_MARK.ToString())
+                                {
+                                    filter = x => $"{x}_after";
+                                }
+                            }
+                            else if (command.Contains(SEN_MARK))
+                            {
+                                if (dir == LEFT_MARK.ToString() || dir == OVER_MARK.ToString())
+                                {
+                                    filter = x => x.Replace("under", "over");
+                                }
+                            }
+                        }
+
+                        var found = YamlValues.CommandTable(key);
+                        //found = [class, tag]
+                        if (found is not null)
+                        {
+                            style_stack.push(command, $"</{found[1]}>");
+                            push_chars($"<{found[1]} class=\"{filter.Invoke(found[0])}\">");
+                            return true;
+                        }
+                        else
+                        {
+#if DEBUG
+                            warnChannel.print(string.Format(I18n.MSG["warn_undefined_command"], line_number, key));
+#endif
+                            return false;
+                        }
+                    }
+            }
+        }
+
+        public void exec_inline_end_command(string command)
+        {
+            var encount = command.Replace(END_MARK, "");
+            if (encount == MAIN_MARK)
+            {
+                //force to finish main_text
+                section = SectionKind.tail;
+                ensure_close();
+                noprint = true;
+                @out.print("</div>\r\n<div class=\"after_text\">\r\n<hr />\r\n");
+            }
+            else if (encount.Contains(CHUUKI_COMMAND) && style_stack.last_command() == CHUUKI_COMMAND)
+            {
+                //special inline ruby
+                style_stack.pop();
+                var matched = PAT_INLINE_RUBY.Match(encount);
+                if (!matched.Success) throw new Exception("Regex failed.");
+                var ruby = matched.Groups[1].Value;
+                push_chars($"</rb><rp>（</rp><rt>{ruby}</rt><rp>）</rp></ruby>");
+
+            }
+            else if (style_stack.last_command()?.Contains(encount) == true)
+            {
+                push_chars(style_stack.pop().closingTag);
+            }
+            else
+            {
+                throw new Exceptions.InvalidNestingException(encount, style_stack.last_command() ?? "");
+            }
+
         }
     }
 }

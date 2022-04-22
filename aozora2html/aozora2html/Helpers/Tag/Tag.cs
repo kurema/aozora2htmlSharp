@@ -185,7 +185,7 @@ public class EditorNote : Inline, IHtmlProvider
 /// </summary>
 public class FontSize : Block, IHtmlProvider
 {
-    public FontSize(Aozora2Html parser, int times, Utils.Daisho daisho) : base(parser)
+    public FontSize(Aozora2Html parser, int times, Aozora2Html.IndentTypeKey daisho) : base(parser)
     {
         @class = daisho.ToString() + times.ToString();
         style = Utils.create_font_size(times, daisho);
@@ -247,7 +247,7 @@ public class InlineFontSize : ReferenceMentioned, IHtmlProvider
     public string @class { get; }
     public string style { get; }
 
-    public InlineFontSize(object? target, int times, Utils.Daisho daisho) : base(target)
+    public InlineFontSize(object? target, int times, Aozora2Html.IndentTypeKey daisho) : base(target)
     {
         @class = daisho.ToString() + times.ToString();
         style = Utils.create_font_size(times, daisho);
