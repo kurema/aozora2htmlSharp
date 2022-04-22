@@ -49,19 +49,21 @@ namespace Aozora
         public const char ACCENT_END = '〕';
         public const string AOZORABUNKO = "青空文庫";
         //PAT_EDITOR = /[校訂|編|編集|編集校訂|校訂編集]$/
+
+        //kurema:.NET 7以降では[RegexGenerator]が使えるようになります。ただし移行するとUWPとかから使えなくなります。困る。
         private static Regex? _PAT_EDITOR = null;
-        public static Regex PAT_EDITOR => _PAT_EDITOR ??= new Regex(@"(校訂|編|編集)$");
+        public static Regex PAT_EDITOR => _PAT_EDITOR ??= new Regex(@"(校訂|編|編集)$", RegexOptions.Compiled);
         private static Regex? _PAT_HENYAKU = null;
-        public static Regex PAT_HENYAKU => _PAT_HENYAKU ??= new Regex(@"編訳$");
+        public static Regex PAT_HENYAKU => _PAT_HENYAKU ??= new Regex(@"編訳$", RegexOptions.Compiled);
         private static Regex? _PAT_TRANSLATOR = null;
-        public static Regex PAT_TRANSLATOR => _PAT_TRANSLATOR ??= new Regex(@"訳$");
+        public static Regex PAT_TRANSLATOR => _PAT_TRANSLATOR ??= new Regex(@"訳$", RegexOptions.Compiled);
         public const char RUBY_PREFIX = '｜';
         private static Regex? _PAT_RUBY = null;
-        public static Regex PAT_RUBY => _PAT_RUBY ??= new Regex(@"《.*?》");
+        public static Regex PAT_RUBY => _PAT_RUBY ??= new Regex(@"《.*?》", RegexOptions.Compiled);
         private static Regex? _PAT_DIRECTION = null;
-        public static Regex PAT_DIRECTION => _PAT_DIRECTION ??= new Regex(@"(右|左|上|下)に(.*)");
+        public static Regex PAT_DIRECTION => _PAT_DIRECTION ??= new Regex(@"(右|左|上|下)に(.*)", RegexOptions.Compiled);
         private static Regex? _PAT_REF = null;
-        public static Regex PAT_REF => _PAT_REF ??= new Regex(@"^「.+」");
+        public static Regex PAT_REF => _PAT_REF ??= new Regex(@"^「.+」", RegexOptions.Compiled);
         public const string CHUUKI_COMMAND = "注記付き";
         public const string TCY_COMMAND = "縦中横";
         public const string KEIGAKOMI_COMMAND = "罫囲み";
@@ -101,58 +103,58 @@ namespace Aozora
         public const string WARICHU_COMMAND = "割り注";
         public const string TENTSUKI_COMMAND = "天付き";
         private static Regex? _PAT_REST_NOTES = null;
-        public static Regex PAT_REST_NOTES => _PAT_REST_NOTES ??= new Regex(@"(左|下)に「(.*)」の(ルビ|注記|傍記)");
+        public static Regex PAT_REST_NOTES => _PAT_REST_NOTES ??= new Regex(@"(左|下)に「(.*)」の(ルビ|注記|傍記)", RegexOptions.Compiled);
         private static Regex? _PAT_KUTEN = null;
-        public static Regex PAT_KUTEN => _PAT_KUTEN ??= new Regex(@"「※」[は|の]");
+        public static Regex PAT_KUTEN => _PAT_KUTEN ??= new Regex(@"「※」[は|の]", RegexOptions.Compiled);
         private static Regex? _PAT_KUTEN_DUAL = null;
-        public static Regex PAT_KUTEN_DUAL => _PAT_KUTEN_DUAL ??= new Regex(@"※.*※");
+        public static Regex PAT_KUTEN_DUAL => _PAT_KUTEN_DUAL ??= new Regex(@"※.*※", RegexOptions.Compiled);
         private static Regex? _PAT_GAIJI = null;
-        public static Regex PAT_GAIJI => _PAT_GAIJI ??= new Regex(@"(?:＃)(.*)(?:、)(.*)");
+        public static Regex PAT_GAIJI => _PAT_GAIJI ??= new Regex(@"(?:＃)(.*)(?:、)(.*)", RegexOptions.Compiled);
         private static Regex? _PAT_KAERITEN = null;
-        public static Regex PAT_KAERITEN => _PAT_KAERITEN ??= new Regex(@"^([一二三四五六七八九十レ上中下甲乙丙丁天地人]+)$");
+        public static Regex PAT_KAERITEN => _PAT_KAERITEN ??= new Regex(@"^([一二三四五六七八九十レ上中下甲乙丙丁天地人]+)$", RegexOptions.Compiled);
         private static Regex? _PAT_OKURIGANA = null;
-        public static Regex PAT_OKURIGANA => _PAT_OKURIGANA ??= new Regex(@"^（(.+)）$");
+        public static Regex PAT_OKURIGANA => _PAT_OKURIGANA ??= new Regex(@"^（(.+)）$", RegexOptions.Compiled);
         private static Regex? _PAT_REMOVE_OKURIGANA = null;
-        public static Regex PAT_REMOVE_OKURIGANA => _PAT_REMOVE_OKURIGANA ??= new Regex(@"[（）]");
+        public static Regex PAT_REMOVE_OKURIGANA => _PAT_REMOVE_OKURIGANA ??= new Regex(@"[（）]", RegexOptions.Compiled);
         private static Regex? _PAT_CHITSUKI = null;
-        public static Regex PAT_CHITSUKI => _PAT_CHITSUKI ??= new Regex(@"(地付き|字上げ)(終わり)*$");
+        public static Regex PAT_CHITSUKI => _PAT_CHITSUKI ??= new Regex(@"(地付き|字上げ)(終わり)*$", RegexOptions.Compiled);
         private static Regex? _PAT_ORIKAESHI_JISAGE = null;
-        public static Regex PAT_ORIKAESHI_JISAGE => _PAT_ORIKAESHI_JISAGE ??= new Regex(@"折り返して(\\d*)字下げ");
+        public static Regex PAT_ORIKAESHI_JISAGE => _PAT_ORIKAESHI_JISAGE ??= new Regex(@"折り返して(\\d*)字下げ", RegexOptions.Compiled);
         private static Regex? _PAT_ORIKAESHI_JISAGE2 = null;
-        public static Regex PAT_ORIKAESHI_JISAGE2 => _PAT_ORIKAESHI_JISAGE2 ??= new Regex(@"(\\d*)字下げ、折り返して(\\d*)字下げ");
+        public static Regex PAT_ORIKAESHI_JISAGE2 => _PAT_ORIKAESHI_JISAGE2 ??= new Regex(@"(\\d*)字下げ、折り返して(\\d*)字下げ", RegexOptions.Compiled);
         private static Regex? _PAT_JI_LEN = null;
-        public static Regex PAT_JI_LEN => _PAT_JI_LEN ??= new Regex(@"([0-9]+)字");
+        public static Regex PAT_JI_LEN => _PAT_JI_LEN ??= new Regex(@"([0-9]+)字", RegexOptions.Compiled);
         private static Regex? _PAT_INLINE_RUBY = null;
-        public static Regex PAT_INLINE_RUBY => _PAT_INLINE_RUBY ??= new Regex(@"「(.*)」の注記付き");
+        public static Regex PAT_INLINE_RUBY => _PAT_INLINE_RUBY ??= new Regex(@"「(.*)」の注記付き", RegexOptions.Compiled);
         private static Regex? _PAT_IMAGE = null;
-        public static Regex PAT_IMAGE => _PAT_IMAGE ??= new Regex(@"(.*)（(fig.+\\.png)(、横([0-9]+)×縦([0-9]+))*）入る");
+        public static Regex PAT_IMAGE => _PAT_IMAGE ??= new Regex(@"(.*)（(fig.+\\.png)(、横([0-9]+)×縦([0-9]+))*）入る", RegexOptions.Compiled);
         private static Regex? _PAT_FRONTREF = null;
-        public static Regex PAT_FRONTREF => _PAT_FRONTREF ??= new Regex(@"「([^「」]*(?:「.+」)*[^「」]*)」[にはの](「.+」の)*(.+)");
+        public static Regex PAT_FRONTREF => _PAT_FRONTREF ??= new Regex(@"「([^「」]*(?:「.+」)*[^「」]*)」[にはの](「.+」の)*(.+)", RegexOptions.Compiled);
         private static Regex? _PAT_RUBY_DIR = null;
-        public static Regex PAT_RUBY_DIR => _PAT_RUBY_DIR ??= new Regex(@"(左|下)に「([^」]*)」の(ルビ|注記)");
+        public static Regex PAT_RUBY_DIR => _PAT_RUBY_DIR ??= new Regex(@"(左|下)に「([^」]*)」の(ルビ|注記)", RegexOptions.Compiled);
         private static Regex? _PAT_CHUUKI = null;
-        public static Regex PAT_CHUUKI => _PAT_CHUUKI ??= new Regex(@"「(.+?)」の注記");
+        public static Regex PAT_CHUUKI => _PAT_CHUUKI ??= new Regex(@"「(.+?)」の注記", RegexOptions.Compiled);
         private static Regex? _PAT_BOUKI = null;
-        public static Regex PAT_BOUKI => _PAT_BOUKI ??= new Regex(@"「(.)」の傍記");
+        public static Regex PAT_BOUKI => _PAT_BOUKI ??= new Regex(@"「(.)」の傍記", RegexOptions.Compiled);
         private static Regex? _PAT_CHARSIZE = null;
-        public static Regex PAT_CHARSIZE => _PAT_CHARSIZE ??= new Regex(@"(.*)段階(..)な文字");
+        public static Regex PAT_CHARSIZE => _PAT_CHARSIZE ??= new Regex(@"(.*)段階(..)な文字", RegexOptions.Compiled);
 
 
         private static Regex? _REGEX_HIRAGANA = null;
-        public static Regex REGEX_HIRAGANA => _REGEX_HIRAGANA ??= new Regex("[ぁ-んゝゞ]");
+        public static Regex REGEX_HIRAGANA => _REGEX_HIRAGANA ??= new Regex("[ぁ-んゝゞ]", RegexOptions.Compiled);
         private static Regex? _REGEX_KATAKANA = null;
-        public static Regex REGEX_KATAKANA => _REGEX_KATAKANA ??= new Regex("[ァ-ンーヽヾヴ]");
+        public static Regex REGEX_KATAKANA => _REGEX_KATAKANA ??= new Regex("[ァ-ンーヽヾヴ]", RegexOptions.Compiled);
         private static Regex? _REGEX_ZENKAKU = null;
-        public static Regex REGEX_ZENKAKU => _REGEX_ZENKAKU ??= new Regex("[０-９Ａ-Ｚａ-ｚΑ-Ωα-ωА-Яа-я−＆’，．]");
+        public static Regex REGEX_ZENKAKU => _REGEX_ZENKAKU ??= new Regex("[０-９Ａ-Ｚａ-ｚΑ-Ωα-ωА-Яа-я−＆’，．]", RegexOptions.Compiled);
         private static Regex? _REGEX_HANKAKU = null;
-        public static Regex REGEX_HANKAKU => _REGEX_HANKAKU ??= new Regex("[A-Za-z0-9#\\-\\&'\\,]");
+        public static Regex REGEX_HANKAKU => _REGEX_HANKAKU ??= new Regex("[A-Za-z0-9#\\-\\&'\\,]", RegexOptions.Compiled);
         private static Regex? _REGEX_KANJI = null;
 
         //kurema:https://dobon.net/vb/dotnet/string/ishiragana.html
         //public static Regex REGEX_KANJI => _REGEX_KANJI ??= new Regex("[亜-熙々※仝〆〇ヶ]");//kurema:これは流石にUnicodeでは怪しい。
         public static Regex REGEX_KANJI => _REGEX_KANJI ??= new Regex(
             @"[々※仝〆〇ヶ\p{IsCJKUnifiedIdeographs}\p{IsCJKCompatibilityIdeographs}\p{IsCJKUnifiedIdeographsExtensionA}]|" +
-            @"[\uD840-\uD869][\uDC00-\uDFFF]|\uD869[\uDC00-\uDEDF]");//kurema:JIS文字だけならここまでは必要ない。
+            @"[\uD840-\uD869][\uDC00-\uDFFF]|\uD869[\uDC00-\uDEDF]", RegexOptions.Compiled);//kurema:JIS文字だけならここまでは必要ない。
 
 
         public const string DYNAMIC_CONTENTS = "<div id=\"card\">\r\n<hr />\r\n<br />\r\n<a href=\"JavaScript:goLibCard();\" id=\"goAZLibCard\">●図書カード</a><script type=\"text/javascript\" src=\"../../contents.js\"></script>\r\n<script type=\"text/javascript\" src=\"../../golibcard.js\"></script>\r\n</div>";
@@ -902,7 +904,7 @@ namespace Aozora
             return null;
         }
 
-        public Helpers.Tag.Tag? apply_jisage(string command)
+        public Helpers.Tag.MultilineJisage? apply_jisage(string command)
         {
             if (command.Contains(MADE_MARK) | command.Contains(END_MARK))
             {
@@ -977,7 +979,7 @@ namespace Aozora
             }
         }
 
-        public Helpers.Tag.Tag? apply_chitsuki(string @string, bool multiline = false)
+        public Helpers.Tag.Chitsuki? apply_chitsuki(string @string, bool multiline = false)
         {
             if (@string.Contains(CLOSE_MARK + INDENT_TYPE[IndentTypeKey.chitsuki] + END_MARK) ||
                 @string.Contains(CLOSE_MARK + JISAGE_COMMAND + END_MARK))
@@ -1050,10 +1052,11 @@ namespace Aozora
             return new Helpers.Tag.Jizume(this, w);
         }
 
-        public void push_block_tag(Helpers.Tag.Block tag, IList<string> closing)
+        public void push_block_tag(Helpers.Tag.Block? tag, StringBuilder closing)
         {
+            if (tag is null) throw new Exception($"{nameof(tag)} is empty");
             push_chars(new BufferItemTag(tag));
-            closing.Add(tag.close_tag());
+            closing.Append(tag.close_tag());
         }
 
         public IndentTypeKey detect_style_size(string style)
@@ -1231,7 +1234,170 @@ namespace Aozora
             {
                 throw new Exceptions.InvalidNestingException(encount, style_stack.last_command() ?? "");
             }
+        }
 
+        public Helpers.Tag.EditorNote? exec_block_start_command(string command)
+        {
+            var original_command = command;//kurema:C#では普通string自体を書き換えません。つまりdup相当は不要。
+            command = new Regex($"^{OPEN_MARK}").Replace(command, "");
+            var match_buf = new StringBuilder();
+
+            void push_item(string command, StringBuilder match_buf, bool pop, IndentTypeKey key, Func<string, Helpers.Tag.Block?> func, Action? action = null)//kurema:これは関数内関数です。
+            {
+                if (command.Contains(INDENT_TYPE[key]))
+                {
+                    if (pop && match_buf.Length != 0) indent_stack.Pop();
+                    push_block_tag(func(command), match_buf);
+                    action?.Invoke();
+                }
+            }
+
+            if (command.Contains(INDENT_TYPE[IndentTypeKey.jisage]))
+            {
+                push_block_tag(apply_jisage(command), match_buf);
+            }
+            else if (new Regex($"({INDENT_TYPE[IndentTypeKey.chitsuki]}|{JIAGE_COMMAND})$").IsMatch(command))
+            {
+                push_block_tag(apply_chitsuki(command, multiline: true) ?? throw new Exception(), match_buf);
+            }
+
+            //kurema:繰り返しが多いので関数化しました。
+            push_item(command, match_buf, false, IndentTypeKey.midashi, a => apply_midashi(a));
+            push_item(command, match_buf, true, IndentTypeKey.jizume, a => apply_jizume(a));
+            push_item(command, match_buf, true, IndentTypeKey.yokogumi, a => apply_yokogumi());
+            push_item(command, match_buf, true, IndentTypeKey.keigakomi, a => apply_keigakomi());
+            push_item(command, match_buf, true, IndentTypeKey.caption, a => apply_caption());
+            push_item(command, match_buf, true, IndentTypeKey.futoji, a => new Helpers.Tag.MultilineStyle(this, "futoji"),
+                () => { indent_stack.Push(new IndentStackItemIndentTypeKey(IndentTypeKey.futoji)); });
+            push_item(command, match_buf, true, IndentTypeKey.shatai, a => new Helpers.Tag.MultilineStyle(this, "shatai"),
+                () => { indent_stack.Push(new IndentStackItemIndentTypeKey(IndentTypeKey.shatai)); });
+
+            {//kurema:空ブロックは微妙な変数名をスコープ内だけにするのが目的です。
+                var matched = PAT_CHARSIZE.Match(command);
+                if (matched.Success)
+                {
+                    var nest = matched.Groups[1].Value;
+                    var style = matched.Groups[2].Value;
+                    if (match_buf.Length > 0) indent_stack.Pop();
+                    var daisho = detect_style_size(style);
+                    push_block_tag(new Helpers.Tag.FontSize(this, int.Parse(Utils.convert_japanese_number(nest)), daisho), match_buf);
+                    indent_stack.Push(new IndentStackItemIndentTypeKey(daisho));
+                }
+            }
+
+            if (match_buf.Length == 0)
+            {
+                return apply_rest_notes(original_command);
+            }
+            else
+            {
+                tag_stack.Push(match_buf.ToString());
+                return null;
+            }
+        }
+
+        public Helpers.Tag.EditorNote? exec_block_end_command(string command)
+        {
+            var original_command = command;//kurema:C#では普通string自体を書き換えません。
+            command = new Regex($@"^{CLOSE_MARK}").Replace(command, "");
+            IIndentStackItem? matched = null;
+            var mode = detect_command_mode(command);
+
+            if (mode != null)
+            {
+                explicit_close(mode.Value);
+                matched = indent_stack.Pop();
+            }
+
+            if (matched != null)
+            {
+                if (matched is not IndentStackItemString) terprip = false;
+                return null;
+            }
+            else
+            {
+                return apply_rest_notes(original_command);
+            }
+        }
+
+        public Helpers.Tag.Tag exec_img_command(string command, string raw)
+        {
+            var matched = PAT_IMAGE.Match(raw);
+            if (matched.Success)
+            {
+                var alt = matched.Groups[1].Value;
+                var src = matched.Groups[2].Value;
+                var width = matched.Groups[4].Value;
+                var height = matched.Groups[5].Value;
+
+                string css_class = alt.Contains(PHOTO_COMMAND) ? "photo" : "illustration";
+                return new Helpers.Tag.Img(src, css_class, alt, width, height);
+            }
+            else
+            {
+                return apply_rest_notes(command);
+            }
+        }
+
+        public Helpers.Tag.EditorNote apply_rest_notes(string command)
+        {
+            chuuki_table[chuuki_table_keys.chuki] = true;
+            return new Helpers.Tag.EditorNote(command);
+        }
+
+        public Helpers.Tag.Tag exec_frontref_command(string command)
+        {
+            var matched = PAT_FRONTREF.Match(command);
+            if (!matched.Success) throw new Exception();
+            string reference = matched.Groups[1].Value;
+            string spec1 = matched.Groups[2].Value;
+            string spec2 = matched.Groups[3].Value;
+            //var spec = !string.IsNullOrEmpty(spec1) ? spec1 + spec2 : spec2;
+            var spec = spec1 + spec2;
+            if (!string.IsNullOrEmpty(reference))
+            {
+                var found = search_front_reference(reference);
+                if (found is not null)
+                {
+                    throw new NotImplementedException();
+                    //var tmp = exec_style();
+                }
+            }
+            //comment out?
+            return apply_rest_notes(command);
+        }
+
+        /// <summary>
+        /// 傍記を並べる用
+        /// </summary>
+        /// <param name="bouki"></param>
+        /// <param name="times"></param>
+        /// <returns></returns>
+        public string multiply(string bouki, int times)
+        {
+            //kurema:もっとスマートに書けると思う。
+            if (times == 0) return "";
+            var sep = "&nbsp;";
+            var result = new StringBuilder(bouki);
+            for (int i = 1; i < times; i++)
+            {
+                result.Append(sep);
+                result.Append(bouki);
+            }
+            return result.ToString();
+        }
+
+        /// <summary>
+        /// rubyタグの再生成(本体はrearrange_ruby)
+        /// </summary>
+        /// <param name="targets"></param>
+        /// <param name="upper_ruby"></param>
+        /// <param name="under_ruby"></param>
+        /// <returns></returns>
+        //complex ruby wrap up utilities -- don't erase! we will use soon ...
+        public Helpers.Tag.Ruby rearrange_ruby_tag(System.Collections.IEnumerable targets, string upper_ruby, string under_ruby)
+        {
+            return Helpers.Tag.Ruby.rearrange_ruby(targets, upper_ruby, under_ruby);
         }
     }
 }
