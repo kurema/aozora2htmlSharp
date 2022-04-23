@@ -282,7 +282,7 @@ namespace Aozora
                 var codes = new int[] { int.Parse(matched.Groups[1].Value), int.Parse(matched.Groups[2].Value), int.Parse(matched.Groups[3].Value) };
                 var folder = string.Format("{0,1}-{1:D2}", codes[0], codes[1]);//%1d-%02d
                 var code = string.Format("{0,1}-{1:2d}-{2:2d}", codes[0], codes[1], codes[2]);//%1d-%02d-%02d
-                return new BufferItemTag(new Helpers.Tag.EmbedGaiji(this, folder, code, desc.Replace(IGETA_MARK.ToString(), ""), gaiji_dir));
+                return new BufferItemTag(new Helpers.Tag.EmbedGaiji(this, folder, code, desc.Replace(new string(IGETA_MARK, 1), ""), gaiji_dir));
             }
             else
             {
@@ -432,9 +432,36 @@ namespace Aozora
             push_chars(tag);
         }
 
-        public void parse()
+        /// <summary>
+        /// main loop
+        /// </summary>
+        /// <exception cref="Exceptions.EncountUndefinedConditionException"></exception>
+        public virtual void parse()
         {
-            throw new NotImplementedException();
+            while (true)
+            {
+                switch (section)
+                {
+                    case SectionKind.head:
+                        parse_header();
+                        break;
+                    case SectionKind.head_end:
+                        judge_chuuki();
+                        break;
+                    case SectionKind.chuuki:
+                    case SectionKind.chuuki_in:
+                        parse_chuuki();
+                        break;
+                    case SectionKind.body:
+                        parse_body();
+                        break;
+                    case SectionKind.tail:
+                        parse_tail();
+                        break;
+                    default:
+                        throw new Exceptions.EncountUndefinedConditionException();
+                }
+            }
         }
 
         public void judge_chuuki()
@@ -469,7 +496,7 @@ namespace Aozora
             }
             else
             {
-                @string = @string!.Replace(RUBY_PREFIX.ToString(), string.Empty);
+                @string = @string!.Replace(new string(RUBY_PREFIX, 1), string.Empty);
                 @string = PAT_RUBY.Replace(@string, string.Empty);
                 header.push(@string);
             }
@@ -500,7 +527,7 @@ namespace Aozora
         /// <exception cref="Exception"></exception>
         public void parse_body()
         {
-            var @char = read_char();
+            object? @char = read_char();
             bool check = true;
 
             switch (@char)
@@ -510,30 +537,37 @@ namespace Aozora
                     @char = read_accent();
                     break;
                 case GAIJI_MARK:
-                //@char = dispatch_gaiji();
-                //break;
+                    @char = dispatch_gaiji();
+                    break;
                 case COMMAND_BEGIN:
-                //@char = dispatch_aozora_command();
-                //break;
+                    @char = dispatch_aozora_command();
+                    break;
                 case KU:
-                //assign_kunoji();
-                //break;
+                    assign_kunoji();
+                    break;
                 case RUBY_BEGIN_MARK:
-                //@char = apply_ruby();
-                //break;
+                    @char = apply_ruby();
+                    break;
                 default:
                     //kurema:TEIHON_MARK[0]は定数じゃないので普通に条件分岐で。
-                    if (@char == TEIHON_MARK[0])
+                    if ((char?)@char == TEIHON_MARK[0])
                     {
-                        //if (buffer.Count == 0) ending_check();
+                        if (buffer.Count == 0) ending_check();
                     }
                     break;
+            }
+
+            if (@char is IBufferItem bufferItem) @char = bufferItem.to_html();
+            if (@char is string s)
+            {
+                if (s.Length == 0) @char = null;
+                if (s.Length == 1) @char = s[0];
             }
 
             switch (@char)
             {
                 case '\n':
-                    //general_output();
+                    general_output();
                     break;
                 case RUBY_PREFIX:
                     ruby_buf.dump_into(buffer);
@@ -543,20 +577,26 @@ namespace Aozora
                     //noop
                     break;
                 default:
-                    if (@char == endchar)
+                    if ((@char as char?) == endchar)
                     {
                         //suddenly finished the file
                         warnChannel.print(string.Format(I18n.MSG["warn_unexpected_terminator"], line_number));
                         throw new Exceptions.TerminateException();//kurema:例外で大域脱出したくない…。
                     }
-                    if (check)
+
+                    if (@char is char charChar)
                     {
-                        Utils.illegal_char_check(@char.Value, line_number, warnChannel);
+                        if (check) Utils.illegal_char_check(charChar, line_number, warnChannel);
+                        push_chars(escape_special_chars(new string(charChar, 1)));
+                        break;
                     }
-                    push_chars(escape_special_chars(@char.Value));
+                    if (@char is string charString)
+                    {
+                        if (check) foreach (var charItem in charString) Utils.illegal_char_check(charItem, line_number, warnChannel);
+                        push_chars(escape_special_chars(charString));
+                    }
                     break;
             }
-            throw new NotImplementedException();
         }
 
         /// <summary>
@@ -640,7 +680,7 @@ namespace Aozora
                     else if (stag.tag is Helpers.Tag.UnEmbedGaiji stagUEG && !stagUEG.escaped)
                     {
                         //消してあった※を復活させて
-                        @out.print(GAIJI_MARK.ToString());
+                        @out.print(new string(GAIJI_MARK, 1));
                     }
                 }
                 @out.print(s.to_html());
@@ -814,7 +854,7 @@ namespace Aozora
         public IBufferItem dispatch_gaiji()
         {
             //「※」の次が「［」でなければ外字ではない
-            if (stream.peek_char(0) != COMMAND_BEGIN) return new BufferItemString(GAIJI_MARK.ToString());
+            if (stream.peek_char(0) != COMMAND_BEGIN) return new BufferItemString(new string( GAIJI_MARK,1));
 
             //「［」を読み捨てる
             read_char();
@@ -839,9 +879,82 @@ namespace Aozora
         /// <summary>
         /// 注記記法の場合分け
         /// </summary>
-        public void dispatch_aozora_command()
+        public IBufferItem? dispatch_aozora_command()
         {
-            throw new NotImplementedException();
+            //「［」の次が「＃」でなければ注記ではない
+            if (stream.peek_char(0) != IGETA_MARK)
+            {
+                return new BufferItemString(new string(COMMAND_BEGIN, 1));
+            }
+            //「＃」を読み捨てる
+            read_char();
+            var (command, raw) = read_to_nest(COMMAND_END);
+            //適用順序はこれで大丈夫か？　誤爆怖いよ誤爆
+
+            IBufferItem? GetReturnValue(Helpers.Tag.Tag? tag)
+            {
+                return tag is null ? null : new BufferItemTag(tag);
+            }
+
+            if (command.Contains(ORIKAESHI_COMMAND))
+            {
+                apply_burasage(command);
+                return null;
+            }
+            else if (command.StartsWith(OPEN_MARK))
+            {
+                return GetReturnValue(exec_block_start_command(command));
+            }
+            else if (command.StartsWith(CLOSE_MARK))
+            {
+                return GetReturnValue(exec_block_end_command(command));
+            }
+            else if (command.Contains(WARICHU_COMMAND))
+            {
+                apply_warichu(command);
+                return null;
+            }
+            else if (command.Contains(JISAGE_COMMAND))
+            {
+                return GetReturnValue(apply_jisage(command));
+            }
+            else if (Regex.IsMatch(command, @"fig(\d)+_(\d)+\.png"))
+            {
+                return GetReturnValue(exec_img_command(command, raw));
+            }//avoid to try complex ruby -- escape to notes
+            else if (PAT_REST_NOTES.IsMatch(command))
+            {
+                return GetReturnValue(apply_rest_notes(command));
+            }
+            else if (command.EndsWith(END_MARK))
+            {
+                exec_inline_end_command(command);
+                return null;
+            }
+            else if (Regex.IsMatch(command, @"1-7-8[2345]"))//kurema:正規表現を二度実行するのは微妙。
+            {
+                return GetReturnValue(apply_dakuten_katakana(command));
+            }
+            else if (PAT_KAERITEN.IsMatch(command))
+            {
+                return new BufferItemTag(new Helpers.Tag.Kaeriten(command));
+            }
+            else if (PAT_OKURIGANA.IsMatch(command))
+            {
+                return new BufferItemTag(new Helpers.Tag.Okurigana(PAT_OKURIGANA.Replace(command, "")));
+            }
+            else if (PAT_CHITSUKI.IsMatch(command))
+            {
+                return GetReturnValue(apply_chitsuki(command));
+            }
+            else if (exec_inline_start_command(command))
+            {
+                return null;
+            }
+            else//rubocop:disable Lint/DuplicateBranch
+            {
+                return GetReturnValue(apply_rest_notes(command));
+            }
         }
 
         public void apply_burasage(string command)
@@ -871,8 +984,6 @@ namespace Aozora
             }
             indent_stack.Push(new IndentStackItemString(tag));
             tag_stack.Push(string.Empty); //dummy
-            //kurema:nil返す理由は謎。
-            //nil
         }
 
         public int? jisage_width(string command)
@@ -934,7 +1045,7 @@ namespace Aozora
 
                 //NOTE: Do not remove duplicates!
                 //rubocop:disable Style/IdenticalConditionalBranches
-                if (check is BufferItemString itemString && itemString.to_html().EndsWith(PAREN_BEGIN_MARK.ToString()))
+                if (check is BufferItemString itemString && itemString.to_html().EndsWith(new String(PAREN_BEGIN_MARK, 1)))
                 {
                     push_chars("<span class=\"warichu\">");
                 }
@@ -1154,14 +1265,14 @@ namespace Aozora
                             key = com;
                             if (command.Contains(TEN_MARK))
                             {
-                                if (dir == LEFT_MARK.ToString() || dir == UNDER_MARK.ToString())
+                                if (dir == new string(LEFT_MARK, 1) || dir == new string(UNDER_MARK, 1))
                                 {
                                     filter = x => $"{x}_after";
                                 }
                             }
                             else if (command.Contains(SEN_MARK))
                             {
-                                if (dir == LEFT_MARK.ToString() || dir == OVER_MARK.ToString())
+                                if (dir == new string(LEFT_MARK, 1) || dir == new string(OVER_MARK, 1))
                                 {
                                     filter = x => x.Replace("under", "over");
                                 }
@@ -1170,10 +1281,10 @@ namespace Aozora
 
                         var found = YamlValues.CommandTable(key);
                         //found = [class, tag]
-                        if (found is not null)
+                        if (found.Item1 is not null)
                         {
-                            style_stack.push(command, $"</{found[1]}>");
-                            push_chars($"<{found[1]} class=\"{filter.Invoke(found[0])}\">");
+                            style_stack.push(command, $"</{found.tag}>");
+                            push_chars($"<{found.tag} class=\"{filter.Invoke(found.@class)}\">");
                             return true;
                         }
                         else
@@ -1321,7 +1432,7 @@ namespace Aozora
             }
         }
 
-        public Helpers.Tag.Tag exec_frontref_command(string command)
+        public IBufferItem exec_frontref_command(string command)
         {
             var matched = PAT_FRONTREF.Match(command);
             if (!matched.Success) throw new Exception();
@@ -1335,12 +1446,14 @@ namespace Aozora
                 var found = search_front_reference(reference);
                 if (found is not null)
                 {
-                    throw new NotImplementedException();
-                    //var tmp = exec_style();
+                    var tmp = exec_style(found, spec);
+                    if (tmp is not null) return tmp;
+
+                    recovery_front_reference(found);
                 }
             }
             //comment out?
-            return apply_rest_notes(command);
+            return new BufferItemTag(apply_rest_notes(command));
         }
 
         /// <summary>
@@ -1475,14 +1588,14 @@ namespace Aozora
                     command = com;
                     if (command.Contains(TEN_MARK))
                     {
-                        if (dir == LEFT_MARK.ToString() || dir == UNDER_MARK.ToString())
+                        if (dir == new string(LEFT_MARK, 1) || dir == new string(UNDER_MARK, 1))
                         {
                             filter = x => $"{x}_after";
                         }
                     }
                     else if (command.Contains(SEN_MARK))
                     {
-                        if (dir == LEFT_MARK.ToString() || dir == OVER_MARK.ToString())
+                        if (dir == new string(LEFT_MARK, 1) || dir == new string(OVER_MARK, 1))
                         {
                             filter = x => x.Replace("under", "over");
                         }
@@ -1491,14 +1604,31 @@ namespace Aozora
 
                 var found = YamlValues.CommandTable(command);
                 //found = [class, tag]
-                if (found is not null)
+                if (found.@class is not null && found.tag is not null)
                 {
-                    return new BufferItemTag(new Helpers.Tag.Decorate(targets, filter.Invoke(found[0]), found[1]));
+                    return new BufferItemTag(new Helpers.Tag.Decorate(targets, filter.Invoke(found.@class), found.tag));
                 }
                 else
                 {
                     return null;
                 }
+            }
+        }
+
+        public Helpers.Tag.Tag? apply_dakuten_katakana(string command)
+        {
+            var match = Regex.Match(command, "1-7-8([2345])");
+            if (!match.Success) return null;
+            var n = int.Parse(match.Groups[1].Value);
+            var frontref = DAKUTEN_KATAKANA_TABLE[n];
+            var found = search_front_reference(frontref);
+            if (found is not null)
+            {
+                return new Helpers.Tag.DakutenKatakana(n, String.Join("", found), gaiji_dir);
+            }
+            else
+            {
+                return apply_rest_notes(command);
             }
         }
 
@@ -1535,7 +1665,7 @@ namespace Aozora
             var (ruby, _) = read_to_nest(RUBY_END_MARK);
             if (ruby.Length == 0)
             {
-                return RUBY_BEGIN_MARK.ToString() + RUBY_END_MARK.ToString();
+                return new string(RUBY_BEGIN_MARK, RUBY_END_MARK);
             }
 
             buffer.AddRange(ruby_buf.create_ruby(ruby));
@@ -1550,7 +1680,7 @@ namespace Aozora
             //kurema:色々怪しい
             var @char = read_char();
             bool check = true;
-            IBufferItem? other = null;
+            string? other = null;
             switch (@char)
             {
                 case ACCENT_BEGIN:
@@ -1558,16 +1688,16 @@ namespace Aozora
                     @char = read_accent();
                     break;
                 case GAIJI_MARK:
-                    other = dispatch_gaiji();
+                    other = dispatch_gaiji()?.to_html();
                     break;
                 case COMMAND_BEGIN:
-                    throw new NotImplementedException();
-                //dispatch_aozora_command();
+                    other = dispatch_aozora_command()?.to_html();
+                    break;
                 case KU:
                     assign_kunoji();
                     break;
                 case RUBY_BEGIN_MARK:
-                    other = new BufferItemString(apply_ruby() ?? "");
+                    other = new BufferItemString(apply_ruby() ?? "")?.to_html();
                     break;
                 default:
                     if (@char == endchar)
@@ -1580,25 +1710,23 @@ namespace Aozora
             if (other is not null)
             {
                 @char = null;
-                if (other is BufferItemString bufferString)
+                if (other.Length == 0)
                 {
-                    if (bufferString.Length == 0)
-                    {
-                        @char = null;
-                        other = null;
-                    }
-                    else if (bufferString.Length == 1)
-                    {
-                        @char = bufferString.to_html()[0];
-                        other = null;
-                    }
+                    @char = null;
+                    other = null;
+                }
+                else if (other.Length == 1)
+                {
+                    @char = other[0];
+                    other = null;
                 }
             }
 
             switch (@char)
             {
                 case '\n':
-                    throw new NotImplementedException();
+                    tail_output();
+                    break;
                 case RUBY_PREFIX:
                     ruby_buf.dump_into(buffer);
                     ruby_buf.@protected = true;
@@ -1614,13 +1742,12 @@ namespace Aozora
                     }
                     else
                     {
-                        var html = other.to_html();
-                        if (check) foreach (var item in html) Utils.illegal_char_check(@char ?? ' ', line_number, warnChannel);
+                        var html = other;
+                        if (check) foreach (var item in html) Utils.illegal_char_check(item, line_number, warnChannel);
                         push_chars(escape_special_chars(html));
                     }
                     break;
             }
-
         }
 
         /// <summary>
@@ -1686,7 +1813,7 @@ namespace Aozora
             if (images.Count > 0)
             {
                 @out.print("\t<li>この作品には、JIS X 0213にない、以下の文字が用いられています。（数字は、底本中の出現「ページ-行」数。）これらの文字は本文内では「※［＃…］」の形で示しました。</li>\r\n</ul>\r\n<br />\r\n\t\t<table class=\"gaiji_list\">\r\n");
-                foreach(var cell in images)
+                foreach (var cell in images)
                 {
                     var k = cell;
                     var vs = string.Join("、", k.ToCharArray().Select(a => new string(a, 1)));
@@ -1727,7 +1854,7 @@ namespace Aozora
             '"' => "&quot;",
             '<' => "&lt;",
             '>' => "&gt;",
-            _ => @char.ToString(),
+            _ => new string(@char, 1),
         };
     }
 }

@@ -52,6 +52,13 @@ namespace Aozora.Exceptions
     }
 
     [Serializable]
+    public class EncountUndefinedConditionException : AozoraException
+    {
+        public EncountUndefinedConditionException() : base("encount undefined condition") { }
+        protected EncountUndefinedConditionException(SerializationInfo info, StreamingContext context) : base(info, context) { }
+    }
+
+    [Serializable]
     public class TagSyntaxException : AozoraException
     {
         public TagSyntaxException() : base(Helpers.I18n.MSG["tag_syntax_error"]) { }

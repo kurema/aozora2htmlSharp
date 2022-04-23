@@ -17,7 +17,112 @@ namespace Aozora.Helpers
 
         }
 
-        //kurema:ToDo: general_output他を実装。別に難しくないけど継承元が未実装。
+        //出力は配列で返す
+        public TextBuffer general_output_accent()
+        {
+            //kurema:返り値がAozora2Htmlのgeneral_output()と違うので名前を変えました。
+            ruby_buf.dump_into(buffer);
+            if (!encount_accent) buffer.Insert(0, new BufferItemString(new string(ACCENT_BEGIN, 1)));
+            if (closed && !encount_accent)
+            {
+                buffer.Add(new BufferItemString(new string(ACCENT_END, 1)));
+            }
+            else if (!closed)
+            {
+                buffer.Add(new BufferItemString("<br />\r\n"));
+            }
+            return buffer;
+        }
 
+        public override void parse()
+        {
+            while (true)
+            {
+                var first = read_char();
+                var second = stream.peek_char(0);
+                var third = stream.peek_char(1);
+                var found = YamlValues.AccentTable(first, second, third);
+
+                string? text = null;
+
+                if (found.code is not null && found.name is not null)
+                {
+                    for (int i = 1; i < found.depth; i++)
+                    {
+                        read_char();
+                    }
+                    encount_accent = true;
+                    chuuki_table[chuuki_table_keys.accent] = true;
+                    first = null;
+                    text = new Tag.Accent(this, found.code, found.name, gaiji_dir).to_html();
+                }
+
+                switch (first)
+                {
+                    case GAIJI_MARK:
+                        first = null;
+                        text = dispatch_gaiji().to_html();
+                        break;
+                    case COMMAND_BEGIN:
+                        first = null;
+                        text = dispatch_aozora_command()?.to_html();
+                        break;
+                    case KU:
+                        first = null;
+                        text = apply_ruby();
+                        break;
+                }
+
+                if (text?.Length == 0)
+                {
+                    first = null;
+                    text = null;
+                }
+                else if (text?.Length == 1)
+                {
+                    first = text[0];
+                    text = null;
+                }
+
+                if (first == '\n')
+                {
+                    if (encount_accent) warnChannel?.print(String.Format(I18n.MSG["warn_invalid_accent_brancket"], line_number));
+                    throw new Exceptions.TerminateException();
+                }
+                else if (first == ACCENT_END)
+                {
+                    closed = true;
+                    throw new Exceptions.TerminateException();
+                }
+                else if (first == RUBY_PREFIX)
+                {
+                    ruby_buf.dump_into(buffer);
+                    ruby_buf.@protected = true;
+                }
+                else if (first is not null)
+                {
+                    Utils.illegal_char_check(first.Value, line_number, warnChannel);
+                    push_chars(escape_special_chars(first.Value));
+                }
+                else if (!string.IsNullOrEmpty(text))
+                {
+                    foreach (var item in text) Utils.illegal_char_check(item);
+                    push_chars(escape_special_chars(text));
+                }
+            }
+        }
+
+        public TextBuffer process()
+        {
+            try
+            {
+                parse();
+            }
+            catch (Exceptions.TerminateException)
+            {
+                return general_output_accent();
+            }
+            throw new Exception();//kurema:parse()から脱出する方法がないのでここには来ない。
+        }
     }
 }

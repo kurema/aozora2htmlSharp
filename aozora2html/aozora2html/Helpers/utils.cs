@@ -37,9 +37,9 @@ public static class Utils
 
     public static string create_midashi_tag(string size)
     {
-        if (size.Contains(Aozora2Html.SIZE_SMALL.ToString())) return "h5";
-        else if (size.Contains(Aozora2Html.SIZE_MIDDLE.ToString())) return "h4";
-        else if (size.Contains(Aozora2Html.SIZE_LARGE.ToString())) return "h3";
+        if (size.Contains(new string(Aozora2Html.SIZE_SMALL, 1))) return "h5";
+        else if (size.Contains(new string(Aozora2Html.SIZE_MIDDLE, 1))) return "h4";
+        else if (size.Contains(new string(Aozora2Html.SIZE_LARGE, 1))) return "h3";
         else throw new Exceptions.UndefinedHeaderException();
     }
 
@@ -88,8 +88,8 @@ public static class Utils
     public static string convert_japanese_number(string command)
     {
         //kurema:dotnetにはPerlのtr///相当の機能がないっぽい。
-        string tmp = Regex.Replace(command, ZENKAKU_NUMS_FULL, a => "0123456789"[ZENKAKU_NUMS_FULL.IndexOf(a.Value)].ToString());
-        tmp = Regex.Replace(tmp, KANJI_NUMS, a => "1234567890"[KANJI_NUMS.IndexOf(a.Value)].ToString());
+        string tmp = Regex.Replace(command, ZENKAKU_NUMS_FULL, a => new string("0123456789"[ZENKAKU_NUMS_FULL.IndexOf(a.Value)], 1));
+        tmp = Regex.Replace(tmp, KANJI_NUMS, a => new string("1234567890"[KANJI_NUMS.IndexOf(a.Value)], 1));
         tmp = Regex.Replace(tmp, @$"(\d){KANJI_TEN}(\d)", "$1$2");
         tmp = Regex.Replace(tmp, @$"(\d){KANJI_TEN}", "${1}0");
         tmp = Regex.Replace(tmp, @$"{KANJI_TEN}(\d)", "1$1");
@@ -198,7 +198,7 @@ public static class Utils
 
     public static Tag.CharType GetCharType(char character)
     {
-        string word = character.ToString();
+        string word = new string(character, 1);
         if (Aozora2Html.REGEX_HIRAGANA.IsMatch(word)) return Tag.CharType.Hiragana;
         if (Aozora2Html.REGEX_KATAKANA.IsMatch(word)) return Tag.CharType.Katankana;
         if (Aozora2Html.REGEX_ZENKAKU.IsMatch(word)) return Tag.CharType.Zenkaku;

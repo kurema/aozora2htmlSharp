@@ -27,9 +27,9 @@ namespace Aozora.Helpers
         public int generate_id(string size)
         {
             int inc;
-            if (size.Contains(Aozora2Html.SIZE_SMALL.ToString())) inc = 1;
-            else if (size.Contains(Aozora2Html.SIZE_MIDDLE.ToString())) inc = 10;
-            else if (size.Contains(Aozora2Html.SIZE_LARGE.ToString())) inc = 100;
+            if (size.Contains(new string(Aozora2Html.SIZE_SMALL, 1))) inc = 1;
+            else if (size.Contains(new string(Aozora2Html.SIZE_MIDDLE, 1))) inc = 10;
+            else if (size.Contains(new string(Aozora2Html.SIZE_LARGE, 1))) inc = 100;
             else throw new Exceptions.UndefinedHeaderException();
 
             midashi_id += inc;

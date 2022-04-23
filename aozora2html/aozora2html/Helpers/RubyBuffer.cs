@@ -61,7 +61,7 @@ namespace Aozora.Helpers
 
         public void push(char @char)
         {
-            push(@char.ToString());
+            push(new string(@char, 1));
         }
 
         public void push(Tag.Tag tag)
@@ -100,7 +100,7 @@ namespace Aozora.Helpers
         {
             if (@protected)
             {
-                ruby_buf.Insert(0, new BufferItemString(Aozora2Html.RUBY_PREFIX.ToString()));
+                ruby_buf.Insert(0, new BufferItemString(new string(Aozora2Html.RUBY_PREFIX,1)));
                 @protected = false;
             }
             var top = ruby_buf[0];
