@@ -314,21 +314,19 @@ namespace Aozora
         /// 一文字読み込む
         /// </summary>
         /// <returns></returns>
-        protected char? read_char() => stream.read_char();
+        protected virtual char? read_char() => stream.read_char();
 
         //一行読み込む
         protected string? read_line() => stream.read_line();
 
-        protected char read_accent()
+        protected TextBuffer read_accent()
         {
-            throw new NotImplementedException();
-            //return new Helpers.AccentParser(stream, ACCENT_END, chuuki_table, images, @out, warnChannel, gaiji_dir, css_files).process;
+            return new Helpers.AccentParser(stream, ACCENT_END, chuuki_table, images, @out, warnChannel, gaiji_dir, css_files).process();
         }
 
-        protected (string, string) read_to_nest(char? endchar)
+        protected virtual (string, string) read_to_nest(char? endchar)
         {
-            throw new NotImplementedException();
-            //return new Helpers.TagParser(stream, endchar, chuuki_table, images, @out, gaiji_dir: gaiji_dir).process();
+            return new Helpers.TagParser(stream, endchar, chuuki_table, images, @out, warnChannel: warnChannel, gaiji_dir: gaiji_dir).process();
         }
 
         protected void finalize()
@@ -534,13 +532,13 @@ namespace Aozora
             {
                 case ACCENT_BEGIN:
                     check = false;
-                    @char = read_accent();
+                    @char = read_accent().to_html();
                     break;
                 case GAIJI_MARK:
-                    @char = dispatch_gaiji();
+                    @char = dispatch_gaiji().to_html();
                     break;
                 case COMMAND_BEGIN:
-                    @char = dispatch_aozora_command();
+                    @char = dispatch_aozora_command()?.to_html();
                     break;
                 case KU:
                     assign_kunoji();
@@ -557,7 +555,6 @@ namespace Aozora
                     break;
             }
 
-            if (@char is IBufferItem bufferItem) @char = bufferItem.to_html();
             if (@char is string s)
             {
                 if (s.Length == 0) @char = null;
@@ -854,7 +851,7 @@ namespace Aozora
         public IBufferItem dispatch_gaiji()
         {
             //「※」の次が「［」でなければ外字ではない
-            if (stream.peek_char(0) != COMMAND_BEGIN) return new BufferItemString(new string( GAIJI_MARK,1));
+            if (stream.peek_char(0) != COMMAND_BEGIN) return new BufferItemString(new string(GAIJI_MARK, 1));
 
             //「［」を読み捨てる
             read_char();
@@ -1685,7 +1682,7 @@ namespace Aozora
             {
                 case ACCENT_BEGIN:
                     check = false;
-                    @char = read_accent();
+                    other = read_accent().to_html();
                     break;
                 case GAIJI_MARK:
                     other = dispatch_gaiji()?.to_html();
