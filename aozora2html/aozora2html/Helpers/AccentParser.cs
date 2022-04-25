@@ -106,7 +106,7 @@ namespace Aozora.Helpers
                 }
                 else if (!string.IsNullOrEmpty(text))
                 {
-                    foreach (var item in text) Utils.illegal_char_check(item);
+                    foreach (var item in text!) Utils.illegal_char_check(item);
                     push_chars(escape_special_chars(text));
                 }
             }

@@ -2,18 +2,12 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Aozora.Helpers;
+namespace Aozora.External;
 
 public static partial class YamlValues
 {
     public static string? JIS2UCS(string code)
     {
-#if DEBUG
-        //kurema:
-        //コンパイルが重くなるので、Debugの場合のみ別プロジェクトに分離しました。
-        //これで一々再コンパイルが不要になるので開発が楽。
-        return Aozora.External.YamlValues.JIS2UCS(code);
-#else
         switch (code)
         {
             case "1-01-01": return "&#x3000;";
@@ -11250,7 +11244,6 @@ public static partial class YamlValues
             case "2-94-85": return "&#x9F75;";
             case "2-94-86": return "&#x2A6B2;";
         }
-#endif
         return null;
     }
 }
