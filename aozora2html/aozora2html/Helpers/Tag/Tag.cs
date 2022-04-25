@@ -183,7 +183,7 @@ public class EditorNote : Inline, IHtmlProvider
 /// <summary>
 /// フォントサイズ指定用 
 /// </summary>
-public class FontSize : Block, IHtmlProvider
+public class FontSize : Block, IHtmlProvider, IMultiline
 {
     public FontSize(Aozora2Html parser, int times, Aozora2Html.IndentTypeKey daisho) : base(parser)
     {

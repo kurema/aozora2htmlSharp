@@ -184,6 +184,61 @@ public static class UnitTestCommandParser
         Assert.Equal(expected, parsed);
     }
 
+    [Fact]
+    public static void TestParseCommandTcy()
+    {
+        var src = "米機Ｂ29［＃「29」は縦中横］の編隊は、\r\n";
+        var parsed = ParseText(src, a => a.use_unicode_embed_gaiji = true);
+        const string expected = "米機Ｂ<span dir=\"ltr\">29</span>の編隊は、<br />\r\n";
+        Assert.Equal(expected, parsed);
+    }
+
+    [Fact]
+    public static void TestParseCommandTcy2()
+    {
+        var src = "［＃縦中横］（※［＃ローマ数字1、1-13-21］）［＃縦中横終わり］\r\n";
+        var parsed = ParseText(src, a => a.use_unicode_embed_gaiji = true);
+        const string expected = "<span dir=\"ltr\">（<img src=\"../../../gaiji/1-13/1-13-21.png\" alt=\"※(ローマ数字1、1-13-21)\" class=\"gaiji\" />）</span><br />\r\n";
+        Assert.Equal(expected, parsed);
+    }
+
+    [Fact]
+    public static void TestParseCommandKogaki()
+    {
+        var src = "それ以上である。（５）［＃「（５）」は行右小書き］\r\n";
+        var parsed = ParseText(src, a => a.use_unicode_embed_gaiji = true);
+        const string expected = "それ以上である。<sup class=\"superscript\">（５）</sup><br />\r\n";
+        Assert.Equal(expected, parsed);
+    }
+
+    [Fact]
+    public static void TestParseCommandUetsuki()
+    {
+        var src = "22［＃「2」は上付き小文字］\r\n";
+        var parsed = ParseText(src, a => a.use_unicode_embed_gaiji = true);
+        const string expected = "2<sup class=\"superscript\">2</sup><br />\r\n";
+        Assert.Equal(expected, parsed);
+    }
+
+    [Fact]
+    public static void TestParseCommandBouki()
+    {
+        var src = "支部長の顔にさっと血が流れ［＃「血が流れ」に「×」の傍記］た\r\n";
+        var parsed = ParseText(src, a => a.use_unicode_embed_gaiji = true);
+        const string expected = "支部長の顔にさっと<ruby><rb>血が流れ</rb><rp>（</rp><rt>×&nbsp;×&nbsp;×&nbsp;×</rt><rp>）</rp></ruby>た<br />\r\n";
+        Assert.Equal(expected, parsed);
+    }
+
+
+    [Fact]
+    public static void TestParseCommandRuby()
+    {
+        var src = "グリーンランドの中央部八千尺の氷河地帯にあるといわれる、［＃横組み］“Ser-mik-Suah《セルミク・シュアー》”［＃横組み終わり］の冥路《よみじ》の国。\r\n";
+        var parsed = ParseText(src, a => a.use_unicode_embed_gaiji = true);
+        const string expected = "グリーンランドの中央部八千尺の氷河地帯にあるといわれる、<span class=\"yokogumi\">“<ruby><rb>Ser-mik-Suah</rb><rp>（</rp><rt>セルミク・シュアー</rt><rp>）</rp></ruby>”</span>の<ruby><rb>冥路</rb><rp>（</rp><rt>よみじ</rt><rp>）</rp></ruby>の国。<br />\r\n";
+        Assert.Equal(expected, parsed);
+    }
+
     public static string? ParseText(string input, Action<Aozora2Html>? action = null)
     {
         using var sr = new System.IO.StringReader(input);

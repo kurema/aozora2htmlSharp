@@ -11,13 +11,13 @@ using Aozora.Helpers.Tag;
 
 namespace TestProject;
 
-public static class UnitTestOkuriganaTag
+public static class UnitTestDirTag
 {
     [Fact]
     public static void TestNew()
     {
-        var tag = new Okurigana("aaa");
-        Assert.True(tag is Okurigana);//kurema:これ要る？
+        var tag = new Dir("テスト");
+        Assert.True(tag is Dir);
         Assert.True(tag is Inline);
         Assert.True(tag is IHtmlProvider);
     }
@@ -25,7 +25,7 @@ public static class UnitTestOkuriganaTag
     [Fact]
     public static void TestToHtml()
     {
-        var tag = new Okurigana("テスト");
-        Assert.Equal("<sup class=\"okurigana\">テスト</sup>", tag.to_html());
+        var tag = new Dir("テスト");
+        Assert.Equal("<span dir=\"ltr\">テスト</span>", tag.to_html());
     }
 }

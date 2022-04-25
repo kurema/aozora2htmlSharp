@@ -55,7 +55,7 @@ public class EmbedGaiji : Gaiji, IHtmlProvider
 /// <summary>
 /// 非埋め込み外字
 /// </summary>
-public class UnEmbedGaiji : Gaiji,IHtmlProvider
+public class UnEmbedGaiji : Gaiji, IHtmlProvider
 {
     public UnEmbedGaiji(string desc)
     {
