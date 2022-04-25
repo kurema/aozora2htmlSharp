@@ -14,17 +14,11 @@ public abstract class ReferenceMentioned : Inline, System.ICloneable
     public ReferenceMentioned(object? target)
     {
         this.target = target;
-        if (target is null || block_element(target)) return;
+        if (target is null || !block_element(target)) return;
         syntax_error();
     }
 
     public object? target { get; set; }
-
-    //kurema: to_s()をto_html()に下関係で、targetが適切に変換されるように以下の関数を追加しました。
-    public string target_to_html()
-    {
-        return (target as IHtmlProvider)?.to_html() ?? target?.ToString() ?? "";
-    }
 
     public static bool block_element(object elt)
     {
@@ -37,8 +31,8 @@ public abstract class ReferenceMentioned : Inline, System.ICloneable
                 {
                     if (block_element(item)) return true;
                 }
-                return true;
-            default: return elt is ReferenceMentioned;
+                return false;
+            default: return elt is Block;
         }
     }
 
@@ -51,14 +45,14 @@ public abstract class ReferenceMentioned : Inline, System.ICloneable
     //}
 
     //kurema:挙動に自信がない。
-    public string target_string
+    public string target_html
     {
         get
         {
             switch (target)
             {
                 case string text: return text;
-                case ReferenceMentioned reference: return reference.target_string;
+                case ReferenceMentioned reference: return reference.target_html;
                 case System.Collections.IEnumerable enumerable:
                     {
                         var sb = new StringBuilder();
@@ -67,15 +61,19 @@ public abstract class ReferenceMentioned : Inline, System.ICloneable
                             switch (item)
                             {
                                 case ReferenceMentioned reference:
-                                    sb.Append(reference.target_string);
+                                    sb.Append(reference.target_html);
+                                    break;
+                                case IHtmlProvider htmlProvider:
+                                    sb.Append(htmlProvider.to_html() ?? "");
                                     break;
                                 default:
-                                    sb.Append(item.ToString() ?? "");
+                                    sb.Append(item?.ToString() ?? "");
                                     break;
                             }
                         }
                         return sb.ToString();
                     }
+                case IHtmlProvider html: return html.to_html();
                 default: return target?.ToString() ?? "";
             }
         }

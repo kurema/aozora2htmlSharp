@@ -135,11 +135,11 @@ public class Decorate : ReferenceMentioned, IHtmlProvider
     {
         if (html_tag is null) throw new ArgumentNullException(nameof(html_tag));
         if (html_class is null) throw new ArgumentNullException(nameof(html_class));
-        this.close = openOverride ?? $"<{html_tag}>";
+        this.close = openOverride ?? $"</{html_tag}>";
         this.open = closeOverride ?? $"<{html_tag} class=\"{html_class}\">";
     }
 
-    public string to_html() => open + (target_to_html()) + close;
+    public string to_html() => open + (target_html) + close;
 
     public override object Clone()
     {
@@ -156,7 +156,7 @@ public class Dir : ReferenceMentioned, IHtmlProvider
     {
     }
 
-    public string to_html() => $"<span dir=\"ltr\">{target_to_html()}</span>";
+    public string to_html() => $"<span dir=\"ltr\">{target_html}</span>";
 
     public override object Clone()
     {
@@ -231,7 +231,7 @@ public class InlineCaption : ReferenceMentioned, IHtmlProvider
 {
     public InlineCaption(object? target) : base(target) { }
 
-    public string to_html() => $"<span class=\"caption\">{target_to_html()}</span>";
+    public string to_html() => $"<span class=\"caption\">{target_html}</span>";
 
     public override object Clone()
     {
@@ -276,7 +276,7 @@ public class InlineKeigakomi : ReferenceMentioned, IHtmlProvider
     {
     }
 
-    public string to_html() => $"<span class=\"keigakomi\">{target_to_html()}</span>";
+    public string to_html() => $"<span class=\"keigakomi\">{target_html}</span>";
 
     public override object Clone()
     {

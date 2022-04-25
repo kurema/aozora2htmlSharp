@@ -9,6 +9,7 @@ namespace Aozora.Helpers
     public interface IOutput
     {
         void print(string words);
+        void println(string words);
         void close();
     }
 
@@ -16,6 +17,8 @@ namespace Aozora.Helpers
     {
         public void close() { }
         public void print(string words) { }
+
+        public void println(string words) { }
     }
 
     public class OutputConsole : IOutput
@@ -25,6 +28,11 @@ namespace Aozora.Helpers
         public void print(string words)
         {
             Console.Write(words);
+        }
+
+        public void println(string words)
+        {
+            Console.WriteLine(words);
         }
     }
 
@@ -38,6 +46,11 @@ namespace Aozora.Helpers
         public void print(string words)
         {
             content.Append(words);
+        }
+
+        public void println(string words)
+        {
+            content.AppendLine(words);
         }
 
         public override string ToString()

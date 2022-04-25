@@ -24,7 +24,7 @@ public class Ruby : ReferenceMentioned, IHtmlProvider
         this.under_ruby = under_ruby ?? throw new ArgumentNullException(nameof(under_ruby));
     }
 
-    public string to_html() => $"<ruby><rb>{target}</rb><rp>{Aozora2Html.PAREN_BEGIN_MARK}</rp><rt>{ruby}</rt><rp>{Aozora2Html.PAREN_END_MARK}</rp></ruby>";
+    public string to_html() => $"<ruby><rb>{target_html}</rb><rp>{Aozora2Html.PAREN_BEGIN_MARK}</rp><rt>{ruby}</rt><rp>{Aozora2Html.PAREN_END_MARK}</rp></ruby>";
 
     public static bool include_ruby(System.Collections.IEnumerable array)
     {

@@ -588,7 +588,7 @@ namespace Aozora
                     if ((@char as char?) == endchar)
                     {
                         //suddenly finished the file
-                        warnChannel.print(string.Format(I18n.MSG["warn_unexpected_terminator"], line_number));
+                        warnChannel.println(string.Format(I18n.MSG["warn_unexpected_terminator"], line_number));
                         throw new Exceptions.TerminateException();//kurema:例外で大域脱出したくない…。
                     }
 
@@ -602,7 +602,8 @@ namespace Aozora
                     {
                         if (check) foreach (var charItem in charString) Utils.illegal_char_check(charItem, line_number, warnChannel);
                         push_chars(escape_special_chars(charString));
-                    }else if (@char is IBufferItem bufferItem)
+                    }
+                    else if (@char is IBufferItem bufferItem)
                     {
                         if (check) foreach (var charItem in bufferItem.to_html()) Utils.illegal_char_check(charItem, line_number, warnChannel);
                         push_chars(bufferItem);
@@ -779,7 +780,7 @@ namespace Aozora
                     }
                     break;
                 case BufferItemTag last_string_tag when last_string_tag.tag is Helpers.Tag.ReferenceMentioned referenceMentioned:
-                    var inner = referenceMentioned.target_string;
+                    var inner = referenceMentioned.target_html;
                     if (inner == @string)
                     {
                         //完全一致
@@ -930,7 +931,7 @@ namespace Aozora
             {
                 return GetReturnValue(apply_jisage(command));
             }
-            else if (Regex.IsMatch(command, @"fig(\d)+_(\d)+\.png"))
+            else if (Regex.IsMatch(command, @"fig(\d)+_(\d)+\.png", RegexOptions.Compiled))
             {
                 return GetReturnValue(exec_img_command(command, raw));
             }//avoid to try complex ruby -- escape to notes
@@ -942,6 +943,10 @@ namespace Aozora
             {
                 exec_inline_end_command(command);
                 return null;
+            }
+            else if (PAT_REF.IsMatch(command))
+            {
+                return exec_frontref_command(command);
             }
             else if (Regex.IsMatch(command, @"1-7-8[2345]"))//kurema:正規表現を二度実行するのは微妙。
             {
@@ -1302,7 +1307,7 @@ namespace Aozora
                         else
                         {
 #if DEBUG
-                            warnChannel.print(string.Format(I18n.MSG["warn_undefined_command"], line_number, key));
+                            warnChannel.println(string.Format(I18n.MSG["warn_undefined_command"], line_number, key));
 #endif
                             return false;
                         }
@@ -1772,7 +1777,7 @@ namespace Aozora
         public void tail_output()
         {
             ruby_buf.dump_into(buffer);
-            var @string = string.Join(string.Empty, buffer);
+            var @string = string.Join(string.Empty, buffer.Select(a=>a.to_html()));
             buffer = new TextBuffer();
             @string = @string.Replace("info@aozora.gr.jp", "<a href=\"mailto: info@aozora.gr.jp\">info@aozora.gr.jp</a>");
             {

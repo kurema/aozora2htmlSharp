@@ -21,6 +21,11 @@ namespace Aozora.Helpers
         {
             return Tag.Tag.GetHtml(tag);
         }
+
+        public override string ToString()
+        {
+            return base.ToString();
+        }
     }
 
     public class BufferItemString : IBufferItem
