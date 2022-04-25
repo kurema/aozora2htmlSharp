@@ -11250,7 +11250,7 @@ public static partial class YamlValues
             case "2-94-85": return "&#x9F75;";
             case "2-94-86": return "&#x2A6B2;";
         }
-#endif
         return null;
+#endif
     }
 }

@@ -10,7 +10,7 @@ namespace Aozora.Helpers
     /// <summary>
     /// ルビ文字列解析用バッファ
     /// </summary>
-    public class RubyBuffer:IList<IBufferItem>
+    public class RubyBuffer : IList<IBufferItem>
     {
         // `｜`が来た時に真にする。ルビの親文字のガード用。
         public bool @protected { get; set; }
@@ -100,11 +100,11 @@ namespace Aozora.Helpers
         {
             if (@protected)
             {
-                ruby_buf.Insert(0, new BufferItemString(new string(Aozora2Html.RUBY_PREFIX,1)));
+                ruby_buf.Insert(0, new BufferItemString(new string(Aozora2Html.RUBY_PREFIX, 1)));
                 @protected = false;
             }
-            var top = ruby_buf[0];
-            if(top is BufferItemString && buffer.Last() is BufferItemString lastString)
+            var top = ruby_buf.Count > 0 ? ruby_buf[0] : null;
+            if (top is BufferItemString && buffer.LastOrDefault() is BufferItemString lastString)
             {
                 lastString.Append(top.to_html());
                 buffer.AddRange(ruby_buf.GetRange(1, ruby_buf.Count - 1));
@@ -119,7 +119,7 @@ namespace Aozora.Helpers
 
 
         //kurema:第二引数は未実装のTextBuffer
-        public void push_char(char @char,TextBuffer buffer)
+        public void push_char(char @char, TextBuffer buffer)
         {
             var ctype = Utils.GetCharType(@char);
             if (ctype == Tag.CharType.HankakuTerminate && char_type == Tag.CharType.Hankaku)

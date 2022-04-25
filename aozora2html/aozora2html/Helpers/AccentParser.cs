@@ -43,7 +43,7 @@ namespace Aozora.Helpers
                 var third = stream.peek_char(1);
                 var found = YamlValues.AccentTable(first, second, third);
 
-                string? text = null;
+                IBufferItem? bufferItem = null;
 
                 if (found.code is not null && found.name is not null)
                 {
@@ -54,34 +54,38 @@ namespace Aozora.Helpers
                     encount_accent = true;
                     chuuki_table[chuuki_table_keys.accent] = true;
                     first = null;
-                    text = new Tag.Accent(this, found.code, found.name, gaiji_dir).to_html();
+                    bufferItem = new BufferItemTag(new Tag.Accent(this, found.code, found.name, gaiji_dir));
                 }
 
                 switch (first)
                 {
                     case GAIJI_MARK:
                         first = null;
-                        text = dispatch_gaiji().to_html();
+                        bufferItem = dispatch_gaiji();
                         break;
                     case COMMAND_BEGIN:
                         first = null;
-                        text = dispatch_aozora_command()?.to_html();
+                        bufferItem = dispatch_aozora_command();
                         break;
                     case KU:
                         first = null;
-                        text = apply_ruby();
+                        bufferItem = new BufferItemString(apply_ruby() ?? "");
                         break;
                 }
 
-                if (text?.Length == 0)
+                if (bufferItem is BufferItemString bufferString)
                 {
-                    first = null;
-                    text = null;
-                }
-                else if (text?.Length == 1)
-                {
-                    first = text[0];
-                    text = null;
+                    var text = bufferString.to_html();
+                    if (text?.Length == 0)
+                    {
+                        first = null;
+                        text = null;
+                    }
+                    else if (text?.Length == 1)
+                    {
+                        first = text[0];
+                        text = null;
+                    }
                 }
 
                 if (first == '\n')
@@ -104,10 +108,14 @@ namespace Aozora.Helpers
                     Utils.illegal_char_check(first.Value, line_number, warnChannel);
                     push_chars(escape_special_chars(first.Value));
                 }
-                else if (!string.IsNullOrEmpty(text))
+                else if (bufferItem is not null)
                 {
-                    foreach (var item in text!) Utils.illegal_char_check(item);
-                    push_chars(escape_special_chars(text));
+                    var text = bufferItem?.to_html();
+                    if (!string.IsNullOrEmpty(text))
+                    {
+                        foreach (var item in text!) Utils.illegal_char_check(item);
+                        push_chars(escape_special_chars(bufferItem!));//kurema:Nullの可能性はないのに警告される。
+                    }
                 }
             }
         }

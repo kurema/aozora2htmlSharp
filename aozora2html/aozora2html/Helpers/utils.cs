@@ -204,7 +204,7 @@ public static class Utils
         if (Aozora2Html.REGEX_ZENKAKU.IsMatch(word)) return Tag.CharType.Zenkaku;
         if (Aozora2Html.REGEX_HANKAKU.IsMatch(word)) return Tag.CharType.Hankaku;
         if (Aozora2Html.REGEX_KANJI.IsMatch(word)) return Tag.CharType.Kanji;
-        if (Regex.IsMatch(@"[.;""?!)]", word)) return Tag.CharType.HankakuTerminate;
+        if (Regex.IsMatch(word,@"[\.;""?!\)]")) return Tag.CharType.HankakuTerminate;
         return Tag.CharType.Else;
     }
 }

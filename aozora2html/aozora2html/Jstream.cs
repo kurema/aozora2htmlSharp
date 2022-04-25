@@ -23,7 +23,7 @@ namespace Aozora
 
         int _line;
         char? current_char;
-        readonly StreamReader file;
+        readonly TextReader file;
         readonly List<int> peekBuffer = new();
 
         // 初期化と同時に、いったん最初の行をscanして、改行コードがCR+LFかどうか調べる。
@@ -31,7 +31,7 @@ namespace Aozora
         // 
         // TODO: 将来的にはさすがにexitまではしないよう、仕様を変更する?
         //kurema: ここではstrictReturnCodeした場合、例外を吐きます。Exitはしません。
-        public Jstream(StreamReader file_io, bool strictReturnCode = false)
+        public Jstream(TextReader file_io, bool strictReturnCode = false)
         {
             _line = 0;
             current_char = null;

@@ -321,12 +321,22 @@ namespace Aozora
 
         protected TextBuffer read_accent()
         {
-            return new Helpers.AccentParser(stream, ACCENT_END, chuuki_table, images, @out, warnChannel, gaiji_dir, css_files).process();
+            return new AccentParser(stream, ACCENT_END, chuuki_table, images, @out, warnChannel, gaiji_dir, css_files)
+            {
+                use_jisx0213_accent = this.use_jisx0213_accent,
+                use_jisx0214_embed_gaiji = this.use_jisx0214_embed_gaiji,
+                use_unicode_embed_gaiji = this.use_unicode_embed_gaiji
+            }.process();
         }
 
         protected virtual (string, string) read_to_nest(char? endchar)
         {
-            return new Helpers.TagParser(stream, endchar, chuuki_table, images, @out, warnChannel: warnChannel, gaiji_dir: gaiji_dir).process();
+            return new TagParser(stream, endchar, chuuki_table, images, @out, warnChannel: warnChannel, gaiji_dir: gaiji_dir)
+            {
+                use_jisx0213_accent = this.use_jisx0213_accent,
+                use_jisx0214_embed_gaiji = this.use_jisx0214_embed_gaiji,
+                use_unicode_embed_gaiji = this.use_unicode_embed_gaiji
+            }.process();
         }
 
         protected void finalize()
@@ -1838,6 +1848,13 @@ namespace Aozora
             @out.print("</div>\r\n");
 
         }
+
+        public string escape_special_chars(IBufferItem text)
+        {
+            if (text is BufferItemString @string) return Regex.Replace(@string.to_html(), @"[&"" <>]", a => escape_special_chars(a.Value[0]));
+            else return text.to_html();
+        }
+
 
         //Original Aozora2Html#push_chars does not convert "'" into '&#39;'; it's old behaivor of CGI.escapeHTML().
         public string escape_special_chars(string text)

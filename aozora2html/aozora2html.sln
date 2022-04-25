@@ -5,7 +5,11 @@ VisualStudioVersion = 17.1.32328.378
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "aozora2html", "aozora2html\aozora2html.csproj", "{18112F28-6521-48C8-95D5-7F7782581C9D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JIS2UCS", "JIS2UCS\JIS2UCS.csproj", "{3663EE1C-8015-453F-89EE-D8FC6D08C095}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JIS2UCS", "JIS2UCS\JIS2UCS.csproj", "{3663EE1C-8015-453F-89EE-D8FC6D08C095}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestProject", "TestProject\TestProject.csproj", "{F7573B51-D789-4DA8-AD74-010927315190}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestConsole", "TestConsole\TestConsole.csproj", "{6C2AE040-B875-423D-B215-B51C335CE3FA}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +25,14 @@ Global
 		{3663EE1C-8015-453F-89EE-D8FC6D08C095}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3663EE1C-8015-453F-89EE-D8FC6D08C095}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3663EE1C-8015-453F-89EE-D8FC6D08C095}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F7573B51-D789-4DA8-AD74-010927315190}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F7573B51-D789-4DA8-AD74-010927315190}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F7573B51-D789-4DA8-AD74-010927315190}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F7573B51-D789-4DA8-AD74-010927315190}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6C2AE040-B875-423D-B215-B51C335CE3FA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6C2AE040-B875-423D-B215-B51C335CE3FA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6C2AE040-B875-423D-B215-B51C335CE3FA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6C2AE040-B875-423D-B215-B51C335CE3FA}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

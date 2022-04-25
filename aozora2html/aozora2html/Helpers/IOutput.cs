@@ -27,4 +27,22 @@ namespace Aozora.Helpers
             Console.Write(words);
         }
     }
+
+    public class OutputString : IOutput
+    {
+        StringBuilder content = new StringBuilder();
+        public void close()
+        {
+        }
+
+        public void print(string words)
+        {
+            content.AppendLine(words);
+        }
+
+        public override string ToString()
+        {
+            return content.ToString();
+        }
+    }
 }
