@@ -37,7 +37,7 @@ namespace Aozora.Helpers
 
         public void print(string words)
         {
-            content.AppendLine(words);
+            content.Append(words);
         }
 
         public override string ToString()

@@ -79,12 +79,12 @@ namespace Aozora.Helpers
                     if (text?.Length == 0)
                     {
                         first = null;
-                        text = null;
+                        bufferItem = null;
                     }
                     else if (text?.Length == 1)
                     {
                         first = text[0];
-                        text = null;
+                        bufferItem = null;
                     }
                 }
 
