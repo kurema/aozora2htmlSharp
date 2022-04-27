@@ -21,7 +21,23 @@ public static class Helper
         return new Aozora2Html(stream, output, null, null, null);
     }
 
+    public static string? ParseText(string input, Action<Aozora2Html>? action = null)
+    {
+        using var sr = new System.IO.StringReader(input);
+        var stream = new Jstream(sr);
+        var output = new OutputString();
+        var parser = new Aozora2Html(stream, output, null, null, null) { section = Aozora2Html.SectionKind.tail };
+        action?.Invoke(parser);
+        try
+        {
+            while (true) parser.parse();
+        }
+        catch (Aozora.Exceptions.TerminateException)
+        {
+        }
 
+        return output.ToString();
+    }
     public class MidashiIdProviderPlaceholder : INewMidashiIdProvider
     {
         public MidashiIdProviderPlaceholder(int midashi_id, bool block_allowed_context)

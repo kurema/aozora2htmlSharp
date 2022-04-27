@@ -118,7 +118,6 @@ namespace Aozora.Helpers
         }
 
 
-        //kurema:第二引数は未実装のTextBuffer
         public void push_char(char @char, TextBuffer buffer)
         {
             var ctype = Utils.GetCharType(@char);
@@ -128,6 +127,21 @@ namespace Aozora.Helpers
                 char_type = Tag.CharType.Else;
             }
             else if (@protected || ((ctype != Tag.CharType.Else) && (ctype == char_type)))
+            {
+                push(@char);
+            }
+            else
+            {
+                dump_into(buffer);
+                push(@char);
+                char_type = ctype;
+            }
+        }
+
+        public void push_char(Tag.Tag @char, TextBuffer buffer)
+        {
+            var ctype = @char.char_type;
+            if (@protected)
             {
                 push(@char);
             }

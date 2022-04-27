@@ -544,7 +544,7 @@ namespace Aozora
             {
                 case ACCENT_BEGIN:
                     check = false;
-                    @char = read_accent().to_html();
+                    @char = read_accent();
                     break;
                 case GAIJI_MARK:
                     @char = dispatch_gaiji();
@@ -610,6 +610,14 @@ namespace Aozora
                         if (check) foreach (var charItem in bufferItem.to_html()) Utils.illegal_char_check(charItem, line_number, warnChannel);
                         push_chars(bufferItem);
                     }
+                    else if (@char is TextBuffer textBuffer)
+                    {
+                        foreach (var item in textBuffer)
+                        {
+                            if (check) foreach (var charItem in item.to_html()) Utils.illegal_char_check(charItem, line_number, warnChannel);
+                            push_chars(item);
+                        }
+                    }
                     break;
             }
         }
@@ -636,7 +644,8 @@ namespace Aozora
 
         public void push_chars(IBufferItem item)
         {
-            push_chars(item.to_html());
+            if (item is BufferItemString) push_chars(item.to_html());
+            else if (item is BufferItemTag itemTag) push_char(itemTag.tag);
         }
 
         public void push_chars(IEnumerable<IBufferItem> bufferItems)
@@ -647,6 +656,11 @@ namespace Aozora
         public void push_char(char @char)
         {
             ruby_buf.push_char(@char, buffer);
+        }
+
+        public void push_char(Helpers.Tag.Tag tag)
+        {
+            ruby_buf.push_char(tag, buffer);
         }
 
         /// <summary>
@@ -1700,29 +1714,32 @@ namespace Aozora
             var @char = read_char();
             bool check = true;
             bool escape = true;//kurema:read_accent()は文字列を返すので強引にエスケープしない指示をする。
-            IBufferItem? otherBuffer = null;
+            IBufferItem[] otherBuffer = new IBufferItem[0];
             switch (@char)
             {
                 case ACCENT_BEGIN:
                     check = false;
                     @char = null;
                     escape = false;
-                    otherBuffer = new BufferItemString(read_accent().to_html());
+                    otherBuffer = read_accent().ToArray();
                     break;
                 case GAIJI_MARK:
                     @char = null;
-                    otherBuffer = dispatch_gaiji();
+                    otherBuffer = new[] { dispatch_gaiji() };
                     break;
                 case COMMAND_BEGIN:
-                    @char = null;
-                    otherBuffer = dispatch_aozora_command();
+                    {
+                        @char = null;
+                        var result = dispatch_aozora_command();
+                        if (result is not null) otherBuffer = new[] { result };
+                    }
                     break;
                 case KU:
                     assign_kunoji();
                     break;
                 case RUBY_BEGIN_MARK:
                     @char = null;
-                    otherBuffer = new BufferItemString(apply_ruby() ?? "");
+                    otherBuffer = new[] { new BufferItemString(apply_ruby() ?? "") };
                     break;
                 default:
                     if (@char == endchar)
@@ -1732,17 +1749,17 @@ namespace Aozora
                     break;
             }
 
-            if (otherBuffer is BufferItemString otherString)
+            if (otherBuffer.Length == 1 && otherBuffer[0] is BufferItemString otherString)
             {
                 if (otherString.Length == 0)
                 {
                     @char = null;
-                    otherBuffer = null;
+                    otherBuffer = new IBufferItem[0];
                 }
                 else if (otherString.Length == 1)
                 {
                     @char = otherString.to_html()[0];
-                    otherBuffer = null;
+                    otherBuffer = new IBufferItem[0];
                 }
             }
 
@@ -1755,19 +1772,22 @@ namespace Aozora
                     ruby_buf.dump_into(buffer);
                     ruby_buf.@protected = true;
                     break;
-                case null when otherBuffer is null:
+                case null when otherBuffer.Length == 0:
                     //noop
                     break;
                 default:
-                    if (otherBuffer is null)
+                    if (otherBuffer.Length == 0)
                     {
                         if (check) Utils.illegal_char_check(@char ?? ' ', line_number, warnChannel);
                         if (escape) push_chars(escape_special_chars(@char ?? ' ')); else push_chars(new string(@char ?? ' ', 1));
                     }
                     else
                     {
-                        if (check) foreach (var item in otherBuffer.to_html()) Utils.illegal_char_check(item, line_number, warnChannel);
-                        if (escape) push_chars(escape_special_chars(otherBuffer)); else push_chars(otherBuffer);
+                        foreach (var itemBuffer in otherBuffer)
+                        {
+                            if (check) foreach (var item in itemBuffer.to_html()) Utils.illegal_char_check(item, line_number, warnChannel);
+                            if (escape) push_chars(escape_special_chars(itemBuffer)); else push_chars(itemBuffer);
+                        }
                     }
                     break;
             }
@@ -1865,10 +1885,10 @@ namespace Aozora
 
         }
 
-        public string escape_special_chars(IBufferItem text)
+        public IBufferItem escape_special_chars(IBufferItem text)
         {
-            if (text is BufferItemString @string) return escape_special_chars(@string.to_html());
-            else return text.to_html();
+            if (text is BufferItemString @string) return new BufferItemString(escape_special_chars(@string.to_html()));
+            else return text;
         }
 
 

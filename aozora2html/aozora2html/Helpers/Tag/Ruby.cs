@@ -28,6 +28,13 @@ public class Ruby : ReferenceMentioned, IHtmlProvider
 
     public static bool include_ruby(System.Collections.IEnumerable array)
     {
+        bool CaseReferenceMentioned(ReferenceMentioned referenceMentioned)
+        {
+            //kurema:ちょっと微妙だけど関数内関数化した。
+            if (referenceMentioned.target is System.Collections.IEnumerable eltArray) return include_ruby(eltArray);
+            else return referenceMentioned.target is Ruby;
+        }
+
         if (array is null) return false;
         //kurema:
         //これはforeach相当で合ってる？
@@ -36,11 +43,13 @@ public class Ruby : ReferenceMentioned, IHtmlProvider
         {
             switch (elt)
             {
+                case BufferItemTag itemTag when itemTag.tag is Ruby:
                 case Ruby: return true;
-                case ReferenceMentioned eltRM:
+                case BufferItemTag itemTag when itemTag.tag is ReferenceMentioned eltRM1:
+                    return CaseReferenceMentioned(eltRM1);
+                case ReferenceMentioned eltRM2:
                     //kurema:原文通りだけど、falseの場合継続とかじゃなくて即returnで良いの？
-                    if (eltRM.target is System.Collections.IEnumerable eltArray) return include_ruby(eltArray);
-                    else return eltRM.target is Ruby;
+                    return CaseReferenceMentioned(eltRM2);
             }
         }
         return false;
@@ -65,57 +74,66 @@ public class Ruby : ReferenceMentioned, IHtmlProvider
             throw new Exceptions.DontAllowTripleRubyException();
         }
 
+        void caseRuby(Ruby ruby, StringBuilder new_under, StringBuilder new_upper)
+        {
+            if (ruby.target is System.Collections.IEnumerable) throw new Exceptions.DontUseDoubleRubyException();
+            if (string.IsNullOrEmpty(ruby.ruby))
+            {
+                if (!new_under_is_array) throw new Exceptions.DontUseDoubleRubyException();
+                new_under.Append(ruby.under_ruby);
+            }
+            else
+            {
+                if (!new_upper_is_array) throw new Exceptions.DontUseDoubleRubyException();
+                new_upper.Append(ruby.ruby);
+            }
+        }
+
+        void caseMentioned(ReferenceMentioned mentioned, StringBuilder new_under, StringBuilder new_upper, List<object?> new_targets, object? x)
+        {
+            if (mentioned.target is System.Collections.IEnumerable targetArray)
+            {
+                // recursive
+                var ruby2 = rearrange_ruby(targetArray, "", "");
+                var target2 = ruby2.target;
+                var upper_ruby2 = ruby2.ruby;
+                var under_ruby2 = ruby2.under_ruby;
+                // rotation!!
+                if (ruby2.target is not System.Collections.IEnumerable targetArray2) throw new Exception("Unexpected code path.");
+                foreach (var y in targetArray2)
+                {
+                    ReferenceMentioned tmp = (ReferenceMentioned)mentioned.Clone();
+                    tmp.target = y;
+                    new_targets.Add(tmp);
+                }
+                if (new_under_is_array) new_under.Append(under_ruby2);
+                else if (under_ruby2.Length > 0) throw new Exceptions.DontUseDoubleRubyException();
+                if (new_upper_is_array) new_upper.Append(upper_ruby2);
+                else if (upper_ruby2.Length > 0) throw new Exceptions.DontUseDoubleRubyException();
+            }
+            else
+            {
+                new_targets.Add(x);
+                //kurema:
+                //空文字列を追加する意味はよく分からない。
+                //https://github.com/aozorahack/aozora2html/blob/159698801a60e8d57c9b8e3818cd11d793caff52/lib/aozora2html/tag/ruby.rb#L85-L89
+                if (new_under_is_array) new_under.Append("");
+                if (new_upper_is_array) new_upper.Append("");
+            }
+        }
+
         foreach (var x in targets)
         {
             switch (x)
             {
+                case BufferItemTag tag when tag.tag is Ruby ruby:
+                    caseRuby(ruby, new_under, new_upper);
+                    break;
                 case Ruby ruby:
-                    {
-                        if (ruby.target is System.Collections.IEnumerable) throw new Exceptions.DontUseDoubleRubyException();
-                        if (string.IsNullOrEmpty(ruby.ruby))
-                        {
-                            if (!new_under_is_array) throw new Exceptions.DontUseDoubleRubyException();
-                            new_under.Append(ruby.under_ruby);
-                        }
-                        else
-                        {
-                            if (!new_upper_is_array) throw new Exceptions.DontUseDoubleRubyException();
-                            new_upper.Append(ruby.ruby);
-                        }
-                    }
+                    caseRuby(ruby, new_under, new_upper);
                     break;
                 case ReferenceMentioned mentioned:
-                    {
-                        if (mentioned.target is System.Collections.IEnumerable targetArray)
-                        {
-                            // recursive
-                            var ruby2 = rearrange_ruby(targetArray, "", "");
-                            var target2 = ruby2.target;
-                            var upper_ruby2 = ruby2.ruby;
-                            var under_ruby2 = ruby2.under_ruby;
-                            // rotation!!
-                            if (ruby2.target is not System.Collections.IEnumerable targetArray2) throw new Exception("Unexpected code path.");
-                            foreach (var y in targetArray2)
-                            {
-                                ReferenceMentioned tmp = (ReferenceMentioned)mentioned.Clone();
-                                tmp.target = y;
-                                new_targets.Add(tmp);
-                            }
-                            if (new_under_is_array) new_under.Append(under_ruby2);
-                            else if (under_ruby2.Length > 0) throw new Exceptions.DontUseDoubleRubyException();
-                            if (new_upper_is_array) new_upper.Append(upper_ruby2);
-                            else if (upper_ruby2.Length > 0) throw new Exceptions.DontUseDoubleRubyException();
-                        }
-                        else
-                        {
-                            new_targets.Add(x);
-                            //kurema:
-                            //空文字列を追加する意味はよく分からない。
-                            //https://github.com/aozorahack/aozora2html/blob/159698801a60e8d57c9b8e3818cd11d793caff52/lib/aozora2html/tag/ruby.rb#L85-L89
-                            if (new_under_is_array) new_under.Append("");
-                            if (new_upper_is_array) new_upper.Append("");
-                        }
-                    }
+                    caseMentioned(mentioned, new_under, new_upper, new_targets, x);
                     break;
                 default:
                     new_targets.Add(x);
