@@ -55,7 +55,7 @@ public class Tag : ICharTypeProvider
 /// </summary>
 public class Block : Tag, IClosable
 {
-    public Block(Aozora2Html parser) : base()
+    public Block(INewMidashiIdProvider parser) : base()
     {
         if (!parser.block_allowed_context) syntax_error();
     }
@@ -66,7 +66,7 @@ public class Block : Tag, IClosable
 
 public class Indent : Block
 {
-    public Indent(Aozora2Html parser) : base(parser)
+    public Indent(INewMidashiIdProvider parser) : base(parser)
     {
     }
 }
@@ -80,7 +80,7 @@ public class Chitsuki : Indent, IHtmlProvider
 {
     public int length { get; }
 
-    public Chitsuki(Aozora2Html parser, int length) : base(parser)
+    public Chitsuki(INewMidashiIdProvider parser, int length) : base(parser)
     {
         this.length = length;
     }
@@ -176,7 +176,7 @@ public class EditorNote : Inline, IHtmlProvider
 /// </summary>
 public class FontSize : Block, IHtmlProvider, IMultiline
 {
-    public FontSize(Aozora2Html parser, int times, Aozora2Html.IndentTypeKey daisho) : base(parser)
+    public FontSize(INewMidashiIdProvider parser, int times, Aozora2Html.IndentTypeKey daisho) : base(parser)
     {
         @class = daisho.ToString() + times.ToString();
         style = Utils.create_font_size(times, daisho);
@@ -222,7 +222,7 @@ public class Jisage : Indent, IHtmlProvider
 {
     public int width { get; }
 
-    public Jisage(Aozora2Html parser, int width) : base(parser)
+    public Jisage(INewMidashiIdProvider parser, int width) : base(parser)
     {
         this.width = width;
     }
@@ -238,7 +238,7 @@ public class Jizume : Indent, IHtmlProvider, IMultiline
     //kurema: 元はw。wだと分からないのでwidthにした。
     public int width { get; }
 
-    public Jizume(Aozora2Html parser, int width) : base(parser)
+    public Jizume(INewMidashiIdProvider parser, int width) : base(parser)
     {
         this.width = width;
     }
@@ -273,12 +273,12 @@ public class Kaeriten : Kunten, IHtmlProvider
 /// <summary>
 /// 罫囲み用
 /// </summary>
-public class Keigakomi : Block, IHtmlProvider
+public class Keigakomi : Block, IHtmlProvider, IMultiline
 {
     //kurema: intの方が正しい？
     public double size { get; }
 
-    public Keigakomi(Aozora2Html parser, double size = 1) : base(parser)
+    public Keigakomi(INewMidashiIdProvider parser, double size = 1) : base(parser)
     {
         this.size = size;
     }
@@ -295,7 +295,7 @@ public class Midashi : ReferenceMentioned, IHtmlProvider
     public int id { get; }
     public string @class { get; }
 
-    public Midashi(Aozora2Html parser, object? target, string size, Utils.MidashiType type) : base(target)
+    public Midashi(INewMidashiIdProvider parser, object? target, string size, Utils.MidashiType type) : base(target)
     {
         tag = Utils.create_midashi_tag(size);
         id = parser.new_midashi_id(size);

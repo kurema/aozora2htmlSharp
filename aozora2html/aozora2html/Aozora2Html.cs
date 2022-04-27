@@ -26,7 +26,7 @@ namespace Aozora
     //$css_files = Array["../../aozora.css"]
 
     // 変換器本体
-    public class Aozora2Html
+    public class Aozora2Html : Helpers.INewMidashiIdProvider
     {
         //kurema: C#では普通に出せるので下のコメントは無視してください。
         // 全角バックスラッシュが出せないから直打ち
@@ -1779,7 +1779,7 @@ namespace Aozora
         public void tail_output()
         {
             ruby_buf.dump_into(buffer);
-            var @string = string.Join(string.Empty, buffer.Select(a=>a.to_html()));
+            var @string = string.Join(string.Empty, buffer.Select(a => a.to_html()));
             buffer = new TextBuffer();
             @string = @string.Replace("info@aozora.gr.jp", "<a href=\"mailto: info@aozora.gr.jp\">info@aozora.gr.jp</a>");
             {

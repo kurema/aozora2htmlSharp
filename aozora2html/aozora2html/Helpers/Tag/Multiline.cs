@@ -17,7 +17,7 @@ public interface IMultiline
 /// </summary>
 public class MultilineCaption : Block, IHtmlProvider, IMultiline
 {
-    public MultilineCaption(Aozora2Html parser) : base(parser)
+    public MultilineCaption(INewMidashiIdProvider parser) : base(parser)
     {
     }
 
@@ -53,7 +53,7 @@ public class MultilineMidashi : Block, IHtmlProvider, IMultiline
     public int id { get; }
     public string @class { get; }
 
-    public MultilineMidashi(Aozora2Html parser, string size, Utils.MidashiType type) : base(parser)
+    public MultilineMidashi(INewMidashiIdProvider parser, string size, Utils.MidashiType type) : base(parser)
     {
         tag = Utils.create_midashi_tag(size);
         id = parser.new_midashi_id(size);
@@ -72,7 +72,7 @@ public class MultilineStyle : Block, IHtmlProvider, IMultiline
 {
     public string style { get; }
 
-    public MultilineStyle(Aozora2Html parser, string style) : base(parser)
+    public MultilineStyle(INewMidashiIdProvider parser, string style) : base(parser)
     {
         this.style = style;
     }
@@ -85,7 +85,7 @@ public class MultilineStyle : Block, IHtmlProvider, IMultiline
 /// </summary>
 public class MultilineYokogumi : Block, IHtmlProvider, IMultiline
 {
-    public MultilineYokogumi(Aozora2Html parser) : base(parser)
+    public MultilineYokogumi(INewMidashiIdProvider parser) : base(parser)
     {
     }
 
