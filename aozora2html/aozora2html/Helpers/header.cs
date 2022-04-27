@@ -176,8 +176,9 @@ namespace Aozora.Helpers
             return header_info;
         }
 
-        public string to_html()
+        public string to_html(string? jQueryPath = "../../jquery-1.4.2.min.js")
         {
+            //kurema:jQueryPathをnullにした場合はscript自体出力しない。epub用。
             var header_info = build_header_info();
 
             // <title> 行を構築
@@ -185,13 +186,14 @@ namespace Aozora.Helpers
 
             // 出力
             var out_buf = new System.Text.StringBuilder();
-            out_buf.Append("<?xml version=\"1.0\" encoding=\"Shift_JIS\"?>\r\n<!DOCTYPE html PUBLIC \"-W3CDTD XHTML 1.1EN\"\r\n    \"http:www.w3.org/TR/xhtml11/DTD/xhtml11.dtd\">\r\n<html xmlns=\"http:www.w3.org/1999/xhtml\" xml:lang=\"ja\" >\r\n<head>\r\n	<meta http-equiv=\"Content-Type\" content=\"text/html;charset=Shift_JIS\" />\r\n	<meta http-equiv=\"content-style-type\" content=\"text/css\" />\r\n");
+            out_buf.Append("<?xml version=\"1.0\" encoding=\"Shift_JIS\"?>\r\n<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.1//EN\"\r\n    \"http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd\">\r\n<html xmlns=\"http://www.w3.org/1999/xhtml\" xml:lang=\"ja\" >\r\n<head>\r\n	<meta http-equiv=\"Content-Type\" content=\"text/html;charset=Shift_JIS\" />\r\n	<meta http-equiv=\"content-style-type\" content=\"text/css\" />\r\n");
             foreach (var css in css_files)
             {
-                out_buf.Append("\t<link rel=\"stylesheet\" type=\"text/css\" href=\"" + css + "\" />\r\n");
+                out_buf.Append($"\t<link rel=\"stylesheet\" type=\"text/css\" href=\"{ css }\" />\r\n");
             }
-            //kurema: jqueryへのリンクは青空文庫でホストする用なので修正が必要
-            out_buf.Append($"\t{html_title}\r\n\t<script type=\"text/javascript\" src=\"../../jquery-1.4.2.min.js\"></script>\r\n  <link rel=\"Schema.DC\" href=\"http:purl.org/dc/elements/1.1/\" />\r\n	<meta name=\"DC.Title\" content=\"{header_info[header_element_type_kind.title]}\" />\r\n	<meta name=\"DC.Creator\" content=\"{header_info[header_element_type_kind.author]}\" />\r\n	<meta name=\"DC.Publisher\" content=\"{Aozora2Html.AOZORABUNKO}\" />\r\n</head>\r\n<body>\r\n<div class=\"metadata\">\r\n");
+            out_buf.Append($"\t{html_title}\r\n");
+            if (!string.IsNullOrWhiteSpace(jQueryPath)) out_buf.Append($"	<script type=\"text/javascript\" src=\"{jQueryPath}\"></script>\r\n");
+            out_buf.Append($"  <link rel=\"Schema.DC\" href=\"http://purl.org/dc/elements/1.1/\" />\r\n	<meta name=\"DC.Title\" content=\"{header_info[header_element_type_kind.title]}\" />\r\n	<meta name=\"DC.Creator\" content=\"{header_info[header_element_type_kind.author]}\" />\r\n	<meta name=\"DC.Publisher\" content=\"{Aozora2Html.AOZORABUNKO}\" />\r\n</head>\r\n<body>\r\n<div class=\"metadata\">\r\n");
             out_buf.Append($"<h1 class=\"title\">{header_info[header_element_type_kind.title]}</h1>\r\n" + out_header_info(header_info, header_element_type_kind.original_title) + out_header_info(header_info, header_element_type_kind.subtitle) + out_header_info(header_info, header_element_type_kind.original_subtitle) + out_header_info(header_info, header_element_type_kind.author) + out_header_info(header_info, header_element_type_kind.editor) + out_header_info(header_info, header_element_type_kind.translator) + out_header_info(header_info, header_element_type_kind.henyaku, "editor-translator"));
             out_buf.Append("<br />\r\n<br />\r\n</div>\r\n<div id=\"contents\" style=\"display:none\"></div><div class=\"main_text\">");
             return out_buf.ToString();

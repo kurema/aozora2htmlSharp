@@ -227,6 +227,8 @@ namespace Aozora
         protected char? endchar = null;//解析終了文字、AccentParserやTagParserでは異なる
         protected bool noprint;//行末を読み込んだとき、何も出力しないかどうかのフラグ
 
+        public string? jQueryPath { get; set; } = "../../jquery-1.4.2.min.js";
+
         //kurema: 警告メッセージ用チャンネルを独自に追加しました。
         protected IOutput warnChannel;
 
@@ -500,7 +502,7 @@ namespace Aozora
             {
                 //空行がくれば、そこでヘッダー終了とみなす
                 section = SectionKind.head_end;
-                @out.print(header.to_html());
+                @out.print(header.to_html(jQueryPath));
             }
             else
             {

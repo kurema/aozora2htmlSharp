@@ -39,10 +39,6 @@ namespace Aozora
             StrictReturnCode = strictReturnCode;
 
             if (strictReturnCode) initial_test();
-
-            //kurema:
-            //CRLFチェックはStreamReaderでは厄介なので省略しました。具体的には巻き戻せません。
-            //その代わり、読みだし時にチェックします。(strictReturnCodeがtrueの場合)
         }
 
         //kurema:当たり前ですがStreamReaderにinspectはないので、これの実行結果はRubyの場合とは異なります。
@@ -144,10 +140,13 @@ namespace Aozora
                 peekBuffer.Add(result);
             }
             var @char = peekBuffer[pos];
-            if (@char == CR && StrictReturnCode)
+            if (@char == CR)
             {
-                var char2 = pos + 1 < peekBuffer.Count ? peekBuffer[pos + 1] : file.Peek();
-                if (char2 != LF) throw new Exceptions.UseCRLFException();
+                if (StrictReturnCode)
+                {
+                    var char2 = pos + 1 < peekBuffer.Count ? peekBuffer[pos + 1] : file.Peek();
+                    if (char2 != LF) throw new Exceptions.UseCRLFException();
+                }
                 @char = LF;
             }
             return IntToNullableChar(@char);
