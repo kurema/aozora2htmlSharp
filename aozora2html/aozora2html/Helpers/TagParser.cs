@@ -22,7 +22,7 @@ namespace Aozora.Helpers
         }
 
         //method override!
-        protected override char? read_char()
+        public override char? read_char()
         {
             var c= base.read_char();
             _raw.Append(c);

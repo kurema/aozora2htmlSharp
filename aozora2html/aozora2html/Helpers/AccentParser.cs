@@ -110,11 +110,11 @@ namespace Aozora.Helpers
                 }
                 else if (bufferItem is not null)
                 {
-                    var text = bufferItem?.to_html();
+                    var text = bufferItem.to_html();
                     if (!string.IsNullOrEmpty(text))
                     {
-                        foreach (var item in text!) Utils.illegal_char_check(item);
-                        push_chars(escape_special_chars(bufferItem!));//kurema:Nullの可能性はないのに警告される。
+                        Utils.illegal_char_check(bufferItem, line_number, warnChannel);
+                        push_chars(escape_special_chars(bufferItem));
                     }
                 }
             }

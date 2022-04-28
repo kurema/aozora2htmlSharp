@@ -87,9 +87,17 @@ public static class Utils
 
     public static string convert_japanese_number(string command)
     {
+        string addBrancket(string original)
+        {
+            var sb = new System.Text.StringBuilder("[");
+            sb.Append(original);
+            sb.Append("]");
+            return sb.ToString();
+        }
+
         //kurema:dotnetにはPerlのtr///相当の機能がないっぽい。
-        string tmp = Regex.Replace(command, ZENKAKU_NUMS_FULL, a => new string("0123456789"[ZENKAKU_NUMS_FULL.IndexOf(a.Value)], 1));
-        tmp = Regex.Replace(tmp, KANJI_NUMS, a => new string("1234567890"[KANJI_NUMS.IndexOf(a.Value)], 1));
+        string tmp = Regex.Replace(command, addBrancket(ZENKAKU_NUMS_FULL), a => new string("0123456789"[ZENKAKU_NUMS_FULL.IndexOf(a.Value)], 1));
+        tmp = Regex.Replace(tmp, addBrancket(KANJI_NUMS), a => new string("1234567890"[KANJI_NUMS.IndexOf(a.Value)], 1));
         tmp = Regex.Replace(tmp, @$"(\d){KANJI_TEN}(\d)", "$1$2");
         tmp = Regex.Replace(tmp, @$"(\d){KANJI_TEN}", "${1}0");
         tmp = Regex.Replace(tmp, @$"{KANJI_TEN}(\d)", "1$1");
@@ -103,6 +111,12 @@ public static class Utils
         jis_gaiji, chuki, onebyte, legal
     }
 
+    public static void illegal_char_check(IBufferItem bufferItem, int line, IOutput output)
+    {
+        if (bufferItem is not BufferItemString bufferItemString) return;
+        foreach (var item in bufferItemString.to_html()) illegal_char_check(item, line, output);
+    }
+
     //kurema:
     //Rubyユーザーへの注記
     //C#で変数名の前に付ける@は無視されます。
@@ -113,13 +127,13 @@ public static class Utils
         switch (result)
         {
             case illegal_char_check_result.jis_gaiji:
-                output.print(string.Format(I18n.MSG["warn_jis_gaiji"], line, @char));
+                output.println(string.Format(I18n.MSG["warn_jis_gaiji"], line, @char));
                 break;
             case illegal_char_check_result.chuki:
-                output.print(string.Format(I18n.MSG["warn_chuki"], line, @char));
+                output.println(string.Format(I18n.MSG["warn_chuki"], line, @char));
                 break;
             case illegal_char_check_result.onebyte:
-                output.print(string.Format(I18n.MSG["warn_onebyte"], line, @char));
+                output.println(string.Format(I18n.MSG["warn_onebyte"], line, @char));
                 break;
             case illegal_char_check_result.legal:
             default:
@@ -204,7 +218,7 @@ public static class Utils
         if (Aozora2Html.REGEX_ZENKAKU.IsMatch(word)) return Tag.CharType.Zenkaku;
         if (Aozora2Html.REGEX_HANKAKU.IsMatch(word)) return Tag.CharType.Hankaku;
         if (Aozora2Html.REGEX_KANJI.IsMatch(word)) return Tag.CharType.Kanji;
-        if (Regex.IsMatch(word,@"[\.;""?!\)]")) return Tag.CharType.HankakuTerminate;
+        if (Regex.IsMatch(word, @"[\.;""?!\)]")) return Tag.CharType.HankakuTerminate;
         return Tag.CharType.Else;
     }
 }

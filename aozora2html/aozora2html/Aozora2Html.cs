@@ -94,7 +94,7 @@ namespace Aozora
         public const string MADE_MARK = "まで";
         public const string DOGYO_MARK = "同行";
         public const char MADO_MARK = '窓';
-        public const string JIAGE_COMMAND = "字上げ";
+        public const string JIAGE_COMMAND = "字上げ";//kurema:JISAGEとJIAGEは字面が似ているので注意！
         public const string JISAGE_COMMAND = "字下げ";
         public const string PHOTO_COMMAND = "写真";
         public const string ORIKAESHI_COMMAND = "折り返して";
@@ -297,10 +297,10 @@ namespace Aozora
         /// </summary>
         /// <param name="command"></param>
         /// <returns>[Symbol]</returns>
-        public IndentTypeKey? detect_command_mode(string command)
+        public static IndentTypeKey? detect_command_mode(string command)
         {
             //kurema:元は正規表現。途中でもマッチするはずなので==ではなくContains。
-            if (command.Contains(INDENT_TYPE[IndentTypeKey.chitsuki] + END_MARK) || command.Contains(JISAGE_COMMAND + END_MARK))
+            if (command.Contains(INDENT_TYPE[IndentTypeKey.chitsuki] + END_MARK) || command.Contains(JIAGE_COMMAND + END_MARK))
             {
                 return IndentTypeKey.chitsuki;
             }
@@ -316,10 +316,10 @@ namespace Aozora
         /// 一文字読み込む
         /// </summary>
         /// <returns></returns>
-        protected virtual char? read_char() => stream.read_char();
+        public virtual char? read_char() => stream.read_char();
 
         //一行読み込む
-        protected string? read_line() => stream.read_line();
+        public string? read_line() => stream.read_line();
 
         protected TextBuffer read_accent()
         {
@@ -607,14 +607,14 @@ namespace Aozora
                     }
                     else if (@char is IBufferItem bufferItem)
                     {
-                        if (check) foreach (var charItem in bufferItem.to_html()) Utils.illegal_char_check(charItem, line_number, warnChannel);
+                        if (check) Utils.illegal_char_check(bufferItem, line_number, warnChannel);
                         push_chars(bufferItem);
                     }
                     else if (@char is TextBuffer textBuffer)
                     {
                         foreach (var item in textBuffer)
                         {
-                            if (check) foreach (var charItem in item.to_html()) Utils.illegal_char_check(charItem, line_number, warnChannel);
+                            if (check) Utils.illegal_char_check(item, line_number, warnChannel);
                             push_chars(item);
                         }
                     }
@@ -1108,7 +1108,7 @@ namespace Aozora
         public Helpers.Tag.Chitsuki? apply_chitsuki(string @string, bool multiline = false)
         {
             if (@string.Contains(CLOSE_MARK + INDENT_TYPE[IndentTypeKey.chitsuki] + END_MARK) ||
-                @string.Contains(CLOSE_MARK + JISAGE_COMMAND + END_MARK))
+                @string.Contains(CLOSE_MARK + JIAGE_COMMAND + END_MARK))
             {
                 explicit_close(IndentTypeKey.chitsuki);
                 indent_stack.Pop();
@@ -1495,7 +1495,7 @@ namespace Aozora
         /// <param name="bouki"></param>
         /// <param name="times"></param>
         /// <returns></returns>
-        public string multiply(string bouki, int times)
+        public static string multiply(string bouki, int times)
         {
             //kurema:もっとスマートに書けると思う。
             if (times == 0) return "";
@@ -1785,7 +1785,7 @@ namespace Aozora
                     {
                         foreach (var itemBuffer in otherBuffer)
                         {
-                            if (check) foreach (var item in itemBuffer.to_html()) Utils.illegal_char_check(item, line_number, warnChannel);
+                            if (check) Utils.illegal_char_check(itemBuffer, line_number, warnChannel);
                             if (escape) push_chars(escape_special_chars(itemBuffer)); else push_chars(itemBuffer);
                         }
                     }
