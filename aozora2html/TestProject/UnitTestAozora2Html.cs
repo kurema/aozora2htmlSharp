@@ -17,7 +17,9 @@ public static class UnitTestAozora2Html
     public static void TestNew()
     {
         var parser = Helper.GetAozora2HtmlPlaceholder();
+#pragma warning disable IDE0150 // 型のチェックよりも 'null 値' チェックを優先する
         Assert.True(parser is Aozora2Html);
+#pragma warning restore IDE0150 // 型のチェックよりも 'null 値' チェックを優先する
         Assert.True(parser is INewMidashiIdProvider);
     }
 
@@ -86,7 +88,7 @@ public static class UnitTestAozora2Html
     public static void TestIllegalCharCheck()
     {
         var output = new OutputString();
-        var result = Utils.illegal_char_check('#', 123, output);
+        Utils.illegal_char_check('#', 123, output);
         Assert.Equal("警告(123行目):1バイトの「#」が使われています\r\n", output.ToString());
     }
 
@@ -94,7 +96,7 @@ public static class UnitTestAozora2Html
     public static void TestIllegalCharCheckSharp()
     {
         var output = new OutputString();
-        var result = Utils.illegal_char_check('♯', 123, output);
+        Utils.illegal_char_check('♯', 123, output);
         Assert.Equal("警告(123行目):注記記号の誤用の可能性がある、「♯」が使われています\r\n", output.ToString());
     }
 
@@ -102,7 +104,7 @@ public static class UnitTestAozora2Html
     public static void TestIllegalCharCheckNotJis()
     {
         var output = new OutputString();
-        var result = Utils.illegal_char_check('①', 123, output);
+        Utils.illegal_char_check('①', 123, output);
         Assert.Equal("警告(123行目):JIS外字「①」が使われています\r\n", output.ToString());
     }
 
@@ -110,7 +112,7 @@ public static class UnitTestAozora2Html
     public static void TestIllegalCharCheckOk()
     {
         var output = new OutputString();
-        var result = Utils.illegal_char_check('あ', 123, output);
+        Utils.illegal_char_check('あ', 123, output);
         Assert.Equal("", output.ToString());
     }
 

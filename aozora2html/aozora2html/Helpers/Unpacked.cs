@@ -149,28 +149,28 @@ namespace Aozora.Helpers
             return CompareBasic(ba, b.InArray) >= 0;
         }
 
-        private static int CompareZeroFill(byte[] a, byte[] b)
-        {
-            if (a is null) throw new ArgumentNullException(nameof(a));
-            if (b is null) throw new ArgumentNullException(nameof(b));
+        //private static int CompareZeroFill(byte[] a, byte[] b)
+        //{
+        //    if (a is null) throw new ArgumentNullException(nameof(a));
+        //    if (b is null) throw new ArgumentNullException(nameof(b));
 
-            static byte getFromLeft(byte[] bytes, int index)
-            {
-                if (index < 0) return 0;
-                if (bytes.Length - index - 1 < 0) return 0;
-                return bytes[bytes.Length - index - 1];
-            }
+        //    static byte getFromLeft(byte[] bytes, int index)
+        //    {
+        //        if (index < 0) return 0;
+        //        if (bytes.Length - index - 1 < 0) return 0;
+        //        return bytes[bytes.Length - index - 1];
+        //    }
 
-            int m = Math.Max(a.Length, b.Length);
-            for (int i = 0; i < m; i++)
-            {
-                byte ca = getFromLeft(a, m - i - 1);
-                byte cb = getFromLeft(b, m - i - 1);
-                if (ca < cb) return -1;
-                if (ca > cb) return 1;
-            }
-            return 0;
-        }
+        //    int m = Math.Max(a.Length, b.Length);
+        //    for (int i = 0; i < m; i++)
+        //    {
+        //        byte ca = getFromLeft(a, m - i - 1);
+        //        byte cb = getFromLeft(b, m - i - 1);
+        //        if (ca < cb) return -1;
+        //        if (ca > cb) return 1;
+        //    }
+        //    return 0;
+        //}
 
         private static int CompareBasic(byte[] a, byte[] b)
         {

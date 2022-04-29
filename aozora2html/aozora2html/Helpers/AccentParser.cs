@@ -41,20 +41,20 @@ namespace Aozora.Helpers
                 var first = read_char();
                 var second = stream.peek_char(0);
                 var third = stream.peek_char(1);
-                var found = YamlValues.AccentTable(first, second, third);
+                var (code, name, depth) = YamlValues.AccentTable(first, second, third);
 
                 IBufferItem? bufferItem = null;
 
-                if (found.code is not null && found.name is not null)
+                if (code is not null && name is not null)
                 {
-                    for (int i = 1; i < found.depth; i++)
+                    for (int i = 1; i < depth; i++)
                     {
                         read_char();
                     }
                     encount_accent = true;
                     chuuki_table[chuuki_table_keys.accent] = true;
                     first = null;
-                    bufferItem = new BufferItemTag(new Tag.Accent(this, found.code, found.name, gaiji_dir));
+                    bufferItem = new BufferItemTag(new Tag.Accent(this, code, name, gaiji_dir));
                 }
 
                 switch (first)
@@ -120,7 +120,7 @@ namespace Aozora.Helpers
             }
         }
 
-        public TextBuffer process()
+        public TextBuffer processAccent()
         {
             try
             {

@@ -227,7 +227,10 @@ namespace Aozora
         protected char? endchar = null;//解析終了文字、AccentParserやTagParserでは異なる
         protected bool noprint;//行末を読み込んだとき、何も出力しないかどうかのフラグ
 
+#pragma warning disable IDE1006 // 命名スタイル
+        //kurema:jQueryは小文字始まりでしょ。
         public string? jQueryPath { get; set; } = "../../jquery-1.4.2.min.js";
+#pragma warning restore IDE1006 // 命名スタイル
 
         //kurema: 警告メッセージ用チャンネルを独自に追加しました。
         protected IOutput warnChannel;
@@ -270,7 +273,31 @@ namespace Aozora
 
         public bool block_allowed_context => style_stack.empty;
 
-        //kurema:下を先に実装したので少し飛んでます。
+        /// <summary>
+        /// parseする
+        /// 
+        /// 終了時（終端まで来た場合）にはthrow :terminateで脱出する
+        /// </summary>
+        public void process()
+        {
+            try
+            {
+                parse();
+            }
+            catch (Exceptions.AozoraException e)
+            {
+                //kurema:原文と異なりexitしません。
+                warnChannel.println(e.Message);
+                return;
+            }
+            catch (Exceptions.TerminateException)
+            {
+            }
+            tail_output();
+            finalize();
+            close();
+        }
+
         public int new_midashi_id(int size) => midashi_counter.generate_id(size);
         public int new_midashi_id(string size) => midashi_counter.generate_id(size);
 
@@ -328,7 +355,7 @@ namespace Aozora
                 use_jisx0213_accent = this.use_jisx0213_accent,
                 use_jisx0214_embed_gaiji = this.use_jisx0214_embed_gaiji,
                 use_unicode_embed_gaiji = this.use_unicode_embed_gaiji
-            }.process();
+            }.processAccent();
         }
 
         protected virtual (string, string) read_to_nest(char? endchar)
@@ -338,7 +365,7 @@ namespace Aozora
                 use_jisx0213_accent = this.use_jisx0213_accent,
                 use_jisx0214_embed_gaiji = this.use_jisx0214_embed_gaiji,
                 use_unicode_embed_gaiji = this.use_unicode_embed_gaiji
-            }.process();
+            }.processTag();
         }
 
         protected void finalize()
@@ -357,6 +384,7 @@ namespace Aozora
         {
             stream.close();
             @out.close();
+            warnChannel.close();
         }
 
         /// <summary>
@@ -916,7 +944,7 @@ namespace Aozora
             var (command, raw) = read_to_nest(COMMAND_END);
             //適用順序はこれで大丈夫か？　誤爆怖いよ誤爆
 
-            IBufferItem? GetReturnValue(Helpers.Tag.Tag? tag)
+            static IBufferItem? GetReturnValue(Helpers.Tag.Tag? tag)
             {
                 return tag is null ? null : new BufferItemTag(tag);
             }
@@ -1308,12 +1336,12 @@ namespace Aozora
                             }
                         }
 
-                        var found = YamlValues.CommandTable(key);
+                        var (@class, tag) = YamlValues.CommandTable(key);
                         //found = [class, tag]
-                        if (found.Item1 is not null)
+                        if (@class is not null)
                         {
-                            style_stack.push(command, $"</{found.tag}>");
-                            push_chars($"<{found.tag} class=\"{filter.Invoke(found.@class)}\">");
+                            style_stack.push(command, $"</{tag}>");
+                            push_chars($"<{tag} class=\"{filter.Invoke(@class)}\">");
                             return true;
                         }
                         else
@@ -1631,11 +1659,11 @@ namespace Aozora
                     }
                 }
 
-                var found = YamlValues.CommandTable(command);
+                var (@class, tag) = YamlValues.CommandTable(command);
                 //found = [class, tag]
-                if (found.@class is not null && found.tag is not null)
+                if (@class is not null && tag is not null)
                 {
-                    return new BufferItemTag(new Helpers.Tag.Decorate(targets, filter.Invoke(found.@class), found.tag));
+                    return new BufferItemTag(new Helpers.Tag.Decorate(targets, filter.Invoke(@class), tag));
                 }
                 else
                 {

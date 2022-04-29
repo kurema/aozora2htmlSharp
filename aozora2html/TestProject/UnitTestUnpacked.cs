@@ -17,7 +17,9 @@ public static class UnitTestUnpacked
     public static void TestNew()
     {
         var unpacked = new Unpacked('ア');
+#pragma warning disable IDE0150 // 型のチェックよりも 'null 値' チェックを優先する
         Assert.True(unpacked is Unpacked);
+#pragma warning restore IDE0150 // 型のチェックよりも 'null 値' チェックを優先する
     }
 
     [Fact]

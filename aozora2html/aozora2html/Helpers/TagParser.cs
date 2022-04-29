@@ -11,7 +11,8 @@ namespace Aozora.Helpers
     public class TagParser : Aozora2Html
     {
         public string Raw => _raw.ToString();
-        StringBuilder _raw = new();//外字変換前の生テキストを残したいことがあるらしい
+
+        readonly StringBuilder _raw = new();//外字変換前の生テキストを残したいことがあるらしい
 
         public TagParser(Jstream input, char? endchar, Dictionary<chuuki_table_keys, bool> chuuki, List<string> images, IOutput output, IOutput? warnChannel = null, string? gaiji_dir = null, string[]? css_files = null) : base(input, output, warnChannel, gaiji_dir, css_files)
         {
@@ -54,7 +55,7 @@ namespace Aozora.Helpers
             return (ans.ToString(), _raw.ToString());
         }
 
-        public (string, string) process()
+        public (string, string) processTag()
         {
             try
             {

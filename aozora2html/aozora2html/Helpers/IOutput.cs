@@ -38,7 +38,7 @@ namespace Aozora.Helpers
 
     public class OutputString : IOutput
     {
-        StringBuilder content = new StringBuilder();
+        readonly StringBuilder content = new();
         public void close()
         {
         }
