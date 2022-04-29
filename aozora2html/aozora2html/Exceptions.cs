@@ -35,6 +35,11 @@ namespace Aozora.Exceptions
         public AozoraException(string message, Exception innerException) : base(message, innerException) { }
 
         protected AozoraException(SerializationInfo info, StreamingContext context) : base(info, context) { }
+
+        public string GetMessageAozora(int n = 0)
+        {
+            return string.Format(Helpers.I18n.MSG["error_stop"], n, this.Message);
+        }
     }
 
     [Serializable]
@@ -96,7 +101,7 @@ namespace Aozora.Exceptions
     [Serializable]
     public class TerminateInStyleException : AozoraException
     {
-        public TerminateInStyleException(string arg1) : base(string.Format(Helpers.I18n.MSG["TerminateInStyleException"], arg1)) { }
+        public TerminateInStyleException(string arg1) : base(string.Format(Helpers.I18n.MSG["terminate_in_style"], arg1)) { }
         protected TerminateInStyleException(SerializationInfo info, StreamingContext context) : base(info, context) { }
     }
 
@@ -108,38 +113,10 @@ namespace Aozora.Exceptions
     }
 
     [Serializable]
-    public class ErrorStopException : AozoraException
-    {
-        public ErrorStopException(int arg1, string arg2) : base(string.Format(Helpers.I18n.MSG["error_stop"], arg1, arg2)) { }
-        protected ErrorStopException(SerializationInfo info, StreamingContext context) : base(info, context) { }
-    }
-
-    [Serializable]
     public class UnsupportedRubyException : AozoraException
     {
         public UnsupportedRubyException() : base(Helpers.I18n.MSG["unsupported_ruby"]) { }
         protected UnsupportedRubyException(SerializationInfo info, StreamingContext context) : base(info, context) { }
-    }
-
-    [Serializable]
-    public class WarnOnebyteException : AozoraException
-    {
-        public WarnOnebyteException(int arg1, string arg2) : base(string.Format(Helpers.I18n.MSG["warn_onebyte"], arg1, arg2)) { }
-        protected WarnOnebyteException(SerializationInfo info, StreamingContext context) : base(info, context) { }
-    }
-
-    [Serializable]
-    public class WarnChukiException : AozoraException
-    {
-        public WarnChukiException(int arg1, string arg2) : base(string.Format(Helpers.I18n.MSG["warn_chuki"], arg1, arg2)) { }
-        protected WarnChukiException(SerializationInfo info, StreamingContext context) : base(info, context) { }
-    }
-
-    [Serializable]
-    public class WarnJisGaijiException : AozoraException
-    {
-        public WarnJisGaijiException(int arg1, string arg2) : base(string.Format(Helpers.I18n.MSG["warn_jis_gaiji"], arg1, arg2)) { }
-        protected WarnJisGaijiException(SerializationInfo info, StreamingContext context) : base(info, context) { }
     }
 
     [Serializable]
@@ -154,19 +131,5 @@ namespace Aozora.Exceptions
     {
         public InvalidNestingException(string arg1, string arg2) : base(string.Format(Helpers.I18n.MSG["invalid_nesting"], arg1, arg2)) { }
         protected InvalidNestingException(SerializationInfo info, StreamingContext context) : base(info, context) { }
-    }
-
-    [Serializable]
-    public class WarnUnexpectedTerminatorException : AozoraException
-    {
-        public WarnUnexpectedTerminatorException(int arg1) : base(string.Format(Helpers.I18n.MSG["warn_unexpected_terminator"], arg1)) { }
-        protected WarnUnexpectedTerminatorException(SerializationInfo info, StreamingContext context) : base(info, context) { }
-    }
-
-    [Serializable]
-    public class WarnUndefinedCommandException : AozoraException
-    {
-        public WarnUndefinedCommandException(int arg1, string arg2) : base(string.Format(Helpers.I18n.MSG["warn_undefined_command"], arg1, arg2)) { }
-        protected WarnUndefinedCommandException(SerializationInfo info, StreamingContext context) : base(info, context) { }
     }
 }

@@ -376,26 +376,22 @@ namespace Aozora
 
         protected string? check_close_match(IndentTypeKey type)
         {
-            IndentTypeKey ind;
-            if (indent_stack.Count == 0)
-            {
-                throw new IndexOutOfRangeException();
-            }
-            if (indent_stack.Last() is IndentStackItemString)
+            IndentTypeKey? ind;
+            if (indent_stack.LastOrDefault() is IndentStackItemString)
             {
                 noprint = true;
                 ind = IndentTypeKey.jisage;
             }
-            else if (indent_stack.Last() is IndentStackItemIndentTypeKey lastKey)
+            else if (indent_stack.LastOrDefault() is IndentStackItemIndentTypeKey lastKey)
             {
                 ind = lastKey.Content;
             }
             else
             {
-                throw new Exception($"Unexpected type for {nameof(indent_stack)} item.");
+                ind = null;
             }
             if (ind == type) return null;
-            else return convert_indent_type(ind);
+            else return convert_indent_type(type);
         }
 
         public bool implicit_close(IndentTypeKey type)
@@ -1432,7 +1428,7 @@ namespace Aozora
             if (mode != null)
             {
                 explicit_close(mode.Value);
-                matched = indent_stack.Pop();
+                matched = indent_stack.Count == 0 ? null : indent_stack.Pop();
             }
 
             if (matched != null)

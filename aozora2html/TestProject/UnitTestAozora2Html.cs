@@ -200,5 +200,105 @@ public static class UnitTestAozora2Html
         Assert.Equal(Aozora2Html.IndentTypeKey.midashi, Aozora2Html.detect_command_mode("中見出し終わり"));
         Assert.Equal(Aozora2Html.IndentTypeKey.futoji, Aozora2Html.detect_command_mode("ここで太字終わり"));
     }
+
+    [Fact]
+    public static void TestTcy()
+    {
+        using var sr = new System.IO.StringReader("［＃ここから５字下げ］\r\n底本： test\r\n");
+        var parser = new Aozora2Html(new Jstream(sr), new OutputDummy(), null, null, null);
+        string message = string.Empty;
+        try
+        {
+            parser.parse_body();
+            parser.parse_body();
+            parser.parse_body();
+            parser.general_output();
+        }
+        catch (Aozora.Exceptions.TerminateInStyleException e)
+        {
+            message = e.Message;
+        }
+        Assert.Equal("字下げ中に本文が終了しました", message);
+    }
+
+    [Fact]
+    public static void TestEndingCheck()
+    {
+        using var sr = new System.IO.StringReader("本文\r\n\r\n底本：test\r\n");
+        var output = new OutputString();
+        var parser = new Aozora2Html(new Jstream(sr), output, null, null, null);
+        string message = string.Empty;
+        try
+        {
+            parser.parse_body();
+            parser.parse_body();
+            parser.parse_body();
+            parser.parse_body();
+            parser.parse_body();
+        }
+        catch (Aozora.Exceptions.AozoraException e)
+        {
+            message = e.Message;
+        }
+        Assert.Equal("本文<br />\r\n<br />\r\n</div>\r\n<div class=\"bibliographical_information\">\r\n<hr />\r\n<br />\r\n", output.ToString());
+    }
+
+    [Fact]
+    public static void TestInvalidClosing()
+    {
+        using var sr = new System.IO.StringReader("［＃ここで太字終わり］\r\n");
+        var parser = new Aozora2Html(new Jstream(sr), new OutputDummy(), null, null, null);
+        string message = string.Empty;
+        try
+        {
+            parser.parse_body();
+        }
+        catch (Aozora.Exceptions.AozoraException e)
+        {
+            message = e.GetMessageAozora();
+        }
+        Assert.Equal("エラー(0行目):太字を閉じようとしましたが、太字中ではありません. \r\n処理を停止します", message);
+    }
+
+    [Fact]
+    public static void TestInvalidNest()
+    {
+        using var sr = new System.IO.StringReader("［＃太字］［＃傍線］あ［＃太字終わり］\r\n");
+        var parser = new Aozora2Html(new Jstream(sr), new OutputDummy(), null, null, null);
+        string message = string.Empty;
+        try
+        {
+            parser.parse_body();
+            parser.parse_body();
+            parser.parse_body();
+            parser.parse_body();
+            parser.parse_body();
+            parser.parse_body();
+            parser.parse_body();
+        }
+        catch (Aozora.Exceptions.AozoraException e)
+        {
+            message = e.GetMessageAozora();
+        }
+        Assert.Equal("エラー(0行目):太字を終了しようとしましたが、傍線中です. \r\n処理を停止します", message);
+    }
+
+    [Fact]
+    public static void TestCommandDo()
+    {
+        using var sr = new System.IO.StringReader("［＃ここから太字］\r\nテスト。\r\n［＃ここで太字終わり］\r\n");
+        var output = new OutputString();
+        var parser = new Aozora2Html(new Jstream(sr), output, null, null, null);
+        string message = string.Empty;
+        try
+        {
+            for (int i = 0; i < 9; i++) parser.parse_body();
+        }
+        catch (Aozora.Exceptions.AozoraException e)
+        {
+            message = e.GetMessageAozora();
+        }
+        Assert.Equal("<div class=\"futoji\">\r\nテスト。<br />\r\n</div>\r\n", output.ToString());
+    }
 }
 
