@@ -1,14 +1,46 @@
 # aozora2htmlSharp
-C#で[aozora2html](https://github.com/aozorahack/aozora2html)。
+[aozora2html](https://github.com/aozorahack/aozora2html)のC#版です。
 
-開発中です。
+## 実行
+コマンドは`aozora2html`です。以下のように実行します。
 
-## 手順
-1. SourceCodeGeneratorAozoraで可能な部分だけ書き換え(微妙)。
-2. 手作業でC#に書き換え。その他必要なコードを追加。
-3. デバッグ。テスト作成。
-4. CUI作成。EPUB作成対応。←今ここ
-5. ネームスキームその他をC#風に改訂。
+```shell-session
+$ aozora2html foo.txt foo.html
+```
 
-## ライセンス
-MITライセンス。  
+こうすると、青空文庫記法で書かれた`foo.txt`を`foo.html`に変換します。
+
+また、青空文庫サイトで配布している、中にテキストファイルが同梱されているzip形式のファイルも変換できます。
+
+```shell-session
+$ aozora2html foo.zip foo.html
+```
+
+第1引数にURLを指定すると、そのURLのファイルをダウンロードして変換します。
+
+```shell-session
+$ aozora2html http://example.jp/foo/bar.zip foo.html
+```
+
+第2引数を省略すると、ファイルではなく標準出力に変換結果を出力します。
+
+```shell-session
+$ aozora2html foo.txt
+```
+
+コマンドラインオプションとして`--gaiji-dir`と`--css-files`、`--use-jisx0213`、`--use-unicode`、`--error-utf8`があります。
+
+* `--gaiji-dir`は外字画像のパスを指定します。
+* `--css-files`はCSSファイルを`,`区切りで指定します。
+* `--use-jisx0213`はJIS X 0213の外字画像を使わず、数値実体参照として表示します。
+* `--use-unicode`はUnicodeのコードポイントが指定されている外字を数値実体参照として表示します。
+* `--error-utf8`はエラーメッセージをUTF-8で出力するようにします。
+
+可能な限り数値実体参照を使って表示するには、以下のようにオプションを指定します。
+
+```shell-session
+$ aozora2html --use-jisx0213 --use-unicode foo.txt
+```
+
+## License
+MIT
