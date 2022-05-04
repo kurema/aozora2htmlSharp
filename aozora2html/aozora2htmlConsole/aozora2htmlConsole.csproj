@@ -8,6 +8,8 @@
 		<RootNamespace>Aozora.Console</RootNamespace>
 		<LangVersion>latest</LangVersion>
 		<AssemblyName>aozora2html</AssemblyName>
+		<Authors>kurema</Authors>
+		<Version>1.0.0</Version>
 	</PropertyGroup>
 
 	<ItemGroup>
