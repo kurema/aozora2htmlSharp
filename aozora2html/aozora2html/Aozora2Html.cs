@@ -119,15 +119,15 @@ namespace Aozora
         private static Regex? _PAT_CHITSUKI = null;
         public static Regex PAT_CHITSUKI => _PAT_CHITSUKI ??= new Regex(@"(地付き|字上げ)(終わり)*$", RegexOptions.Compiled);
         private static Regex? _PAT_ORIKAESHI_JISAGE = null;
-        public static Regex PAT_ORIKAESHI_JISAGE => _PAT_ORIKAESHI_JISAGE ??= new Regex(@"折り返して(\\d*)字下げ", RegexOptions.Compiled);
+        public static Regex PAT_ORIKAESHI_JISAGE => _PAT_ORIKAESHI_JISAGE ??= new Regex(@"折り返して(\d*)字下げ", RegexOptions.Compiled);
         private static Regex? _PAT_ORIKAESHI_JISAGE2 = null;
-        public static Regex PAT_ORIKAESHI_JISAGE2 => _PAT_ORIKAESHI_JISAGE2 ??= new Regex(@"(\\d*)字下げ、折り返して(\\d*)字下げ", RegexOptions.Compiled);
+        public static Regex PAT_ORIKAESHI_JISAGE2 => _PAT_ORIKAESHI_JISAGE2 ??= new Regex(@"(\d*)字下げ、折り返して(\d*)字下げ", RegexOptions.Compiled);
         private static Regex? _PAT_JI_LEN = null;
         public static Regex PAT_JI_LEN => _PAT_JI_LEN ??= new Regex(@"([0-9]+)字", RegexOptions.Compiled);
         private static Regex? _PAT_INLINE_RUBY = null;
         public static Regex PAT_INLINE_RUBY => _PAT_INLINE_RUBY ??= new Regex(@"「(.*)」の注記付き", RegexOptions.Compiled);
         private static Regex? _PAT_IMAGE = null;
-        public static Regex PAT_IMAGE => _PAT_IMAGE ??= new Regex(@"(.*)（(fig.+\\.png)(、横([0-9]+)×縦([0-9]+))*）入る", RegexOptions.Compiled);
+        public static Regex PAT_IMAGE => _PAT_IMAGE ??= new Regex(@"(.*)（(fig.+\.png)(、横([0-9]+)×縦([0-9]+))*）入る", RegexOptions.Compiled);
         private static Regex? _PAT_FRONTREF = null;
         public static Regex PAT_FRONTREF => _PAT_FRONTREF ??= new Regex(@"「([^「」]*(?:「.+」)*[^「」]*)」[にはの](「.+」の)*(.+)", RegexOptions.Compiled);
         private static Regex? _PAT_RUBY_DIR = null;
@@ -147,7 +147,7 @@ namespace Aozora
         private static Regex? _REGEX_ZENKAKU = null;
         public static Regex REGEX_ZENKAKU => _REGEX_ZENKAKU ??= new Regex("[０-９Ａ-Ｚａ-ｚΑ-Ωα-ωА-Яа-я−＆’，．]", RegexOptions.Compiled);
         private static Regex? _REGEX_HANKAKU = null;
-        public static Regex REGEX_HANKAKU => _REGEX_HANKAKU ??= new Regex("[A-Za-z0-9#\\-\\&'\\,]", RegexOptions.Compiled);
+        public static Regex REGEX_HANKAKU => _REGEX_HANKAKU ??= new Regex(@"[A-Za-z0-9#\-\&'\,]", RegexOptions.Compiled);
         private static Regex? _REGEX_KANJI = null;
 
         //kurema:https://dobon.net/vb/dotnet/string/ishiragana.html
@@ -546,7 +546,7 @@ namespace Aozora
                 case SectionKind.chuuki:
                     section = SectionKind.chuuki_in;
                     break;
-                case SectionKind.body:
+                case SectionKind.chuuki_in:
                     section = SectionKind.body;
                     break;
             }
@@ -611,7 +611,8 @@ namespace Aozora
                     //noop
                     break;
                 default:
-                    if ((@char as char?) == endchar)
+                    if ((@char is null && endchar is null) || (@char is char c && c == endchar) || (@char is string s2 && s2.Length is 1 && s2[0] == endchar) 
+                        ||(@char is BufferItemString bufferS && bufferS.Length == 1 && bufferS.to_html()[0] == endchar))
                     {
                         //suddenly finished the file
                         warnChannel.println(string.Format(I18n.MSG["warn_unexpected_terminator"], line_number));
@@ -1856,13 +1857,18 @@ namespace Aozora
 
             void printCondition(chuuki_table_keys key, string text)
             {
-                if (chuuki_table[key]) @out.print(text);
+                if (checkChuukiTable(key)) @out.print(text);
+            }
+
+            bool checkChuukiTable(chuuki_table_keys key)
+            {
+                return chuuki_table.ContainsKey(key) && chuuki_table[key];
             }
 
             printCondition(chuuki_table_keys.chuki, "\t<li>［＃…］は、入力者による注を表す記号です。</li>\r\n");
-            if (chuuki_table[chuuki_table_keys.kunoji])
+            if (checkChuukiTable(chuuki_table_keys.kunoji))
             {
-                if (chuuki_table[chuuki_table_keys.dakutenkunoji])
+                if (checkChuukiTable(chuuki_table_keys.dakutenkunoji))
                 {
                     @out.print($"\t<li>「くの字点」は「{KU + NOJI}」で、「濁点付きくの字点」は「{KU + DAKUTEN + NOJI}」で表しました。</li>\r\n");
                 }
@@ -1871,7 +1877,7 @@ namespace Aozora
                     @out.print($"\t<li>「くの字点」は「{KU + NOJI}」で表しました。</li>\r\n");
                 }
             }
-            else if (chuuki_table[chuuki_table_keys.dakutenkunoji])
+            else if (checkChuukiTable(chuuki_table_keys.dakutenkunoji))
             {
                 @out.print($"\t<li>「濁点付きくの字点」は「{KU + DAKUTEN + NOJI}」で表しました。</li>\r\n");
             }

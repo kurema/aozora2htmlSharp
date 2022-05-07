@@ -12,6 +12,11 @@ namespace Aozora.Helpers
     /// </summary>
     public class TextBuffer : List<IBufferItem>, Tag.IHtmlProvider
     {
+        public override string ToString()
+        {
+            return to_html();
+        }
+
         public TextBuffer()
         {
         }

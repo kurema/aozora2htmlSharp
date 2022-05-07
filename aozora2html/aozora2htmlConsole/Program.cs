@@ -26,7 +26,8 @@ rootCommand.SetHandler(async (DirectoryInfo? gaijiDir, string[] cssFiles, bool u
     bool strictReturnCode = true;
 
     Aozora.Jstream jstream;
-    if (textFile is null)
+    string? textFileDirectory = null;
+    if (string.IsNullOrWhiteSpace(textFile))
     {
         jstream = new Aozora.Jstream(Console.In, strictReturnCode);
     }
@@ -34,13 +35,21 @@ rootCommand.SetHandler(async (DirectoryInfo? gaijiDir, string[] cssFiles, bool u
     {
         if (File.Exists(textFile))
         {
+            textFileDirectory = Path.GetDirectoryName(Path.GetFullPath(textFile));
+
             if (Path.GetExtension(textFile)?.ToUpper() == ".ZIP")
             {
-                //System.IO.Compression.ZipArchive archive=new System.IO.Compression.ZipArchive(
+                var sr = Aozora.Console.Functions.GetFirstEntryZip(new FileStream(textFile, FileMode.Open, FileAccess.Read));
+                if (sr is null)
+                {
+                    Console.Error.WriteLine($"The zip file is empty.");
+                    return;
+                }
+                jstream = new Aozora.Jstream(sr, strictReturnCode);
             }
             else
             {
-                jstream = new Aozora.Jstream(new StreamReader(textFile), strictReturnCode);
+                jstream = new Aozora.Jstream(new StreamReader(textFile, Aozora.Aozora2Html.ShiftJis), strictReturnCode);
             }
         }
         else if (Uri.TryCreate(textFile, new UriCreationOptions(), out Uri? uri))
@@ -65,14 +74,13 @@ rootCommand.SetHandler(async (DirectoryInfo? gaijiDir, string[] cssFiles, bool u
                 }
                 if (response.Content.Headers.ContentType?.MediaType?.ToUpperInvariant().StartsWith("APPLICATION/ZIP") == true)
                 {
-                    System.IO.Compression.ZipArchive archive = new(await response.Content.ReadAsStreamAsync(), System.IO.Compression.ZipArchiveMode.Read);
-                    var text = archive.Entries.FirstOrDefault(a => a.Name.ToUpperInvariant().EndsWith(".TXT") && a.CompressedLength > 0);//Use first .txt file
-                    if (text is null)
+                    var sr = Aozora.Console.Functions.GetFirstEntryZip(await response.Content.ReadAsStreamAsync());
+                    if (sr is null)
                     {
                         Console.Error.WriteLine($"The zip file is empty.");
                         return;
                     }
-                    jstream = new Aozora.Jstream(new StreamReader(text.Open(), Aozora.Aozora2Html.ShiftJis), strictReturnCode);//Assume the encoding is shiftJis.
+                    jstream = new Aozora.Jstream(sr, strictReturnCode);
                 }
                 else
                 {
@@ -81,7 +89,7 @@ rootCommand.SetHandler(async (DirectoryInfo? gaijiDir, string[] cssFiles, bool u
             }
             else
             {
-                Console.Error.WriteLine($"Scheme not supported.");
+                Console.Error.WriteLine($"The scheme is not supported: {uri.Scheme}");
                 return;
             }
         }
@@ -92,10 +100,44 @@ rootCommand.SetHandler(async (DirectoryInfo? gaijiDir, string[] cssFiles, bool u
         }
     }
 
-    Console.WriteLine($"jisx:{useJisx0213}\nunicode:{useUnicode}");
+    Aozora.Helpers.IOutput output;
+    if (htmlFile is null)
+    {
+        output = new Aozora.Helpers.OutputConsole();
+    }
+    else
+    {
+        output = new Aozora.Helpers.OutputStreamWriter(new StreamWriter(htmlFile.OpenWrite(),Aozora.Aozora2Html.ShiftJis));
+    }
+
+    string? gaijiDirRelative = null;
+    if (gaijiDir is not null)
+    {
+        if (textFileDirectory is not null) gaijiDirRelative = Path.GetRelativePath(textFileDirectory, gaijiDir.FullName);
+        else gaijiDirRelative = gaijiDir.FullName;
+    }
+
+    string[] cssFilesRelative = cssFiles.Select(a => Path.IsPathRooted(a) && textFileDirectory is not null ? Path.GetRelativePath(textFileDirectory, a) : a).ToArray();
+
+    var aozora = new Aozora.Aozora2Html(jstream, output, new Aozora.Helpers.OutputConsoleError(), gaijiDirRelative, cssFilesRelative)
+    {
+        use_jisx0213_accent = useJisx0213,
+        use_jisx0214_embed_gaiji = useJisx0213,
+        use_unicode_embed_gaiji = useUnicode,
+    };
+    try
+    {
+        aozora.process();
+    }
+    catch (Exception e)
+    {
+        throw;
+    }
 }, optionGaiji, optionCss, optionJisx, optionUnicode, argumentIn, argumentOut);
 
+//await rootCommand.InvokeAsync("chukiichiran_kinyurei.txt output.html");
+await rootCommand.InvokeAsync("test.txt output2.html");
 //await rootCommand.InvokeAsync(args);
-await rootCommand.InvokeAsync("http://www.aozora.com/ --css-files aaa --use-unicode");
-await rootCommand.InvokeAsync("-?");
+//await rootCommand.InvokeAsync("test --css-files aaa --use-unicode");
+//await rootCommand.InvokeAsync("-?");
 //await rootCommand.InvokeAsync("");

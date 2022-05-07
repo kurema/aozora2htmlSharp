@@ -311,7 +311,7 @@ public class Midashi : ReferenceMentioned, IHtmlProvider
 
     public string to_html()
     {
-        return $"<{tag} class=\"{@class}\"><a class=\"midashi_anchor\" id=\"midashi{id}\">{target}</a></{tag}>";
+        return $"<{tag} class=\"{@class}\"><a class=\"midashi_anchor\" id=\"midashi{id}\">{target_html}</a></{tag}>";
     }
 
     public override object Clone()
