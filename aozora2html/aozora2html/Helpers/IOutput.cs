@@ -65,6 +65,7 @@ namespace Aozora.Helpers
 
         public void close()
         {
+            Content?.Flush();
             Content?.Close();
             Content?.Dispose();
             Content = null;

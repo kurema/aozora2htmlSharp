@@ -235,7 +235,9 @@ namespace Aozora
         //kurema: 警告メッセージ用チャンネルを独自に追加しました。
         protected IOutput warnChannel;
 
-        //kurema:本来はstatic変数。しかし、parserに属した方が扱いやすいので移しました。
+        //kurema:
+        //本来はstatic変数。しかし、parserに属した方が扱いやすいので移しました。
+        //具体的にはマルチスレッドで同時に実行する時とかにstaticだと問題があります。
         public bool use_jisx0213_accent { get; set; } = false;
         public bool use_jisx0214_embed_gaiji { get; set; } = false;
         public bool use_unicode_embed_gaiji { get; set; } = false;
@@ -250,7 +252,6 @@ namespace Aozora
             buffer = new();
             ruby_buf = new();
             section = SectionKind.head;
-            header = new(css_files);
             style_stack = new();
             chuuki_table = new();
             images = new();
@@ -262,6 +263,7 @@ namespace Aozora
             this.warnChannel = warnChannel ?? new OutputConsole();
             this.gaiji_dir = gaiji_dir ?? "../../../gaiji/";
             this.css_files = css_files ?? new[] { "../../aozora.css" };
+            header = new(this.css_files);
         }
 
         public enum SectionKind
@@ -287,15 +289,18 @@ namespace Aozora
             catch (Exceptions.AozoraException e)
             {
                 //kurema:原文と異なりexitしません。
-                warnChannel.println(e.Message);
+                warnChannel.println(e.GetMessageAozora(line_number));
                 return;
             }
             catch (Exceptions.TerminateException)
             {
             }
-            tail_output();
-            finalize();
-            close();
+            finally
+            {
+                tail_output();
+                finalize();
+                close();
+            }
         }
 
         public int new_midashi_id(int size) => midashi_counter.generate_id(size);
@@ -405,12 +410,12 @@ namespace Aozora
         protected string? check_close_match(IndentTypeKey type)
         {
             IndentTypeKey? ind;
-            if (indent_stack.LastOrDefault() is IndentStackItemString)
+            if (indent_stack.FirstOrDefault() is IndentStackItemString)
             {
                 noprint = true;
                 ind = IndentTypeKey.jisage;
             }
-            else if (indent_stack.LastOrDefault() is IndentStackItemIndentTypeKey lastKey)
+            else if (indent_stack.FirstOrDefault() is IndentStackItemIndentTypeKey lastKey)
             {
                 ind = lastKey.Content;
             }
@@ -450,7 +455,7 @@ namespace Aozora
         /// </summary>
         public void ensure_close()
         {
-            var n = indent_stack.LastOrDefault();
+            var n = indent_stack.FirstOrDefault();
             if (n is null) return;
 
             throw new Exceptions.TerminateInStyleException(convert_indent_type(n));
@@ -718,7 +723,7 @@ namespace Aozora
             var terpripLocal = buf.terpri() && terprip;
             terprip = true;
 
-            if (indent_stack.LastOrDefault() is not null and IndentStackItemString lastString && indent_type == TextBuffer.blank_type_result.@false)//kurema:indentの場合は含まない？
+            if (indent_stack.FirstOrDefault() is not null and IndentStackItemString lastString && indent_type == TextBuffer.blank_type_result.@false)//kurema:indentの場合は含まない？
             {
                 @out.print(lastString.Content);
             }
@@ -741,7 +746,7 @@ namespace Aozora
             }
 
             //最後はCRLFを出力する
-            if (indent_stack.LastOrDefault() is BufferItemString)
+            if (indent_stack.FirstOrDefault() is IndentStackItemString)
             {
                 //ぶら下げindent
                 //tail always active

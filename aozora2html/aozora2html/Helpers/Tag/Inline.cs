@@ -46,7 +46,7 @@ public class InlineFontSize : ReferenceMentioned, IHtmlProvider
         this.style = style ?? throw new ArgumentNullException(nameof(style));
     }
 
-    public string to_html() => $"<span class=\"{@class}\" style=\"font-size: {style};\">{target}</span>";
+    public string to_html() => $"<span class=\"{@class}\" style=\"font-size: {style};\">{target_html}</span>";
 
     public override object Clone()
     {
@@ -80,7 +80,7 @@ public class InlineYokogumi : ReferenceMentioned, IHtmlProvider
     {
     }
 
-    public string to_html() => $"<span class=\"yokogumi\">{target}</span>";
+    public string to_html() => $"<span class=\"yokogumi\">{target_html}</span>";
 
     public override object Clone()
     {

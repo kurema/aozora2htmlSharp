@@ -107,7 +107,7 @@ rootCommand.SetHandler(async (DirectoryInfo? gaijiDir, string[] cssFiles, bool u
     }
     else
     {
-        output = new Aozora.Helpers.OutputStreamWriter(new StreamWriter(htmlFile.OpenWrite(),Aozora.Aozora2Html.ShiftJis));
+        output = new Aozora.Helpers.OutputStreamWriter(new StreamWriter(htmlFile.OpenWrite(), Aozora.Aozora2Html.ShiftJis));
     }
 
     string? gaijiDirRelative = null;
@@ -119,7 +119,7 @@ rootCommand.SetHandler(async (DirectoryInfo? gaijiDir, string[] cssFiles, bool u
 
     string[] cssFilesRelative = cssFiles.Select(a => Path.IsPathRooted(a) && textFileDirectory is not null ? Path.GetRelativePath(textFileDirectory, a) : a).ToArray();
 
-    var aozora = new Aozora.Aozora2Html(jstream, output, new Aozora.Helpers.OutputConsoleError(), gaijiDirRelative, cssFilesRelative)
+    var aozora = new Aozora.Aozora2Html(jstream, output, new Aozora.Helpers.OutputConsoleError(), gaijiDirRelative, cssFilesRelative.Length == 0 ? null : cssFilesRelative)
     {
         use_jisx0213_accent = useJisx0213,
         use_jisx0214_embed_gaiji = useJisx0213,
@@ -135,8 +135,9 @@ rootCommand.SetHandler(async (DirectoryInfo? gaijiDir, string[] cssFiles, bool u
     }
 }, optionGaiji, optionCss, optionJisx, optionUnicode, argumentIn, argumentOut);
 
-//await rootCommand.InvokeAsync("chukiichiran_kinyurei.txt output.html");
-await rootCommand.InvokeAsync("test.txt output2.html");
+//await rootCommand.InvokeAsync("chukiichiran_kinyurei.txt");
+await rootCommand.InvokeAsync("chukiichiran_kinyurei.txt output.html");
+//await rootCommand.InvokeAsync("test.txt output2.html");
 //await rootCommand.InvokeAsync(args);
 //await rootCommand.InvokeAsync("test --css-files aaa --use-unicode");
 //await rootCommand.InvokeAsync("-?");
