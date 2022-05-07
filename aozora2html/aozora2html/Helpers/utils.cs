@@ -10,7 +10,7 @@ public static class Utils
     // ユーティリティ関数モジュール
     //using StringRefinements
 
-    public const string KANJI_NUMS = "一二三四五六七八九〇";
+    public const string KANJI_NUMS = "一二三四五六七八九〇○";
     public const string KANJI_TEN = "十";
     public const string ZENKAKU_NUMS = "０-９";
     public const string ZENKAKU_NUMS_FULL = "０１２３４５６７８９";
@@ -97,7 +97,7 @@ public static class Utils
 
         //kurema:dotnetにはPerlのtr///相当の機能がないっぽい。
         string tmp = Regex.Replace(command, addBrancket(ZENKAKU_NUMS_FULL), a => new string("0123456789"[ZENKAKU_NUMS_FULL.IndexOf(a.Value)], 1));
-        tmp = Regex.Replace(tmp, addBrancket(KANJI_NUMS), a => new string("1234567890"[KANJI_NUMS.IndexOf(a.Value)], 1));
+        tmp = Regex.Replace(tmp, addBrancket(KANJI_NUMS), a => new string("12345678900"[KANJI_NUMS.IndexOf(a.Value)], 1));
         tmp = Regex.Replace(tmp, @$"(\d){KANJI_TEN}(\d)", "$1$2");
         tmp = Regex.Replace(tmp, @$"(\d){KANJI_TEN}", "${1}0");
         tmp = Regex.Replace(tmp, @$"{KANJI_TEN}(\d)", "1$1");

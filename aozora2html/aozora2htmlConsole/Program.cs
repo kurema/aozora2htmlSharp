@@ -107,7 +107,7 @@ rootCommand.SetHandler(async (DirectoryInfo? gaijiDir, string[] cssFiles, bool u
     }
     else
     {
-        output = new Aozora.Helpers.OutputStreamWriter(new StreamWriter(htmlFile.OpenWrite(), Aozora.Aozora2Html.ShiftJis));
+        output = new Aozora.Helpers.OutputStreamWriter(new StreamWriter(htmlFile.Open(FileMode.Create), Aozora.Aozora2Html.ShiftJis));
     }
 
     string? gaijiDirRelative = null;
@@ -125,14 +125,7 @@ rootCommand.SetHandler(async (DirectoryInfo? gaijiDir, string[] cssFiles, bool u
         use_jisx0214_embed_gaiji = useJisx0213,
         use_unicode_embed_gaiji = useUnicode,
     };
-    try
-    {
-        aozora.process();
-    }
-    catch (Exception e)
-    {
-        throw;
-    }
+    aozora.process();
 }, optionGaiji, optionCss, optionJisx, optionUnicode, argumentIn, argumentOut);
 
 //await rootCommand.InvokeAsync("chukiichiran_kinyurei.txt");

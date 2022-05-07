@@ -219,7 +219,7 @@ namespace Aozora
         protected Header header;
         protected StyleStack style_stack;//スタイルのスタック
         protected Dictionary<chuuki_table_keys, bool> chuuki_table;//最後にどの注記を出すかを保持しておく
-        protected List<string> images;//使用した外字の画像保持用
+        protected List<(string, List<string>)> images;//使用した外字の画像保持用
         protected Stack<IIndentStackItem> indent_stack;//基本はシンボルだが、ぶらさげのときはdivタグの文字列が入る
         protected Stack<string> tag_stack;
         protected MidashiCounter midashi_counter;//見出しのカウンタ、見出しの種類によって増分が異なる
@@ -616,8 +616,8 @@ namespace Aozora
                     //noop
                     break;
                 default:
-                    if ((@char is null && endchar is null) || (@char is char c && c == endchar) || (@char is string s2 && s2.Length is 1 && s2[0] == endchar) 
-                        ||(@char is BufferItemString bufferS && bufferS.Length == 1 && bufferS.to_html()[0] == endchar))
+                    if ((@char is null && endchar is null) || (@char is char c && c == endchar) || (@char is string s2 && s2.Length is 1 && s2[0] == endchar)
+                        || (@char is BufferItemString bufferS && bufferS.Length == 1 && bufferS.to_html()[0] == endchar))
                     {
                         //suddenly finished the file
                         warnChannel.println(string.Format(I18n.MSG["warn_unexpected_terminator"], line_number));
@@ -811,16 +811,17 @@ namespace Aozora
                     {
                         //部分一致
                         //kurema:元は再帰対策でlast_stringと同じものをtmpに置いてたっぽい。
+                        var tmp = searching_buf[searching_buf.Count - 1];
                         searching_buf.RemoveAt(searching_buf.Count - 1);
                         var found = search_front_reference(new Regex($"{Regex.Escape(last_string_string.to_html())}$").Replace(@string, ""));//kurema:不安
                         if (found != null)
                         {
-                            found.Add(last_string);
+                            found.Add(tmp);
                             return found;
                         }
                         else
                         {
-                            searching_buf.Add(last_string);
+                            searching_buf.Add(tmp);
                             return null;
                         }
                     }
@@ -836,15 +837,17 @@ namespace Aozora
                     else if (@string.EndsWith(inner))
                     {
                         //部分一致
+                        var tmp = searching_buf[searching_buf.Count - 1];
+                        searching_buf.RemoveAt(searching_buf.Count - 1);
                         var found = search_front_reference(new Regex($"{Regex.Escape(inner)}$").Replace(@string, ""));
                         if (found != null)
                         {
-                            found.Add(last_string);
+                            found.Add(tmp);
                             return found;
                         }
                         else
                         {
-                            searching_buf.Add(last_string);
+                            searching_buf.Add(tmp);
                             return null;
                         }
 
@@ -897,15 +900,15 @@ namespace Aozora
             var kanji = match.Groups[1].Value;
             var line = match.Groups[2].Value;
 
-            var tmp = images.FirstOrDefault(a => a.StartsWith(kanji));
+            var tmp = images.FirstOrDefault(a => a.Item1 == kanji);
             var index = images.IndexOf(tmp);
-            if (tmp is not null)
+            if (tmp.Item1 == kanji)
             {
-                images[index] += line;
+                images[index].Item2.Add(line);
             }
             else
             {
-                images.Add(kanji + line);
+                images.Add((kanji, new List<string>() { line }));
             }
             return new Helpers.Tag.UnEmbedGaiji(command);
         }
@@ -1004,7 +1007,7 @@ namespace Aozora
             }
             else if (PAT_OKURIGANA.IsMatch(command))
             {
-                return new BufferItemTag(new Helpers.Tag.Okurigana(PAT_OKURIGANA.Replace(command, "")));
+                return new BufferItemTag(new Helpers.Tag.Okurigana(PAT_REMOVE_OKURIGANA.Replace(command, "")));
             }
             else if (PAT_CHITSUKI.IsMatch(command))
             {
@@ -1272,32 +1275,26 @@ namespace Aozora
                     return true;
                 case DOGYO_OMIDASHI_COMMAND:
                     style_stack.push(command, "</a></h3>");
-                    terprip = false;
                     push_chars($"<h3 class=\"dogyo-o-midashi\"><a class=\"midashi_anchor\" id=\"midashi{midashi_counter.generate_id(100)}\">");
                     return true;
                 case DOGYO_NAKAMIDASHI_COMMAND:
                     style_stack.push(command, "</a></h4>");
-                    terprip = false;
                     push_chars($"<h4 class=\"dogyo-naka-midashi\"><a class=\"midashi_anchor\" id=\"midashi{midashi_counter.generate_id(10)}\">");
                     return true;
                 case DOGYO_KOMIDASHI_COMMAND:
                     style_stack.push(command, "</a></h5>");
-                    terprip = false;
-                    push_chars($"<h5 class=\"dogyo-ko-midashi\"><a class=\"midashi_anchor\" id=\"midashi#{@midashi_counter.generate_id(1)}\">");
+                    push_chars($"<h5 class=\"dogyo-ko-midashi\"><a class=\"midashi_anchor\" id=\"midashi{@midashi_counter.generate_id(1)}\">");
                     return true;
                 case MADO_OMIDASHI_COMMAND:
                     style_stack.push(command, "</a></h3>");
-                    terprip = false;
                     push_chars($"<h3 class=\"mado-o-midashi\"><a class=\"midashi_anchor\" id=\"midashi{midashi_counter.generate_id(100)}\">");
                     return true;
                 case MADO_NAKAMIDASHI_COMMAND:
                     style_stack.push(command, "</a></h4>");
-                    terprip = false;
                     push_chars($"<h4 class=\"mado-naka-midashi\"><a class=\"midashi_anchor\" id=\"midashi{midashi_counter.generate_id(10)}\">");
                     return true;
                 case MADO_KOMIDASHI_COMMAND:
                     style_stack.push(command, "</a></h5>");
-                    terprip = false;
                     push_chars($"<h5 class=\"mado-ko-midashi\"><a class=\"midashi_anchor\" id=\"midashi{midashi_counter.generate_id(1)}\">");
                     return true;
                 default:
@@ -1893,8 +1890,8 @@ namespace Aozora
                 @out.print("\t<li>この作品には、JIS X 0213にない、以下の文字が用いられています。（数字は、底本中の出現「ページ-行」数。）これらの文字は本文内では「※［＃…］」の形で示しました。</li>\r\n</ul>\r\n<br />\r\n\t\t<table class=\"gaiji_list\">\r\n");
                 foreach (var cell in images)
                 {
-                    var k = cell;
-                    var vs = string.Join("、", k.ToCharArray().Select(a => new string(a, 1)));
+                    var k = cell.Item1;
+                    var vs = string.Join("、", cell.Item2);
                     @out.print($@"			<tr>
 				<td>
 				{k}
@@ -1904,7 +1901,7 @@ namespace Aozora
 {vs}				</td>
 				<!--
 				<td>
-				　　<img src=""../../../gaiji/others/xxxx.png"" alt=""#{k}"" width=32 height=32 />
+				　　<img src=""../../../gaiji/others/xxxx.png"" alt=""{k}"" width=32 height=32 />
 				</td>
 				-->
 			</tr>
