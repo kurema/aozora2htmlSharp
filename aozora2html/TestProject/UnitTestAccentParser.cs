@@ -7,35 +7,35 @@ public static class UnitTestAccentParser
     [Fact]
     public static void TestNew()
     {
-        var str = "ke'tiquettel\r\n";
+        var str = "ã€”e'tiquetteã€•\r\n";
         using var sr = new System.IO.StringReader(str);
         var stream = new Aozora.Jstream(sr);
         var output = new Aozora.Helpers.OutputString();
-        var parsed = new Aozora.Helpers.AccentParser(stream, 'l', new(), new(), output, gaiji_dir: "g_dir/").processAccent().to_html();
-        Assert.Equal(@"k<img src=""g_dir/1-09/1-09-63.png"" alt=""¦(ƒAƒLƒ…[ƒgƒAƒNƒZƒ“ƒg•t‚«E¬•¶š)"" class=""gaiji"" />tiquette", parsed);
+        var parsed = new Aozora.Helpers.AccentParser(stream, 'ã€•', new(), new(), output, gaiji_dir: "g_dir/").processAccent().to_html();
+        Assert.Equal(@"ã€”<img src=""g_dir/1-09/1-09-63.png"" alt=""â€»(ã‚¢ã‚­ãƒ¥ãƒ¼ãƒˆã‚¢ã‚¯ã‚»ãƒ³ãƒˆä»˜ãEå°æ–‡å­—)"" class=""gaiji"" />tiquette", parsed);
     }
 
     [Fact]
     public static void TestInvalid()
     {
-        var str = "ke'tiquette\r\n";
+        var str = "ã€”e'tiquette\r\n";
         using var sr = new System.IO.StringReader(str);
         var stream = new Aozora.Jstream(sr);
         var output = new Aozora.Helpers.OutputString();
         var warn = new Aozora.Helpers.OutputString();
-        var parsed = new Aozora.Helpers.AccentParser(stream, 'l', new(), new(), output, warnChannel: warn, gaiji_dir: "g_dir/").processAccent().to_html();
-        //kurema:Œ³‚ÌƒeƒXƒg‚Å‚Ís––‚Í"\n"‚Å‚µ‚½‚ªA‚±‚¿‚ç‚Å‚Í"\r\n"‚É‚µ‚Ä‚¢‚Ü‚·B
-        Assert.Equal("Œx(1s–Ú):ƒAƒNƒZƒ“ƒg•ª‰ğ‚Ì‹TbŠ‡ŒÊ‚Ìn‚ß‚ÆI‚í‚è‚ªAs’†‚Å‘µ‚Á‚Ä‚¢‚Ü‚¹‚ñ\r\n", warn.ToString());
+        var parsed = new Aozora.Helpers.AccentParser(stream, 'ã€•', new(), new(), output, warnChannel: warn, gaiji_dir: "g_dir/").processAccent().to_html();
+        //kurema:å…ƒã®ãƒ†ã‚¹ãƒˆã§ã¯è¡Œæœ«ã¯"\n"ã§ã—ãŸãŒã€ã“ã¡ã‚‰ã§ã¯"\r\n"ã«ã—ã¦ã„ã¾ã™ã€‚
+        Assert.Equal("è­¦å‘Š(1è¡Œç›®):ã‚¢ã‚¯ã‚»ãƒ³ãƒˆåˆ†è§£ã®äº€ç”²æ‹¬å¼§ã®å§‹ã‚ã¨çµ‚ã‚ã‚ŠãŒã€è¡Œä¸­ã§æƒã£ã¦ã„ã¾ã›ã‚“\r\n", warn.ToString());
     }
 
     [Fact]
     public static void TestUseJisx0213()
     {
-        var str = "ke'tiquettel\r\n";
+        var str = "ã€”e'tiquetteã€•\r\n";
         using var sr = new System.IO.StringReader(str);
         var stream = new Aozora.Jstream(sr);
         var output = new Aozora.Helpers.OutputString();
-        var parsed = new Aozora.Helpers.AccentParser(stream, 'l', new(), new(), output, gaiji_dir: "g_dir/") { use_jisx0213_accent = true }.processAccent().to_html();
-        Assert.Equal(@"k&#x00E9;tiquette", parsed);
+        var parsed = new Aozora.Helpers.AccentParser(stream, 'ã€•', new(), new(), output, gaiji_dir: "g_dir/") { use_jisx0213_accent = true }.processAccent().to_html();
+        Assert.Equal(@"ã€”&#x00E9;tiquette", parsed);
     }
 }
