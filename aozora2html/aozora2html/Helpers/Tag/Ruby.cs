@@ -28,7 +28,7 @@ public class Ruby : ReferenceMentioned, IHtmlProvider
 
     public static bool include_ruby(System.Collections.IEnumerable array)
     {
-        bool CaseReferenceMentioned(ReferenceMentioned referenceMentioned)
+        static bool CaseReferenceMentioned(ReferenceMentioned referenceMentioned)
         {
             //kurema:ちょっと微妙だけど関数内関数化した。
             if (referenceMentioned.target is System.Collections.IEnumerable eltArray) return include_ruby(eltArray);

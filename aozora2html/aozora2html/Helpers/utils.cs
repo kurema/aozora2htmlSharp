@@ -87,7 +87,7 @@ public static class Utils
 
     public static string convert_japanese_number(string command)
     {
-        string addBrancket(string original)
+        static string addBrancket(string original)
         {
             var sb = new System.Text.StringBuilder("[");
             sb.Append(original);
@@ -212,7 +212,7 @@ public static class Utils
 
     public static Tag.CharType GetCharType(char character)
     {
-        string word = new string(character, 1);
+        string word = new(character, 1);
         if (Aozora2Html.REGEX_HIRAGANA.IsMatch(word)) return Tag.CharType.Hiragana;
         if (Aozora2Html.REGEX_KATAKANA.IsMatch(word)) return Tag.CharType.Katankana;
         if (Aozora2Html.REGEX_ZENKAKU.IsMatch(word)) return Tag.CharType.Zenkaku;

@@ -133,11 +133,15 @@ rootCommand.SetHandler(async (DirectoryInfo? gaijiDir, string[] cssFiles, bool u
     aozora.process();
 }, optionGaiji, optionCss, optionJisx, optionUnicode, argumentIn, argumentOut);
 
-await rootCommand.InvokeAsync("https://www.aozora.gr.jp/cards/001030/files/4815_ruby_14375.zip ziptest.html --gaiji-dir ../rarara");
+#if DEBUG
+await rootCommand.InvokeAsync("https://www.aozora.gr.jp/cards/001030/files/4815_ruby_14375.zip ziptest.html --use-jisx0213 --gaiji-dir ../rarara");
 //await rootCommand.InvokeAsync("chukiichiran_kinyurei.txt output.html");
 //await rootCommand.InvokeAsync("test.txt test.html");
 //await rootCommand.InvokeAsync("test.txt output2.html");
-//await rootCommand.InvokeAsync(args);
+
 //await rootCommand.InvokeAsync("test --css-files aaa --use-unicode");
 //await rootCommand.InvokeAsync("-?");
 //await rootCommand.InvokeAsync("");
+#else
+await rootCommand.InvokeAsync(args);
+#endif
