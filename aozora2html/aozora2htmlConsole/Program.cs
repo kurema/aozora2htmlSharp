@@ -9,6 +9,7 @@ var optionJisx = new Option<bool>("--use-jisx0213", () => false, "use JIS X 0213
 var optionUnicode = new Option<bool>("--use-unicode", () => false, "use Unicode character") { Arity = new ArgumentArity(0, 1) };
 var argumentIn = new Argument<string>("text file",/* () => null,*/ "input file.");
 var argumentOut = new Argument<FileInfo?>("html file", () => null, "output file").LegalFilePathsOnly();
+//kurema:--error-utf8はC#環境下で余り意味ないと思ったので削除しました。
 //new Option<bool>("--error-utf8","show error messages in UTF-8, not Shift_JIS"),
 
 var rootCommand = new RootCommand()
@@ -60,6 +61,10 @@ rootCommand.SetHandler(async (DirectoryInfo? gaijiDir, string[] cssFiles, bool u
                 try
                 {
                     var wc = new System.Net.Http.HttpClient();
+                    //kurema:
+                    //青空文庫はUser-Agentを普通のブラウザの様に偽装しないとミラーサイト(停止済み)にリダイレクトされるという謎の仕様がある。
+                    //https://twitter.com/agtc/status/522892380626628609
+                    wc.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:47.0) Gecko/20100101 Firefox/47.0");
                     response = await wc.GetAsync(textFile);
                 }
                 catch (Exception e)
@@ -114,10 +119,10 @@ rootCommand.SetHandler(async (DirectoryInfo? gaijiDir, string[] cssFiles, bool u
     if (gaijiDir is not null)
     {
         if (textFileDirectory is not null) gaijiDirRelative = Path.GetRelativePath(textFileDirectory, gaijiDir.FullName);
-        else gaijiDirRelative = gaijiDir.FullName;
+        else gaijiDirRelative = Path.GetRelativePath(Directory.GetCurrentDirectory(), gaijiDir.FullName);
     }
 
-    string[] cssFilesRelative = cssFiles.Select(a => Path.IsPathRooted(a) && textFileDirectory is not null ? Path.GetRelativePath(textFileDirectory, a) : a).ToArray();
+    string[] cssFilesRelative = cssFiles.SelectMany(a=>a.Split(',')).Select(a => Path.IsPathRooted(a) && textFileDirectory is not null ? Path.GetRelativePath(textFileDirectory, a) : a).ToArray();
 
     var aozora = new Aozora.Aozora2Html(jstream, output, new Aozora.Helpers.OutputConsoleError(), gaijiDirRelative, cssFilesRelative.Length == 0 ? null : cssFilesRelative)
     {
@@ -128,8 +133,9 @@ rootCommand.SetHandler(async (DirectoryInfo? gaijiDir, string[] cssFiles, bool u
     aozora.process();
 }, optionGaiji, optionCss, optionJisx, optionUnicode, argumentIn, argumentOut);
 
-//await rootCommand.InvokeAsync("chukiichiran_kinyurei.txt");
-await rootCommand.InvokeAsync("chukiichiran_kinyurei.txt output.html");
+await rootCommand.InvokeAsync("https://www.aozora.gr.jp/cards/001030/files/4815_ruby_14375.zip ziptest.html --gaiji-dir ../rarara");
+//await rootCommand.InvokeAsync("chukiichiran_kinyurei.txt output.html");
+//await rootCommand.InvokeAsync("test.txt test.html");
 //await rootCommand.InvokeAsync("test.txt output2.html");
 //await rootCommand.InvokeAsync(args);
 //await rootCommand.InvokeAsync("test --css-files aaa --use-unicode");

@@ -261,7 +261,12 @@ namespace Aozora
             terprip = true;
             noprint = false;//kurema:元は初期nil。falseで問題ないと思われる。
             this.warnChannel = warnChannel ?? new OutputConsole();
-            this.gaiji_dir = gaiji_dir ?? "../../../gaiji/";
+            {
+                this.gaiji_dir = gaiji_dir ?? "../../../gaiji/";
+                if (System.IO.Path.DirectorySeparatorChar != '/') this.gaiji_dir = this.gaiji_dir.Replace(System.IO.Path.DirectorySeparatorChar, '/');
+                if (System.IO.Path.AltDirectorySeparatorChar != '/') this.gaiji_dir = this.gaiji_dir.Replace(System.IO.Path.AltDirectorySeparatorChar, '/');
+                if (!this.gaiji_dir.EndsWith("/")) this.gaiji_dir += "/";
+            }
             this.css_files = css_files ?? new[] { "../../aozora.css" };
             header = new(this.css_files);
         }

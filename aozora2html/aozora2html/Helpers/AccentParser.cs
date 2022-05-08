@@ -68,6 +68,9 @@ namespace Aozora.Helpers
                         bufferItem = dispatch_aozora_command();
                         break;
                     case KU:
+                        assign_kunoji();
+                        break;
+                    case RUBY_BEGIN_MARK:
                         first = null;
                         bufferItem = new BufferItemString(apply_ruby() ?? "");
                         break;
