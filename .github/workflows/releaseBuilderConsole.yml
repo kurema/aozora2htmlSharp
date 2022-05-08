@@ -1,0 +1,40 @@
+name: Release builder for console
+
+on:
+  push:
+    tags: 'v*'
+  workflow_dispatch:
+  
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    
+    env:
+      SolutionDirectory: aozora2html
+      
+    steps:
+    
+    - name: Get tag
+      id: tag
+      if: github.event_name == 'push'
+      uses: dawidd6/action-get-tag@v1
+
+    - name: Use tag
+      if: github.event_name == 'push'
+      run: echo ${{steps.tag.outputs.tag}}
+
+    - name: Checkout
+      uses: actions/checkout@v2
+        
+    - name: Setup dotnet
+      uses: actions/setup-dotnet@v2
+      with:
+        dotnet-version: 6.0.x
+
+    - name: Install dependencies
+      run: dotnet restore
+      working-directory: ${{env.SolutionDirectory}}
+      
+    - name: Build
+      run: dotnet build --configuration Release --no-restore
+      working-directory: ${{env.SolutionDirectory}}
