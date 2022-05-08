@@ -5,31 +5,26 @@ on:
     tags: 'v*'
   workflow_dispatch:
   
+env:
+  SolutionDirectory: aozora2html/
+  ConsolePath: aozora2htmlConsole/aozora2htmlConsole.csproj
+  DotnetVersion: 6.0.x
+  
 jobs:
-  release:
-    runs-on: ubuntu-latest
-    
-    env:
-      SolutionDirectory: aozora2html
+  test:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macOS-latest]    
       
     steps:
-    
-    - name: Get tag
-      id: tag
-      if: github.event_name == 'push'
-      uses: dawidd6/action-get-tag@v1
-
-    - name: Use tag
-      if: github.event_name == 'push'
-      run: echo ${{steps.tag.outputs.tag}}
-
     - name: Checkout
       uses: actions/checkout@v2
         
     - name: Setup dotnet
       uses: actions/setup-dotnet@v2
       with:
-        dotnet-version: 6.0.x
+        dotnet-version: ${{env.DotnetVersion}}
 
     - name: Install dependencies
       run: dotnet restore
@@ -38,3 +33,48 @@ jobs:
     - name: Build
       run: dotnet build --configuration Release --no-restore
       working-directory: ${{env.SolutionDirectory}}
+
+    - name: Test
+      run: dotnet test --no-restore --verbosity normal
+      working-directory: ${{env.SolutionDirectory}}
+      
+  publish:
+    runs-on: ubuntu-latest
+    needs: test
+    
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+        
+    - name: Setup dotnet
+      uses: actions/setup-dotnet@v2
+      with:
+        dotnet-version: ${{env.DotnetVersion}}
+        
+    - name: Install dependencies
+      run: dotnet restore
+      working-directory: ${{env.SolutionDirectory}}
+
+    - name: Publish
+      run: |
+        dotnet publish ${{env.ConsolePath}} --self-contained true --runtime win-x64
+        dotnet publish ${{env.ConsolePath}} --self-contained true --runtime win-x86
+        dotnet publish ${{env.ConsolePath}} --self-contained true --runtime win-arm
+        dotnet publish ${{env.ConsolePath}} --self-contained true --runtime win-arm64
+        dotnet publish ${{env.ConsolePath}} --self-contained true --runtime linux-x64
+        dotnet publish ${{env.ConsolePath}} --self-contained true --runtime linux-musl-x64
+        dotnet publish ${{env.ConsolePath}} --self-contained true --runtime linux-arm
+        dotnet publish ${{env.ConsolePath}} --self-contained true --runtime linux-arm64
+        dotnet publish ${{env.ConsolePath}} --self-contained true --runtime tizen
+        dotnet publish ${{env.ConsolePath}} --self-contained true --runtime osx-x64
+        dotnet publish ${{env.ConsolePath}} --self-contained true --runtime osx.11.0-arm64
+        dotnet publish ${{env.ConsolePath}} --self-contained true --runtime osx.10.10-x64
+        
+      working-directory: ${{env.SolutionDirectory}}
+      
+    - name: Upload to artifact 
+      uses: actions/upload-artifact@v2
+      if: github.event_name == 'workflow_dispatch'
+      with:
+        name: StorePackage
+        path: ${{env.SolutionDirectory}}bin/publish
