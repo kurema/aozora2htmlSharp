@@ -130,6 +130,8 @@ namespace Aozora
         public static Regex PAT_IMAGE => _PAT_IMAGE ??= new Regex(@"(.*)（(fig.+\.png)(、横([0-9]+)×縦([0-9]+))*）入る", RegexOptions.Compiled);
         private static Regex? _PAT_FRONTREF = null;
         public static Regex PAT_FRONTREF => _PAT_FRONTREF ??= new Regex(@"「([^「」]*(?:「.+」)*[^「」]*)」[にはの](「.+」の)*(.+)", RegexOptions.Compiled);
+        //private static Regex? _PAT_FRONTREF2 = null;
+        //public static Regex PAT_FRONTREF2 => _PAT_FRONTREF2 ??= new Regex(@"「([^「」]*(?:「.+」)*[^「」]*」?)」[にはの](「.+」の)*(.+)", RegexOptions.Compiled);
         private static Regex? _PAT_RUBY_DIR = null;
         public static Regex PAT_RUBY_DIR => _PAT_RUBY_DIR ??= new Regex(@"(左|下)に「([^」]*)」の(ルビ|注記)", RegexOptions.Compiled);
         private static Regex? _PAT_CHUUKI = null;
@@ -572,6 +574,7 @@ namespace Aozora
         public void parse_body()
         {
             object? @char = read_char();
+            @char ??= ":eof";//kurema:C#版では:eofをnullで代用してるが、下では普通に@charがnullになりえるので適当な":eof"で仮置き。
             bool check = true;
 
             switch (@char)
@@ -621,7 +624,7 @@ namespace Aozora
                     //noop
                     break;
                 default:
-                    if ((@char is null && endchar is null) || (@char is char c && c == endchar) || (@char is string s2 && s2.Length is 1 && s2[0] == endchar)
+                    if ((@char is ":eof" && endchar is null) || (@char is char c && c == endchar) || (@char is string s2 && s2.Length is 1 && s2[0] == endchar)
                         || (@char is BufferItemString bufferS && bufferS.Length == 1 && bufferS.to_html()[0] == endchar))
                     {
                         //suddenly finished the file
@@ -1041,15 +1044,15 @@ namespace Aozora
             if (command.Contains(TENTSUKI_COMMAND))
             {
                 var matched = PAT_ORIKAESHI_JISAGE.Match(command);
-                if (!matched.Success || matched.Groups.Count < 2) throw new Exception();
-                var width = matched.Groups[1].Value;
+                string width;
+                if (!matched.Success || matched.Groups.Count < 2) width = "0";
+                else width = matched.Groups[1].Value;
                 tag = $"<div class=\"burasage\" style=\"margin-left: {width}em; text-indent: -{width}em;\">";
             }
             else
             {
                 var matched = PAT_ORIKAESHI_JISAGE2.Match(command);
-                if (!matched.Success || matched.Groups.Count < 3) throw new Exception();
-                var (left, indent) = (matched.Groups[1].Value, matched.Groups[2].Value);
+                var (left, indent) = (!matched.Success || matched.Groups.Count < 3) ? ("0", "0") : (matched.Groups[1].Value, matched.Groups[2].Value);
                 var left2 = int.Parse(left) - int.Parse(indent);
                 tag = $"<div class=\"burasage\" style=\"margin-left: {indent}em; text-indent: {left2}em;\">";
             }
@@ -1379,8 +1382,8 @@ namespace Aozora
                 //special inline ruby
                 style_stack.pop();
                 var matched = PAT_INLINE_RUBY.Match(encount);
-                if (!matched.Success) throw new Exception("Regex failed.");
-                var ruby = matched.Groups[1].Value;
+                //if (!matched.Success) throw new Exception("Regex failed.");
+                var ruby = (!matched.Success) ? "" : matched.Groups[1].Value;
                 push_chars($"</rb><rp>（</rp><rt>{ruby}</rt><rp>）</rp></ruby>");
 
             }
@@ -1500,7 +1503,17 @@ namespace Aozora
         public IBufferItem exec_frontref_command(string command)
         {
             var matched = PAT_FRONTREF.Match(command);
-            if (!matched.Success) throw new Exception();
+            if (!matched.Success)
+            {
+                return new BufferItemTag(apply_rest_notes(command));
+                //kurema:
+                //「吾輩は猫である」中にある「［＃「なります」」は底本では「なります。」］」対策。
+                //だったのだが、apply_rest_notes(command)で問題ないのでコメントアウト。
+                //原文もそういう意図だとも読める。
+
+                //matched = PAT_FRONTREF2.Match(command);
+                //if (!matched.Success) throw new Exception();
+            }
             string reference = matched.Groups[1].Value;
             string spec1 = matched.Groups[2].Value;
             string spec2 = matched.Groups[3].Value;

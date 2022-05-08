@@ -88,7 +88,7 @@ public static class Functions
                     }
                     if (response.Content.Headers.ContentType?.MediaType?.ToUpperInvariant().StartsWith("APPLICATION/ZIP") == true)
                     {
-                        var sr = Aozora.Console.Functions.GetFirstEntryZip(await response.Content.ReadAsStreamAsync());
+                        var sr = GetFirstEntryZip(await response.Content.ReadAsStreamAsync());
                         if (sr is null)
                         {
                             System.Console.Error.WriteLine($"The zip file is empty.");
