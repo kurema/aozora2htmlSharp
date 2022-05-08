@@ -38,9 +38,11 @@ jobs:
     - name: Test
       run: dotnet test --no-restore --verbosity normal
       working-directory: ${{env.SolutionDirectory}}
-      
+  
+# Only windows-latest can build Windows, Linux and macOS with ReadyToRun option.
+#https://docs.microsoft.com/ja-jp/dotnet/core/deploying/ready-to-run
   publish:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     needs: test
     
     steps:
@@ -72,7 +74,7 @@ jobs:
           "osx.10.10-x64"
         )
         for item in "${platforms[@]}" ; do
-          dotnet publish ${{env.ConsolePath}} --configuration Release --self-contained true -p:PublishTrimmed=true -p:PublishSingleFile=true --runtime ${item} --output publish/${item}/
+          dotnet publish ${{env.ConsolePath}} --configuration Release --self-contained true -p:PublishTrimmed=true -p:PublishSingleFile=true --runtime ${item} --output publish/${item}/ -p:PublishReadyToRun=true
         done
         
       working-directory: ${{env.SolutionDirectory}}
