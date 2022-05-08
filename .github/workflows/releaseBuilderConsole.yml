@@ -65,7 +65,6 @@ jobs:
         dotnet publish ${{env.ConsolePath}} --self-contained true --runtime linux-musl-x64
         dotnet publish ${{env.ConsolePath}} --self-contained true --runtime linux-arm
         dotnet publish ${{env.ConsolePath}} --self-contained true --runtime linux-arm64
-        dotnet publish ${{env.ConsolePath}} --self-contained true --runtime tizen
         dotnet publish ${{env.ConsolePath}} --self-contained true --runtime osx-x64
         dotnet publish ${{env.ConsolePath}} --self-contained true --runtime osx.11.0-arm64
         dotnet publish ${{env.ConsolePath}} --self-contained true --runtime osx.10.10-x64
