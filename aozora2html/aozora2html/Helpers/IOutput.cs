@@ -78,7 +78,8 @@ namespace Aozora.Helpers
 
         public void println(string words)
         {
-            Content?.WriteLine(words);
+            Content?.Write(words);
+            Content?.Write("\r\n");
         }
     }
 
@@ -96,7 +97,8 @@ namespace Aozora.Helpers
 
         public void println(string words)
         {
-            content.AppendLine(words);
+            content.Append(words);
+            content.Append("\r\n");
         }
 
         public override string ToString()
