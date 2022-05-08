@@ -1897,20 +1897,8 @@ namespace Aozora
                 {
                     var k = cell.Item1;
                     var vs = string.Join("、", cell.Item2);
-                    @out.print($@"			<tr>
-				<td>
-				{k}
-				</td>
-				<td>&nbsp;&nbsp;</td>
-				<td>
-{vs}				</td>
-				<!--
-				<td>
-				　　<img src=""../../../gaiji/others/xxxx.png"" alt=""{k}"" width=32 height=32 />
-				</td>
-				-->
-			</tr>
-");
+                    //kurema:ヒアドキュメント(逐語的文字列)に変換する場合は、Visual Studioを使用して下の行でクイック操作(Ctrl+.)を押してください。
+                    @out.print($"\t\t\t<tr>\r\n\t\t\t\t<td>\r\n\t\t\t\t{k}\r\n\t\t\t\t</td>\r\n\t\t\t\t<td>&nbsp;&nbsp;</td>\r\n\t\t\t\t<td>\r\n{vs}\t\t\t\t</td>\r\n\t\t\t\t<!--\r\n\t\t\t\t<td>\r\n\t\t\t\t　　<img src=\"../../../gaiji/others/xxxx.png\" alt=\"{k}\" width=32 height=32 />\r\n\t\t\t\t</td>\r\n\t\t\t\t-->\r\n\t\t\t</tr>\r\n");
                 }
                 @out.print("\t\t</table>\r\n");
             }
