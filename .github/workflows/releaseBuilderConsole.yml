@@ -10,7 +10,8 @@ env:
   ConsolePath: aozora2htmlConsole/aozora2htmlConsole.csproj
   DotnetVersion: 6.0.x
   BinaryPath: aozora2htmlConsole/bin/Release/net6.0/
-  
+#https://qiita.com/i-tanaka730/items/d46fdfb5c2f601e512c2
+
 jobs:
   test:
     runs-on: ${{ matrix.os }}
@@ -58,17 +59,22 @@ jobs:
 
     - name: Publish
       run: |
-        dotnet publish ${{env.ConsolePath}} --configuration Release --self-contained true --runtime win-x64
-        dotnet publish ${{env.ConsolePath}} --configuration Release --self-contained true --runtime win-x86
-        dotnet publish ${{env.ConsolePath}} --configuration Release --self-contained true --runtime win-arm
-        dotnet publish ${{env.ConsolePath}} --configuration Release --self-contained true --runtime win-arm64
-        dotnet publish ${{env.ConsolePath}} --configuration Release --self-contained true --runtime linux-x64
-        dotnet publish ${{env.ConsolePath}} --configuration Release --self-contained true --runtime linux-musl-x64
-        dotnet publish ${{env.ConsolePath}} --configuration Release --self-contained true --runtime linux-arm
-        dotnet publish ${{env.ConsolePath}} --configuration Release --self-contained true --runtime linux-arm64
-        dotnet publish ${{env.ConsolePath}} --configuration Release --self-contained true --runtime osx-x64
-        dotnet publish ${{env.ConsolePath}} --configuration Release --self-contained true --runtime osx.11.0-arm64
-        dotnet publish ${{env.ConsolePath}} --configuration Release --self-contained true --runtime osx.10.10-x64
+        platforms=(
+          "win-x64"
+          "win-x86"
+          "win-arm"
+          "win-arm64"
+          "linux-x64"
+          "linux-musl-x64"
+          "linux-arm"
+          "linux-arm64"
+          "osx-x64"
+          "osx.11.0-arm64"
+          "osx.10.10-x64"
+        )
+        for item in "${platforms[@]}" ; do
+          dotnet publish ${{env.ConsolePath}} --configuration Release --self-contained true -p:PublishTrimmed=true -p:PublishSingleFile=true --runtime ${item} --output publish/${item}/
+        done
         
       working-directory: ${{env.SolutionDirectory}}
       
@@ -77,4 +83,4 @@ jobs:
       if: github.event_name == 'workflow_dispatch'
       with:
         name: StorePackage
-        path: ${{env.SolutionDirectory}}${{env.BinaryPath}}
+        path: ${{env.SolutionDirectory}}publish
