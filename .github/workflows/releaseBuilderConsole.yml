@@ -59,6 +59,7 @@ jobs:
       working-directory: ${{env.SolutionDirectory}}
 
     - name: Publish
+      shell: bash
       run: |
         platforms=(
           "win-x64"
