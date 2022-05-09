@@ -1,6 +1,9 @@
 # aozora2htmlSharp
 [aozora2html](https://github.com/aozorahack/aozora2html)のC#版です。
 
+このブランチはRuby版の挙動に準拠したv1.0系統です。
+基本的に今後コミットする予定はありません。
+
 ## 実行
 コマンドは`aozora2html`です。以下のように実行します。
 
