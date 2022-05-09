@@ -103,6 +103,9 @@ var code = new Unpacked('あ');
 if("00" <= code && code <= "7f"){}
 ```
 
+## --error-utf8
+--error-utf8は廃止しています。
+
 # 将来
 
 ## 正規表現
