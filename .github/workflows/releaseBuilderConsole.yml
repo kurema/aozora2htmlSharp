@@ -36,7 +36,7 @@ jobs:
       working-directory: ${{env.SolutionDirectory}}
 
     - name: Test
-      run: dotnet test --no-restore --verbosity normal
+      run: dotnet test --configuration Release --no-restore --verbosity normal
       working-directory: ${{env.SolutionDirectory}}
   
 # Only windows-latest can build Windows, Linux and macOS with ReadyToRun option.
