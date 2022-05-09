@@ -6,6 +6,8 @@
 	  <AssemblyName>aozora2htmlLibrary</AssemblyName>
     <RootNamespace>Aozora</RootNamespace>
     <Nullable>enable</Nullable>
+	<IsTrimmable>true</IsTrimmable>
+	<EnableTrimAnalyzer>true</EnableTrimAnalyzer>
   </PropertyGroup>
 
   <ItemGroup>
