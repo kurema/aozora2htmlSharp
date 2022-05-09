@@ -70,6 +70,7 @@ jobs:
           "linux-musl-x64"
           "linux-arm"
           "linux-arm64"
+          "rhel-x64"
           "osx-x64"
           "osx.11.0-arm64"
           "osx.10.10-x64"
