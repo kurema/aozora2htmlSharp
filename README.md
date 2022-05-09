@@ -28,7 +28,7 @@ $ aozora2html http://example.jp/foo/bar.zip foo.html
 $ aozora2html foo.txt
 ```
 
-コマンドラインオプションとして`--gaiji-dir`と`--css-files`、`--use-jisx0213`、`--use-unicode`、`--error-utf8`があります。
+コマンドラインオプションとして`--gaiji-dir`と`--css-files`、`--use-jisx0213`、`--use-unicode`があります。
 
 * `--gaiji-dir`は外字画像のパスを指定します。
 * `--css-files`はCSSファイルを`,`区切りで指定します。
