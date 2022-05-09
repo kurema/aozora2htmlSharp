@@ -14,6 +14,7 @@ namespace TestProject;
 public static class UnitTestInlineCaptionTag
 {
     [Fact]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0150:型のチェックよりも 'null 値' チェックを優先する", Justification = "<保留中>")]
     public static void TestNew()
     {
         var tag = new InlineCaption("aaa");
@@ -27,6 +28,6 @@ public static class UnitTestInlineCaptionTag
     public static void TestToHtml()
     {
         var tag = new InlineCaption("テスト");
-        Assert.Equal("<span class=\"caption\">テスト</span>", tag.to_html());
+        Assert.Equal("<span class=\"caption\">テスト</span>", tag.ToHtml());
     }
 }

@@ -14,6 +14,7 @@ namespace TestProject;
 public static class UnitTestDirTag
 {
     [Fact]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0150:型のチェックよりも 'null 値' チェックを優先する", Justification = "<保留中>")]
     public static void TestNew()
     {
         var tag = new Dir("テスト");
@@ -26,6 +27,6 @@ public static class UnitTestDirTag
     public static void TestToHtml()
     {
         var tag = new Dir("テスト");
-        Assert.Equal("<span dir=\"ltr\">テスト</span>", tag.to_html());
+        Assert.Equal("<span dir=\"ltr\">テスト</span>", tag.ToHtml());
     }
 }

@@ -6,7 +6,7 @@ namespace Aozora.Helpers;
 
 public static partial class YamlValues
 {
-    public static string? JIS2UCS(string code)
+    public static string? Jisx0213ToUnicode(string code)
     {
 #if DEBUG
         //kurema:

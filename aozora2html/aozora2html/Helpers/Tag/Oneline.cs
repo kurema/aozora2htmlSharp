@@ -9,7 +9,7 @@ namespace Aozora.Helpers.Tag
     /// </summary>
     public interface IOnelineIndent
     {
-        public string close_tag();
+        public string CloseTag();
     }
 
     /// <summary>

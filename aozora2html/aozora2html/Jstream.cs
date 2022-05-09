@@ -38,11 +38,13 @@ namespace Aozora
             file = file_io;
             StrictReturnCode = strictReturnCode;
 
-            if (strictReturnCode) initial_test();
+            if (strictReturnCode) RunInitialTest();
         }
 
-        //kurema:当たり前ですがStreamReaderにinspectはないので、これの実行結果はRubyの場合とは異なります。
-        public string inspect => $"#<jcode-stream input {file}>";
+        //kurema:
+        //当たり前ですがStreamReaderにinspectはないので、これの実行結果はRubyの場合とは異なります。
+        //どこからも参照されてないのでどうでも良さそう。
+        public string Inspect => $"#<jcode-stream input {file}>";
 
         private int ReadFromFile()
         {
@@ -75,7 +77,7 @@ namespace Aozora
         //EOFまで到達すると :eof というシンボルを返す
         //
         //TODO: EOFの場合はnilを返すように変更する?
-        public char? read_char()
+        public char? ReadChar()
         {
             var @char = ReadFromFile();
             ReadAny = true;
@@ -127,7 +129,7 @@ namespace Aozora
          * 行末の場合は(1文字ではなく)CR+LFを返す
          * 行末の先に進んだ場合の挙動は未定義になる
          */
-        public char? peek_char(int pos)
+        public char? PeekChar(int pos)
         {
             while (pos >= peekBuffer.Count)
             {
@@ -152,7 +154,7 @@ namespace Aozora
             return IntToNullableChar(@char);
         }
 
-        public void initial_test()
+        public void RunInitialTest()
         {
             while (true)
             {
@@ -177,7 +179,7 @@ namespace Aozora
         /// 
         /// 何も読み込む前は0、読み込み始めの最初の文字から\r\nまでが1、その次の文字から次の\r\nは2、……といった値になる
         /// </summary>
-        public int line
+        public int Line
         {
             get
             {
@@ -193,12 +195,12 @@ namespace Aozora
         /// <param name="endchar">[String] endchar 終端文字</param>
         /// <returns></returns>
         //kurema:終端文字自体は含まない。
-        public string? read_to(char endchar)
+        public string? ReadTo(char endchar)
         {
             var buf = new StringBuilder();
             while (true)
             {
-                var @char = read_char();
+                var @char = ReadChar();
                 if (@char == endchar) return buf.ToString();
                 //kurema:
                 //これは何をやってるのか分からない。
@@ -220,9 +222,9 @@ namespace Aozora
         /// 1行読み込み
         /// </summary>
         /// <returns>[String] 読み込んだ文字列を返す</returns>
-        public string? read_line() => read_to(LF);
+        public string? ReadLine() => ReadTo(LF);
 
-        public void close()
+        public void Close()
         {
             file.Close();
             file.Dispose();

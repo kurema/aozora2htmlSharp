@@ -134,7 +134,7 @@ public static class UnitTestCommandParser
     public static void TestParseCommandUnicode()
     {
         var src = "※［＃「衄のへん＋卩」、U+5379、287-2］\r\n";
-        var parsed = Helper.ParseText(src, a => a.use_unicode_embed_gaiji = true);
+        var parsed = Helper.ParseText(src, a => a.UseUnicodeEmbedGaiji = true);
         const string expected = "&#x5379;<br />\r\n";
         Assert.Equal(expected, parsed);
     }
@@ -143,7 +143,7 @@ public static class UnitTestCommandParser
     public static void TestParseCommandTeisei1()
     {
         var src = "吹喋［＃「喋」に「ママ」の注記］\r\n";
-        var parsed = Helper.ParseText(src, a => a.use_unicode_embed_gaiji = true);
+        var parsed = Helper.ParseText(src, a => a.UseUnicodeEmbedGaiji = true);
         const string expected = "吹<ruby><rb>喋</rb><rp>（</rp><rt>ママ</rt><rp>）</rp></ruby><br />\r\n";
         Assert.Equal(expected, parsed);
     }
@@ -152,7 +152,7 @@ public static class UnitTestCommandParser
     public static void TestParseCommandTeisei2()
     {
         var src = "紋附だとか［＃「紋附だとか」は底本では「絞附だとか」］\r\n";
-        var parsed = Helper.ParseText(src, a => a.use_unicode_embed_gaiji = true);
+        var parsed = Helper.ParseText(src, a => a.UseUnicodeEmbedGaiji = true);
         const string expected = "紋附だとか<span class=\"notes\">［＃「紋附だとか」は底本では「絞附だとか」］</span><br />\r\n";
         Assert.Equal(expected, parsed);
     }
@@ -161,7 +161,7 @@ public static class UnitTestCommandParser
     public static void TestParseCommandTeisei3()
     {
         var src = "私は籠《ざる》［＃ルビの「ざる」は底本では「さる」］をさげ\r\n";
-        var parsed = Helper.ParseText(src, a => a.use_unicode_embed_gaiji = true);
+        var parsed = Helper.ParseText(src, a => a.UseUnicodeEmbedGaiji = true);
         const string expected = "私は<ruby><rb>籠</rb><rp>（</rp><rt>ざる</rt><rp>）</rp></ruby><span class=\"notes\">［＃ルビの「ざる」は底本では「さる」］</span>をさげ<br />\r\n";
         Assert.Equal(expected, parsed);
     }
@@ -170,7 +170,7 @@ public static class UnitTestCommandParser
     public static void TestParseCommandTeisei4()
     {
         var src = "広場へに［＃「広場へに」はママ］店でもだそう。\r\n";
-        var parsed = Helper.ParseText(src, a => a.use_unicode_embed_gaiji = true);
+        var parsed = Helper.ParseText(src, a => a.UseUnicodeEmbedGaiji = true);
         const string expected = "広場へに<span class=\"notes\">［＃「広場へに」はママ］</span>店でもだそう。<br />\r\n";
         Assert.Equal(expected, parsed);
     }
@@ -179,7 +179,7 @@ public static class UnitTestCommandParser
     public static void TestParseCommandTeisei5()
     {
         var src = "お湯《ゆう》［＃ルビの「ゆう」はママ］\r\n";
-        var parsed = Helper.ParseText(src, a => a.use_unicode_embed_gaiji = true);
+        var parsed = Helper.ParseText(src, a => a.UseUnicodeEmbedGaiji = true);
         const string expected = "お<ruby><rb>湯</rb><rp>（</rp><rt>ゆう</rt><rp>）</rp></ruby><span class=\"notes\">［＃ルビの「ゆう」はママ］</span><br />\r\n";
         Assert.Equal(expected, parsed);
     }
@@ -188,7 +188,7 @@ public static class UnitTestCommandParser
     public static void TestParseCommandTcy()
     {
         var src = "米機Ｂ29［＃「29」は縦中横］の編隊は、\r\n";
-        var parsed = Helper.ParseText(src, a => a.use_unicode_embed_gaiji = true);
+        var parsed = Helper.ParseText(src, a => a.UseUnicodeEmbedGaiji = true);
         const string expected = "米機Ｂ<span dir=\"ltr\">29</span>の編隊は、<br />\r\n";
         Assert.Equal(expected, parsed);
     }
@@ -197,7 +197,7 @@ public static class UnitTestCommandParser
     public static void TestParseCommandTcy2()
     {
         var src = "［＃縦中横］（※［＃ローマ数字1、1-13-21］）［＃縦中横終わり］\r\n";
-        var parsed = Helper.ParseText(src, a => a.use_unicode_embed_gaiji = true);
+        var parsed = Helper.ParseText(src, a => a.UseUnicodeEmbedGaiji = true);
         const string expected = "<span dir=\"ltr\">（<img src=\"../../../gaiji/1-13/1-13-21.png\" alt=\"※(ローマ数字1、1-13-21)\" class=\"gaiji\" />）</span><br />\r\n";
         Assert.Equal(expected, parsed);
     }
@@ -206,7 +206,7 @@ public static class UnitTestCommandParser
     public static void TestParseCommandKogaki()
     {
         var src = "それ以上である。（５）［＃「（５）」は行右小書き］\r\n";
-        var parsed = Helper.ParseText(src, a => a.use_unicode_embed_gaiji = true);
+        var parsed = Helper.ParseText(src, a => a.UseUnicodeEmbedGaiji = true);
         const string expected = "それ以上である。<sup class=\"superscript\">（５）</sup><br />\r\n";
         Assert.Equal(expected, parsed);
     }
@@ -215,7 +215,7 @@ public static class UnitTestCommandParser
     public static void TestParseCommandUetsuki()
     {
         var src = "22［＃「2」は上付き小文字］\r\n";
-        var parsed = Helper.ParseText(src, a => a.use_unicode_embed_gaiji = true);
+        var parsed = Helper.ParseText(src, a => a.UseUnicodeEmbedGaiji = true);
         const string expected = "2<sup class=\"superscript\">2</sup><br />\r\n";
         Assert.Equal(expected, parsed);
     }
@@ -224,7 +224,7 @@ public static class UnitTestCommandParser
     public static void TestParseCommandBouki()
     {
         var src = "支部長の顔にさっと血が流れ［＃「血が流れ」に「×」の傍記］た\r\n";
-        var parsed = Helper.ParseText(src, a => a.use_unicode_embed_gaiji = true);
+        var parsed = Helper.ParseText(src, a => a.UseUnicodeEmbedGaiji = true);
         const string expected = "支部長の顔にさっと<ruby><rb>血が流れ</rb><rp>（</rp><rt>×&nbsp;×&nbsp;×&nbsp;×</rt><rp>）</rp></ruby>た<br />\r\n";
         Assert.Equal(expected, parsed);
     }
@@ -234,7 +234,7 @@ public static class UnitTestCommandParser
     public static void TestParseCommandRuby()
     {
         var src = "グリーンランドの中央部八千尺の氷河地帯にあるといわれる、［＃横組み］“Ser-mik-Suah《セルミク・シュアー》”［＃横組み終わり］の冥路《よみじ》の国。\r\n";
-        var parsed = Helper.ParseText(src, a => a.use_unicode_embed_gaiji = true);
+        var parsed = Helper.ParseText(src, a => a.UseUnicodeEmbedGaiji = true);
         const string expected = "グリーンランドの中央部八千尺の氷河地帯にあるといわれる、<span class=\"yokogumi\">“<ruby><rb>Ser-mik-Suah</rb><rp>（</rp><rt>セルミク・シュアー</rt><rp>）</rp></ruby>”</span>の<ruby><rb>冥路</rb><rp>（</rp><rt>よみじ</rt><rp>）</rp></ruby>の国。<br />\r\n";
         Assert.Equal(expected, parsed);
     }

@@ -24,17 +24,17 @@ namespace Aozora.Helpers
         {
         }
 
-        public string to_html()
+        public string ToHtml()
         {
             var result = new StringBuilder();
             foreach (var item in this)
             {
-                result.Append(item.to_html());
+                result.Append(item.ToHtml());
             }
             return result.ToString();
         }
 
-        public enum blank_type_result
+        public enum BlankTypeResult
         {
             @true, @false, inline
         }
@@ -45,21 +45,21 @@ namespace Aozora.Helpers
         /// @bufferの中身によって行末の出力が異なるため
         /// </summary>
         /// <returns>[true, false, :inline] 空文字ではない文字列が入っていればfalse、1行注記なら:inline、それ以外しか入っていなければtrue</returns>
-        public blank_type_result blank_type()
+        public BlankTypeResult BlankType()
         {
             foreach (var token in this)
             {
-                if (token is BufferItemString text && text.Length > 0) return blank_type_result.@false;
-                if (token is BufferItemTag tag && tag.tag is Tag.IOnelineIndent) return blank_type_result.inline;
+                if (token is BufferItemString text && text.Length > 0) return BlankTypeResult.@false;
+                if (token is BufferItemTag tag && tag.Content is Tag.IOnelineIndent) return BlankTypeResult.inline;
             }
-            return blank_type_result.@true;
+            return BlankTypeResult.@true;
         }
 
         /// <summary>
         /// 行末で&lt;br /&gt;を出力するべきかどうかの判別用
         /// </summary>
         /// <returns>[true, false] Multilineの注記しか入っていなければfalse、Multilineでも空文字でもない要素が含まれていればtrue</returns>
-        public bool terpri()
+        public bool Terpri()
         {
             //kurema: terpriは"TERminate PRInt line"を意味するLispの関数だそう。要するにConsole.WriteLine();
             bool flag = true;
@@ -67,7 +67,7 @@ namespace Aozora.Helpers
             {
                 switch (x)
                 {
-                    case BufferItemTag tag when tag.tag is Tag.IMultiline:
+                    case BufferItemTag tag when tag.Content is Tag.IMultiline:
                         flag = false;
                         break;
                     case BufferItemString @string when @string.Length == 0: break;

@@ -14,6 +14,7 @@ namespace TestProject;
 public static class UnitTestOkuriganaTag
 {
     [Fact]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0150:型のチェックよりも 'null 値' チェックを優先する", Justification = "<保留中>")]
     public static void TestNew()
     {
         var tag = new Okurigana("aaa");
@@ -26,6 +27,6 @@ public static class UnitTestOkuriganaTag
     public static void TestToHtml()
     {
         var tag = new Okurigana("テスト");
-        Assert.Equal("<sup class=\"okurigana\">テスト</sup>", tag.to_html());
+        Assert.Equal("<sup class=\"okurigana\">テスト</sup>", tag.ToHtml());
     }
 }

@@ -14,6 +14,7 @@ namespace TestProject;
 public static class UnitTestKaeritenTag
 {
     [Fact]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0150:型のチェックよりも 'null 値' チェックを優先する", Justification = "<保留中>")]
     public static void TestNew()
     {
         var tag = new Kaeriten("aaa");
@@ -27,7 +28,7 @@ public static class UnitTestKaeritenTag
     public static void TestToHtml()
     {
         var tag = new Kaeriten("テスト");
-        Assert.Equal("<sub class=\"kaeriten\">テスト</sub>", tag.to_html());
+        Assert.Equal("<sub class=\"kaeriten\">テスト</sub>", tag.ToHtml());
     }
 }
 

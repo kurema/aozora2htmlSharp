@@ -18,12 +18,12 @@ namespace Aozora.Helpers
             this.css_files = css_files ?? new string[0];
         }
 
-        public void push(string line)
+        public void Push(string line)
         {
             header.Add(line);
         }
 
-        public string out_header_info(Dictionary<header_element_type_kind, string> hash, header_element_type_kind attr, string? true_name = null)
+        public string OutHeaderInfo(Dictionary<HeaderElementTypeKind, string> hash, HeaderElementTypeKind attr, string? true_name = null)
         {
             if (hash.ContainsKey(attr))
             {
@@ -36,7 +36,7 @@ namespace Aozora.Helpers
             }
         }
 
-        public header_element_type_kind header_element_type(string text)
+        public HeaderElementTypeKind Header_element_type(string text)
         {
             bool original = true;
             foreach (var ch in text)
@@ -54,120 +54,120 @@ namespace Aozora.Helpers
             }
             if (original)
             {
-                return header_element_type_kind.original;
+                return HeaderElementTypeKind.original;
             }
             else if (Aozora2Html.PAT_EDITOR.IsMatch(text))
             {
-                return header_element_type_kind.editor;
+                return HeaderElementTypeKind.editor;
             }
             else if (Aozora2Html.PAT_HENYAKU.IsMatch(text))
             {
-                return header_element_type_kind.henyaku;
+                return HeaderElementTypeKind.henyaku;
             }
             else if (Aozora2Html.PAT_TRANSLATOR.IsMatch(text))
             {
-                return header_element_type_kind.translator;
+                return HeaderElementTypeKind.translator;
             }
-            return header_element_type_kind.author;
+            return HeaderElementTypeKind.author;
         }
 
-        public enum header_element_type_kind
+        public enum HeaderElementTypeKind
         {
             editor, translator, henyaku, author, original, title, original_title, subtitle, original_subtitle
         }
 
 
-        public header_element_type_kind process_person(string word, Dictionary<header_element_type_kind, string> header_info)
+        public HeaderElementTypeKind ProcessPerson(string word, Dictionary<HeaderElementTypeKind, string> header_info)
         {
-            var type = header_element_type(word);
+            var type = Header_element_type(word);
             switch (type)
             {
-                case header_element_type_kind.editor:
-                    header_info[header_element_type_kind.editor] = word;
+                case HeaderElementTypeKind.editor:
+                    header_info[HeaderElementTypeKind.editor] = word;
                     break;
-                case header_element_type_kind.translator:
-                    header_info[header_element_type_kind.translator] = word;
+                case HeaderElementTypeKind.translator:
+                    header_info[HeaderElementTypeKind.translator] = word;
                     break;
-                case header_element_type_kind.henyaku:
-                    header_info[header_element_type_kind.henyaku] = word;
+                case HeaderElementTypeKind.henyaku:
+                    header_info[HeaderElementTypeKind.henyaku] = word;
                     break;
-                case header_element_type_kind.author:
+                case HeaderElementTypeKind.author:
                 default:
-                    type = header_element_type_kind.author;
-                    header_info[header_element_type_kind.author] = word;
+                    type = HeaderElementTypeKind.author;
+                    header_info[HeaderElementTypeKind.author] = word;
                     break;
             }
             return type;
         }
 
-        public string build_title(Dictionary<header_element_type_kind, string> header_info)
+        public string BuildTitle(Dictionary<HeaderElementTypeKind, string> header_info)
         {
             var buff = new[] {
-            header_element_type_kind.author,header_element_type_kind.translator,header_element_type_kind.editor,header_element_type_kind.henyaku,
-            header_element_type_kind.title,header_element_type_kind.original_title,
-            header_element_type_kind.subtitle,header_element_type_kind.original_subtitle,
+            HeaderElementTypeKind.author,HeaderElementTypeKind.translator,HeaderElementTypeKind.editor,HeaderElementTypeKind.henyaku,
+            HeaderElementTypeKind.title,HeaderElementTypeKind.original_title,
+            HeaderElementTypeKind.subtitle,HeaderElementTypeKind.original_subtitle,
             }.Where(a => header_info.ContainsKey(a)).Select(a => header_info[a]);
             string buf_str = string.Join(" ", buff);
             return $"<title>{buf_str}</title>";
         }
 
-        public Dictionary<header_element_type_kind, string> build_header_info()
+        public Dictionary<HeaderElementTypeKind, string> BuildHeaderInfo()
         {
             //kurema: ヘッダーは行数によって順番が決まているみたい。
-            var header_info = new Dictionary<header_element_type_kind, string>() { { header_element_type_kind.title, header[0] } };
+            var header_info = new Dictionary<HeaderElementTypeKind, string>() { { HeaderElementTypeKind.title, header[0] } };
             switch (header.Count)
             {
                 case 2:
-                    process_person(header[1], header_info);
+                    ProcessPerson(header[1], header_info);
                     break;
                 case 3:
-                    if (header_element_type(header[1]) == header_element_type_kind.original)
+                    if (Header_element_type(header[1]) == HeaderElementTypeKind.original)
                     {
-                        header_info[header_element_type_kind.original_title] = header[1];
-                        process_person(header[2], header_info);
+                        header_info[HeaderElementTypeKind.original_title] = header[1];
+                        ProcessPerson(header[2], header_info);
                     }
-                    else if (process_person(header[2], header_info) == header_element_type_kind.author)
+                    else if (ProcessPerson(header[2], header_info) == HeaderElementTypeKind.author)
                     {
-                        header_info[header_element_type_kind.subtitle] = header[1];
+                        header_info[HeaderElementTypeKind.subtitle] = header[1];
                     }
                     else
                     {
-                        header_info[header_element_type_kind.author] = header[1];
+                        header_info[HeaderElementTypeKind.author] = header[1];
                     }
                     break;
                 case 4:
-                    if (header_element_type(header[1]) == header_element_type_kind.original)
+                    if (Header_element_type(header[1]) == HeaderElementTypeKind.original)
                     {
-                        header_info[header_element_type_kind.original_title] = header[1];
+                        header_info[HeaderElementTypeKind.original_title] = header[1];
                     }
                     else
                     {
-                        header_info[header_element_type_kind.subtitle] = header[1];
+                        header_info[HeaderElementTypeKind.subtitle] = header[1];
                     }
-                    if (process_person(header[3], header_info) == header_element_type_kind.author)
+                    if (ProcessPerson(header[3], header_info) == HeaderElementTypeKind.author)
                     {
-                        header_info[header_element_type_kind.subtitle] = header[2];
+                        header_info[HeaderElementTypeKind.subtitle] = header[2];
                     }
                     else
                     {
-                        header_info[header_element_type_kind.author] = header[2];
+                        header_info[HeaderElementTypeKind.author] = header[2];
                     }
                     break;
                 case 5:
-                    header_info[header_element_type_kind.original_title] = header[1];
-                    header_info[header_element_type_kind.subtitle] = header[2];
-                    header_info[header_element_type_kind.author] = header[3];
-                    if (process_person(header[4], header_info) == header_element_type_kind.author)
+                    header_info[HeaderElementTypeKind.original_title] = header[1];
+                    header_info[HeaderElementTypeKind.subtitle] = header[2];
+                    header_info[HeaderElementTypeKind.author] = header[3];
+                    if (ProcessPerson(header[4], header_info) == HeaderElementTypeKind.author)
                     {
                         throw new Exceptions.AuthorTwiceException();
                     }
                     break;
                 case 6:
-                    header_info[header_element_type_kind.original_title] = header[1];
-                    header_info[header_element_type_kind.subtitle] = header[2];
-                    header_info[header_element_type_kind.original_subtitle] = header[3];
-                    header_info[header_element_type_kind.author] = header[4];
-                    if (process_person(header[5], header_info) == header_element_type_kind.author)
+                    header_info[HeaderElementTypeKind.original_title] = header[1];
+                    header_info[HeaderElementTypeKind.subtitle] = header[2];
+                    header_info[HeaderElementTypeKind.original_subtitle] = header[3];
+                    header_info[HeaderElementTypeKind.author] = header[4];
+                    if (ProcessPerson(header[5], header_info) == HeaderElementTypeKind.author)
                     {
                         throw new Exceptions.AuthorTwiceException();
                     }
@@ -176,13 +176,13 @@ namespace Aozora.Helpers
             return header_info;
         }
 
-        public string to_html(string? jQueryPath = "../../jquery-1.4.2.min.js")
+        public string ToHtml(string? jQueryPath = "../../jquery-1.4.2.min.js")
         {
             //kurema:jQueryPathをnullにした場合はscript自体出力しない。epub用。
-            var header_info = build_header_info();
+            var header_info = BuildHeaderInfo();
 
             // <title> 行を構築
-            var html_title = build_title(header_info);
+            var html_title = BuildTitle(header_info);
 
             // 出力
             var out_buf = new System.Text.StringBuilder();
@@ -193,8 +193,8 @@ namespace Aozora.Helpers
             }
             out_buf.Append($"\t{html_title}\r\n");
             if (!string.IsNullOrWhiteSpace(jQueryPath)) out_buf.Append($"	<script type=\"text/javascript\" src=\"{jQueryPath}\"></script>\r\n");
-            out_buf.Append($"  <link rel=\"Schema.DC\" href=\"http://purl.org/dc/elements/1.1/\" />\r\n	<meta name=\"DC.Title\" content=\"{header_info[header_element_type_kind.title]}\" />\r\n	<meta name=\"DC.Creator\" content=\"{header_info[header_element_type_kind.author]}\" />\r\n	<meta name=\"DC.Publisher\" content=\"{Aozora2Html.AOZORABUNKO}\" />\r\n</head>\r\n<body>\r\n<div class=\"metadata\">\r\n");
-            out_buf.Append($"<h1 class=\"title\">{header_info[header_element_type_kind.title]}</h1>\r\n" + out_header_info(header_info, header_element_type_kind.original_title) + out_header_info(header_info, header_element_type_kind.subtitle) + out_header_info(header_info, header_element_type_kind.original_subtitle) + out_header_info(header_info, header_element_type_kind.author) + out_header_info(header_info, header_element_type_kind.editor) + out_header_info(header_info, header_element_type_kind.translator) + out_header_info(header_info, header_element_type_kind.henyaku, "editor-translator"));
+            out_buf.Append($"  <link rel=\"Schema.DC\" href=\"http://purl.org/dc/elements/1.1/\" />\r\n	<meta name=\"DC.Title\" content=\"{header_info[HeaderElementTypeKind.title]}\" />\r\n	<meta name=\"DC.Creator\" content=\"{header_info[HeaderElementTypeKind.author]}\" />\r\n	<meta name=\"DC.Publisher\" content=\"{Aozora2Html.AOZORABUNKO}\" />\r\n</head>\r\n<body>\r\n<div class=\"metadata\">\r\n");
+            out_buf.Append($"<h1 class=\"title\">{header_info[HeaderElementTypeKind.title]}</h1>\r\n" + OutHeaderInfo(header_info, HeaderElementTypeKind.original_title) + OutHeaderInfo(header_info, HeaderElementTypeKind.subtitle) + OutHeaderInfo(header_info, HeaderElementTypeKind.original_subtitle) + OutHeaderInfo(header_info, HeaderElementTypeKind.author) + OutHeaderInfo(header_info, HeaderElementTypeKind.editor) + OutHeaderInfo(header_info, HeaderElementTypeKind.translator) + OutHeaderInfo(header_info, HeaderElementTypeKind.henyaku, "editor-translator"));
             out_buf.Append("<br />\r\n<br />\r\n</div>\r\n<div id=\"contents\" style=\"display:none\"></div><div class=\"main_text\">");
             return out_buf.ToString();
         }

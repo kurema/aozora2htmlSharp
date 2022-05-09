@@ -9,7 +9,7 @@ namespace Aozora.Helpers
         protected bool closed = false; //改行での強制撤退チェックフラグ
         protected bool encount_accent = false;
 
-        public AccentParser(Jstream input, char? endchar, Dictionary<chuuki_table_keys, bool> chuuki, List<(string, List<string>)> images, IOutput output, IOutput? warnChannel = null, string? gaiji_dir = null, string[]? css_files = null) : base(input, output, warnChannel, gaiji_dir, css_files)
+        public AccentParser(Jstream input, char? endchar, Dictionary<ChuukiTableKeys, bool> chuuki, List<(string, List<string>)> images, IOutput output, IOutput? warnChannel = null, string? gaiji_dir = null, string[]? css_files = null) : base(input, output, warnChannel, gaiji_dir, css_files)
         {
             chuuki_table = chuuki;
             this.endchar = endchar; //改行は越えられない <br />を出力していられない
@@ -18,10 +18,10 @@ namespace Aozora.Helpers
         }
 
         //出力は配列で返す
-        public TextBuffer general_output_accent()
+        public TextBuffer GeneralOutputAccent()
         {
             //kurema:返り値がAozora2Htmlのgeneral_output()と違うので名前を変えました。
-            ruby_buf.dump_into(buffer);
+            ruby_buf.DumpInto(buffer);
             if (!encount_accent) buffer.Insert(0, new BufferItemString(new string(ACCENT_BEGIN, 1)));
             if (closed && !encount_accent)
             {
@@ -34,13 +34,13 @@ namespace Aozora.Helpers
             return buffer;
         }
 
-        public override void parse()
+        public override void Parse()
         {
             while (true)
             {
-                var first = read_char();
-                var second = stream.peek_char(0);
-                var third = stream.peek_char(1);
+                var first = ReadChar();
+                var second = stream.PeekChar(0);
+                var third = stream.PeekChar(1);
                 var (code, name, depth) = YamlValues.AccentTable(first, second, third);
 
                 IBufferItem? bufferItem = null;
@@ -49,10 +49,10 @@ namespace Aozora.Helpers
                 {
                     for (int i = 1; i < depth; i++)
                     {
-                        read_char();
+                        ReadChar();
                     }
                     encount_accent = true;
-                    chuuki_table[chuuki_table_keys.accent] = true;
+                    chuuki_table[ChuukiTableKeys.accent] = true;
                     first = null;
                     bufferItem = new BufferItemTag(new Tag.Accent(this, code, name, gaiji_dir));
                 }
@@ -61,24 +61,24 @@ namespace Aozora.Helpers
                 {
                     case GAIJI_MARK:
                         first = null;
-                        bufferItem = dispatch_gaiji();
+                        bufferItem = DispatchGaiji();
                         break;
                     case COMMAND_BEGIN:
                         first = null;
-                        bufferItem = dispatch_aozora_command();
+                        bufferItem = DispatchAozoraCommand();
                         break;
                     case KU:
-                        assign_kunoji();
+                        AssignKunoji();
                         break;
                     case RUBY_BEGIN_MARK:
                         first = null;
-                        bufferItem = new BufferItemString(apply_ruby() ?? "");
+                        bufferItem = new BufferItemString(ApplyRuby() ?? "");
                         break;
                 }
 
                 if (bufferItem is BufferItemString bufferString)
                 {
-                    var text = bufferString.to_html();
+                    var text = bufferString.ToHtml();
                     if (text?.Length == 0)
                     {
                         first = null;
@@ -93,7 +93,7 @@ namespace Aozora.Helpers
 
                 if (first == '\n')
                 {
-                    if (encount_accent) warnChannel?.println(String.Format(I18n.MSG["warn_invalid_accent_brancket"], line_number));
+                    if (encount_accent) warnChannel?.PrintLine(String.Format(I18n.MSG["warn_invalid_accent_brancket"], LineNumber));
                     throw new Exceptions.TerminateException();
                 }
                 else if (first == ACCENT_END)
@@ -103,35 +103,35 @@ namespace Aozora.Helpers
                 }
                 else if (first == RUBY_PREFIX)
                 {
-                    ruby_buf.dump_into(buffer);
-                    ruby_buf.@protected = true;
+                    ruby_buf.DumpInto(buffer);
+                    ruby_buf.IsProtected = true;
                 }
                 else if (first is not null)
                 {
-                    Utils.illegal_char_check(first.Value, line_number, warnChannel);
-                    push_chars(escape_special_chars(first.Value));
+                    Utils.IllegalCharCheck(first.Value, LineNumber, warnChannel);
+                    PushChars(EscapeSpecialChars(first.Value));
                 }
                 else if (bufferItem is not null)
                 {
-                    var text = bufferItem.to_html();
+                    var text = bufferItem.ToHtml();
                     if (!string.IsNullOrEmpty(text))
                     {
-                        Utils.illegal_char_check(bufferItem, line_number, warnChannel);
-                        push_chars(escape_special_chars(bufferItem));
+                        Utils.IllegalCharCheck(bufferItem, LineNumber, warnChannel);
+                        PushChars(EscapeSpecialChars(bufferItem));
                     }
                 }
             }
         }
 
-        public TextBuffer processAccent()
+        public TextBuffer ProcessAccent()
         {
             try
             {
-                parse();
+                Parse();
             }
             catch (Exceptions.TerminateException)
             {
-                return general_output_accent();
+                return GeneralOutputAccent();
             }
             throw new Exception();//kurema:parse()から脱出する方法がないのでここには来ない。
         }

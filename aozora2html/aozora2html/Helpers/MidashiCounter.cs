@@ -18,13 +18,13 @@ namespace Aozora.Helpers
             midashi_id = current_id;
         }
 
-        public int generate_id(int size)
+        public int GenerateId(int size)
         {
             midashi_id += size;
             return midashi_id;
         }
 
-        public int generate_id(string size)
+        public int GenerateId(string size)
         {
             int inc;
             if (size.Contains(new string(Aozora2Html.SIZE_SMALL, 1))) inc = 1;

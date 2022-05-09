@@ -18,11 +18,11 @@ public class InlineCaption : ReferenceMentioned, IHtmlProvider
 {
     public InlineCaption(object? target) : base(target) { }
 
-    public string to_html() => $"<span class=\"caption\">{target_html}</span>";
+    public string ToHtml() => $"<span class=\"caption\">{TargetHtml}</span>";
 
     public override object Clone()
     {
-        return new InlineCaption(target);
+        return new InlineCaption(Target);
     }
 }
 
@@ -31,26 +31,26 @@ public class InlineCaption : ReferenceMentioned, IHtmlProvider
 /// </summary>
 public class InlineFontSize : ReferenceMentioned, IHtmlProvider
 {
-    public string @class { get; }
-    public string style { get; }
+    public string Class { get; }
+    public string Style { get; }
 
     public InlineFontSize(object? target, int times, Aozora2Html.IndentTypeKey daisho) : base(target)
     {
-        @class = daisho.ToString() + times.ToString();
-        style = Utils.create_font_size(times, daisho);
+        Class = daisho.ToString() + times.ToString();
+        Style = Utils.CreateFontSize(times, daisho);
     }
 
     public InlineFontSize(object? target, string @class, string style) : base(target)
     {
-        this.@class = @class ?? throw new ArgumentNullException(nameof(@class));
-        this.style = style ?? throw new ArgumentNullException(nameof(style));
+        this.Class = @class ?? throw new ArgumentNullException(nameof(@class));
+        this.Style = style ?? throw new ArgumentNullException(nameof(style));
     }
 
-    public string to_html() => $"<span class=\"{@class}\" style=\"font-size: {style};\">{target_html}</span>";
+    public string ToHtml() => $"<span class=\"{Class}\" style=\"font-size: {Style};\">{TargetHtml}</span>";
 
     public override object Clone()
     {
-        return new InlineFontSize(target, @class, style);
+        return new InlineFontSize(Target, Class, Style);
     }
 }
 
@@ -63,11 +63,11 @@ public class InlineKeigakomi : ReferenceMentioned, IHtmlProvider
     {
     }
 
-    public string to_html() => $"<span class=\"keigakomi\">{target_html}</span>";
+    public string ToHtml() => $"<span class=\"keigakomi\">{TargetHtml}</span>";
 
     public override object Clone()
     {
-        return new InlineKeigakomi(target);
+        return new InlineKeigakomi(Target);
     }
 }
 
@@ -80,11 +80,11 @@ public class InlineYokogumi : ReferenceMentioned, IHtmlProvider
     {
     }
 
-    public string to_html() => $"<span class=\"yokogumi\">{target_html}</span>";
+    public string ToHtml() => $"<span class=\"yokogumi\">{TargetHtml}</span>";
 
     public override object Clone()
     {
-        return new InlineYokogumi(target);
+        return new InlineYokogumi(Target);
     }
 }
 

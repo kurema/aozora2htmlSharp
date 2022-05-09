@@ -14,6 +14,7 @@ namespace TestProject;
 public static class UnitTestKeigakomiTag
 {
     [Fact]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0150:型のチェックよりも 'null 値' チェックを優先する", Justification = "<保留中>")]
     public static void TestNew()
     {
         var parser = Helper.GetAozora2HtmlPlaceholder();
@@ -30,8 +31,8 @@ public static class UnitTestKeigakomiTag
         var parser = Helper.GetAozora2HtmlPlaceholder();
         var tag = new Keigakomi(parser);
 
-        Assert.Equal("<div class=\"keigakomi\" style=\"border: solid 1px\">", tag.to_html());
-        Assert.Equal("</div>", tag.close_tag());
+        Assert.Equal("<div class=\"keigakomi\" style=\"border: solid 1px\">", tag.ToHtml());
+        Assert.Equal("</div>", tag.CloseTag());
     }
 
     [Fact]
@@ -40,8 +41,8 @@ public static class UnitTestKeigakomiTag
         var parser = Helper.GetAozora2HtmlPlaceholder();
         var tag = new Keigakomi(parser, 2);
 
-        Assert.Equal("<div class=\"keigakomi\" style=\"border: solid 2px\">", tag.to_html());
-        Assert.Equal("</div>", tag.close_tag());
+        Assert.Equal("<div class=\"keigakomi\" style=\"border: solid 2px\">", tag.ToHtml());
+        Assert.Equal("</div>", tag.CloseTag());
     }
 }
 

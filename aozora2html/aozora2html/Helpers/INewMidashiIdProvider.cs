@@ -6,7 +6,7 @@ namespace Aozora.Helpers;
 
 public interface INewMidashiIdProvider
 {
-    int new_midashi_id(int size);
-    int new_midashi_id(string size);
-    bool block_allowed_context { get; }
+    int GenerateNewMidashiId(int size);
+    int GenerateNewMidashiId(string size);
+    bool BlockAllowedContext { get; }
 }

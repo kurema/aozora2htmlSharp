@@ -7,9 +7,9 @@ namespace Aozora.Helpers.Tag;
 /// </summary>
 public class Gaiji : Inline
 {
-    public override CharType char_type => CharType.Kanji;
+    public override CharType CharType => CharType.Kanji;
 
-    public static string Jisx0213_to_unicode(string code) => YamlValues.JIS2UCS(code) ?? throw new ArgumentOutOfRangeException(nameof(code));
+    public static string ConvertJisx0213ToUnicode(string code) => YamlValues.Jisx0213ToUnicode(code) ?? throw new ArgumentOutOfRangeException(nameof(code));
 }
 
 /// <summary>
@@ -22,32 +22,32 @@ public class EmbedGaiji : Gaiji, IHtmlProvider
     public EmbedGaiji(Aozora2Html parser, string? folder, string? code, string name, string gaiji_dir, string? unicode_num = null)
     {
         Parser = parser ?? throw new ArgumentNullException(nameof(parser));
-        this.folder = folder ?? "";
-        this.code = code;
-        this.name = name ?? throw new ArgumentNullException(nameof(name));
-        this.unicode = unicode_num;
-        this.gaiji_dir = gaiji_dir ?? throw new ArgumentNullException(nameof(gaiji_dir));
+        this.Folder = folder ?? "";
+        this.Code = code;
+        this.Name = name ?? throw new ArgumentNullException(nameof(name));
+        this.Unicode = unicode_num;
+        this.GaijiDir = gaiji_dir ?? throw new ArgumentNullException(nameof(gaiji_dir));
     }
 
-    public string folder { get; }
-    public string? code { get; }
-    public string name { get; }
-    public string? unicode { get; }
-    public string gaiji_dir { get; }
+    public string Folder { get; }
+    public string? Code { get; }
+    public string Name { get; }
+    public string? Unicode { get; }
+    public string GaijiDir { get; }
 
-    public string to_html()
+    public string ToHtml()
     {
-        if (Parser.use_jisx0214_embed_gaiji && !string.IsNullOrWhiteSpace(code))
+        if (Parser.UseJisx0214EmbedGaiji && !string.IsNullOrWhiteSpace(Code))
         {
-            return Jisx0213_to_unicode(code!);
+            return ConvertJisx0213ToUnicode(Code!);
         }
-        else if (Parser.use_unicode_embed_gaiji && !string.IsNullOrEmpty(unicode))
+        else if (Parser.UseUnicodeEmbedGaiji && !string.IsNullOrEmpty(Unicode))
         {
-            return $"&#x{unicode};";
+            return $"&#x{Unicode};";
         }
         else
         {
-            return $"<img src=\"{gaiji_dir}{folder}/{code}.png\" alt=\"{Aozora2Html.GAIJI_MARK}({name})\" class=\"gaiji\" />";
+            return $"<img src=\"{GaijiDir}{Folder}/{Code}.png\" alt=\"{Aozora2Html.GAIJI_MARK}({Name})\" class=\"gaiji\" />";
         }
     }
 }
@@ -59,13 +59,13 @@ public class UnEmbedGaiji : Gaiji, IHtmlProvider
 {
     public UnEmbedGaiji(string desc)
     {
-        this.desc = desc ?? throw new ArgumentNullException(nameof(desc));
+        this.Desc = desc ?? throw new ArgumentNullException(nameof(desc));
     }
 
-    public string desc { get; }
-    public bool escaped { get; protected set; } = false;
+    public string Desc { get; }
+    public bool Escaped { get; protected set; } = false;
 
-    public bool escape() => escaped = true;
+    public bool Escape() => Escaped = true;
 
-    public string to_html() => $"<span class=\"notes\">［{desc}］</span>";
+    public string ToHtml() => $"<span class=\"notes\">［{Desc}］</span>";
 }

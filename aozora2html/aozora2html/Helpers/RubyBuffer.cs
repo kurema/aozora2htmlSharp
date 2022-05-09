@@ -13,142 +13,142 @@ namespace Aozora.Helpers
     public class RubyBuffer : IList<IBufferItem>
     {
         // `｜`が来た時に真にする。ルビの親文字のガード用。
-        public bool @protected { get; set; }
+        public bool IsProtected { get; set; }
 
         // バッファの初期化。`""`の1要素のバッファにする。
         //kurema: 下のMemeberNotNullはNullable様だけど、.NetStandard 2.0では使えない。
         //[System.Diagnostics.CodeAnalysis.MemberNotNull(nameof(ruby_buf))]
-        public void clear()
+        public void Clear()
         {
-            ruby_buf = new List<IBufferItem>();
-            @protected = false;
+            RubyBuf = new List<IBufferItem>();
+            IsProtected = false;
             char_type = null;
         }
 
-        public List<IBufferItem> ruby_buf { get; private set; } = new List<IBufferItem>();//kurema:この代入は余計。でも楽。
+        public List<IBufferItem> RubyBuf { get; private set; } = new List<IBufferItem>();//kurema:この代入は余計。でも楽。
         // @ruby_buf内の文字のchar_type
         public Tag.CharType? char_type = null;
 
         public RubyBuffer()
         {
-            clear();
+            Clear();
         }
 
-        public bool empty => ruby_buf.Count == 0;
-        public bool present => !empty;
+        public bool IsEmpty => RubyBuf.Count == 0;
+        public bool IsPresent => !IsEmpty;
 
-        public IBufferItem[] ToArray() => ruby_buf.ToArray();
-        public IBufferItem? last => ruby_buf.Count > 0 ? ruby_buf.Last() : null;
+        public IBufferItem[] ToArray() => RubyBuf.ToArray();
+        public IBufferItem? Last => RubyBuf.Count > 0 ? RubyBuf.Last() : null;
 
-        public int length => ruby_buf.Count;
+        public int Length => RubyBuf.Count;
 
-        public int Count => ((ICollection<IBufferItem>)ruby_buf).Count;
+        public int Count => ((ICollection<IBufferItem>)RubyBuf).Count;
 
-        public bool IsReadOnly => ((ICollection<IBufferItem>)ruby_buf).IsReadOnly;
+        public bool IsReadOnly => ((ICollection<IBufferItem>)RubyBuf).IsReadOnly;
 
-        public IBufferItem this[int index] { get => ((IList<IBufferItem>)ruby_buf)[index]; set => ((IList<IBufferItem>)ruby_buf)[index] = value; }
+        public IBufferItem this[int index] { get => ((IList<IBufferItem>)RubyBuf)[index]; set => ((IList<IBufferItem>)RubyBuf)[index] = value; }
 
 
         // バッファ末尾にitemを追加する
         //
         // itemとバッファの最後尾がどちらもStringであれば連結したStringにし、
         // そうでなければバッファの末尾に新しい要素として追加する
-        public void push(string value)
+        public void Push(string value)
         {
-            if (last is BufferItemString itemString) itemString.Append(value);
-            else ruby_buf.Add(new BufferItemString(value));
+            if (Last is BufferItemString itemString) itemString.Append(value);
+            else RubyBuf.Add(new BufferItemString(value));
         }
 
-        public void push(char @char)
+        public void Push(char @char)
         {
-            push(new string(@char, 1));
+            Push(new string(@char, 1));
         }
 
-        public void push(Tag.Tag tag)
+        public void Push(Tag.Tag tag)
         {
-            ruby_buf.Add(new BufferItemTag(tag));
+            RubyBuf.Add(new BufferItemTag(tag));
         }
 
-        public IBufferItem[] create_ruby(string ruby)
+        public IBufferItem[] CreateRuby(string ruby)
         {
             //kurema:
             //`ans = +''` ってのがあるんだけど。`+''`ってのは何？分からん。
             var ans = new StringBuilder();
             var notes = new List<IBufferItem>();
 
-            foreach (var token in ruby_buf)
+            foreach (var token in RubyBuf)
             {
-                if ((token as BufferItemTag)?.tag is Tag.UnEmbedGaiji gaiji)
+                if ((token as BufferItemTag)?.Content is Tag.UnEmbedGaiji gaiji)
                 {
                     ans.Append(Aozora2Html.GAIJI_MARK);
-                    gaiji.escape();
+                    gaiji.Escape();
                     notes.Add(token);
                 }
                 else
                 {
-                    ans.Append(token.to_html());
+                    ans.Append(token.ToHtml());
                 }
             }
 
             notes.Insert(0, new BufferItemTag(new Tag.Ruby(ans.ToString(), ruby)));
-            clear();
+            Clear();
             return notes.ToArray();
         }
 
         //buffer management
-        public TextBuffer dump_into(TextBuffer buffer)
+        public TextBuffer DumpInto(TextBuffer buffer)
         {
-            if (@protected)
+            if (IsProtected)
             {
-                ruby_buf.Insert(0, new BufferItemString(new string(Aozora2Html.RUBY_PREFIX, 1)));
-                @protected = false;
+                RubyBuf.Insert(0, new BufferItemString(new string(Aozora2Html.RUBY_PREFIX, 1)));
+                IsProtected = false;
             }
-            var top = ruby_buf.Count > 0 ? ruby_buf[0] : null;
+            var top = RubyBuf.Count > 0 ? RubyBuf[0] : null;
             if (top is BufferItemString && buffer.LastOrDefault() is BufferItemString lastString)
             {
-                lastString.Append(top.to_html());
-                buffer.AddRange(ruby_buf.GetRange(1, ruby_buf.Count - 1));
+                lastString.Append(top.ToHtml());
+                buffer.AddRange(RubyBuf.GetRange(1, RubyBuf.Count - 1));
             }
             else
             {
-                buffer.AddRange(ruby_buf);
+                buffer.AddRange(RubyBuf);
             }
-            clear();
+            Clear();
             return buffer;
         }
 
 
-        public void push_char(char @char, TextBuffer buffer)
+        public void PushChar(char @char, TextBuffer buffer)
         {
             var ctype = Utils.GetCharType(@char);
             if (ctype == Tag.CharType.HankakuTerminate && char_type == Tag.CharType.Hankaku)
             {
-                push(@char);
+                Push(@char);
                 char_type = Tag.CharType.Else;
             }
-            else if (@protected || ((ctype != Tag.CharType.Else) && (ctype == char_type)))
+            else if (IsProtected || ((ctype != Tag.CharType.Else) && (ctype == char_type)))
             {
-                push(@char);
+                Push(@char);
             }
             else
             {
-                dump_into(buffer);
-                push(@char);
+                DumpInto(buffer);
+                Push(@char);
                 char_type = ctype;
             }
         }
 
-        public void push_char(Tag.Tag @char, TextBuffer buffer)
+        public void PushChar(Tag.Tag @char, TextBuffer buffer)
         {
-            var ctype = @char.char_type;
-            if (@protected)
+            var ctype = @char.CharType;
+            if (IsProtected)
             {
-                push(@char);
+                Push(@char);
             }
             else
             {
-                dump_into(buffer);
-                push(@char);
+                DumpInto(buffer);
+                Push(@char);
                 char_type = ctype;
             }
         }
@@ -156,52 +156,52 @@ namespace Aozora.Helpers
         #region IList
         public int IndexOf(IBufferItem item)
         {
-            return ((IList<IBufferItem>)ruby_buf).IndexOf(item);
+            return ((IList<IBufferItem>)RubyBuf).IndexOf(item);
         }
 
         public void Insert(int index, IBufferItem item)
         {
-            ((IList<IBufferItem>)ruby_buf).Insert(index, item);
+            ((IList<IBufferItem>)RubyBuf).Insert(index, item);
         }
 
         public void RemoveAt(int index)
         {
-            ((IList<IBufferItem>)ruby_buf).RemoveAt(index);
+            ((IList<IBufferItem>)RubyBuf).RemoveAt(index);
         }
 
         public void Add(IBufferItem item)
         {
-            ((ICollection<IBufferItem>)ruby_buf).Add(item);
+            ((ICollection<IBufferItem>)RubyBuf).Add(item);
         }
 
-        public void Clear()
-        {
-            ((ICollection<IBufferItem>)ruby_buf).Clear();
-        }
+        //public void Clear()
+        //{
+        //    ((ICollection<IBufferItem>)RubyBuf).Clear();
+        //}
 
         public bool Contains(IBufferItem item)
         {
-            return ((ICollection<IBufferItem>)ruby_buf).Contains(item);
+            return ((ICollection<IBufferItem>)RubyBuf).Contains(item);
         }
 
         public void CopyTo(IBufferItem[] array, int arrayIndex)
         {
-            ((ICollection<IBufferItem>)ruby_buf).CopyTo(array, arrayIndex);
+            ((ICollection<IBufferItem>)RubyBuf).CopyTo(array, arrayIndex);
         }
 
         public bool Remove(IBufferItem item)
         {
-            return ((ICollection<IBufferItem>)ruby_buf).Remove(item);
+            return ((ICollection<IBufferItem>)RubyBuf).Remove(item);
         }
 
         public IEnumerator<IBufferItem> GetEnumerator()
         {
-            return ((IEnumerable<IBufferItem>)ruby_buf).GetEnumerator();
+            return ((IEnumerable<IBufferItem>)RubyBuf).GetEnumerator();
         }
 
         IEnumerator IEnumerable.GetEnumerator()
         {
-            return ((IEnumerable)ruby_buf).GetEnumerator();
+            return ((IEnumerable)RubyBuf).GetEnumerator();
         }
         #endregion
 

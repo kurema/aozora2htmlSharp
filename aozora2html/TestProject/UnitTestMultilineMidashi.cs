@@ -14,6 +14,7 @@ namespace TestProject;
 public static class UnitTestMultilineMidashi
 {
     [Fact]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0150:型のチェックよりも 'null 値' チェックを優先する", Justification = "<保留中>")]
     public static void TestNew()
     {
         var tag = new MultilineMidashi(new Helper.MidashiIdProviderPlaceholder(2, true), "小", Utils.MidashiType.normal);
@@ -28,24 +29,24 @@ public static class UnitTestMultilineMidashi
     public static void TestToHtml()
     {
         var tag = new MultilineMidashi(new Helper.MidashiIdProviderPlaceholder(2, true), "小", Utils.MidashiType.normal);
-        Assert.Equal("<h5 class=\"ko-midashi\"><a class=\"midashi_anchor\" id=\"midashi2\">", tag.to_html());
-        Assert.Equal("</a></h5>", tag.close_tag());
+        Assert.Equal("<h5 class=\"ko-midashi\"><a class=\"midashi_anchor\" id=\"midashi2\">", tag.ToHtml());
+        Assert.Equal("</a></h5>", tag.CloseTag());
     }
 
     [Fact]
     public static void TestToHtmlChu()
     {
         var tag = new MultilineMidashi(new Helper.MidashiIdProviderPlaceholder(2, true), "中", Utils.MidashiType.dogyo);
-        Assert.Equal("<h4 class=\"dogyo-naka-midashi\"><a class=\"midashi_anchor\" id=\"midashi2\">", tag.to_html());
-        Assert.Equal("</a></h4>", tag.close_tag());
+        Assert.Equal("<h4 class=\"dogyo-naka-midashi\"><a class=\"midashi_anchor\" id=\"midashi2\">", tag.ToHtml());
+        Assert.Equal("</a></h4>", tag.CloseTag());
     }
 
     [Fact]
     public static void TestToHtmlDai()
     {
         var tag = new MultilineMidashi(new Helper.MidashiIdProviderPlaceholder(2, true), "大", Utils.MidashiType.mado);
-        Assert.Equal("<h3 class=\"mado-o-midashi\"><a class=\"midashi_anchor\" id=\"midashi2\">", tag.to_html());
-        Assert.Equal("</a></h3>", tag.close_tag());
+        Assert.Equal("<h3 class=\"mado-o-midashi\"><a class=\"midashi_anchor\" id=\"midashi2\">", tag.ToHtml());
+        Assert.Equal("</a></h3>", tag.CloseTag());
     }
 
     [Fact]
@@ -54,7 +55,7 @@ public static class UnitTestMultilineMidashi
         string error = "";
         try
         {
-            new MultilineMidashi(new Helper.MidashiIdProviderPlaceholder(2, true), "あ", Utils.MidashiType.mado);
+            var _ = new MultilineMidashi(new Helper.MidashiIdProviderPlaceholder(2, true), "あ", Utils.MidashiType.mado);
         }
         catch (Aozora.Exceptions.UndefinedHeaderException e)
         {
@@ -70,7 +71,7 @@ public static class UnitTestMultilineMidashi
         try
         {
             //kurema:C#のenumは基本内部的にintなので範囲外の値も設定できます。
-            new MultilineMidashi(new Helper.MidashiIdProviderPlaceholder(2, true), "大", (Utils.MidashiType)12345);
+            var _ = new MultilineMidashi(new Helper.MidashiIdProviderPlaceholder(2, true), "大", (Utils.MidashiType)12345);
         }
         catch (Aozora.Exceptions.UndefinedHeaderException e)
         {

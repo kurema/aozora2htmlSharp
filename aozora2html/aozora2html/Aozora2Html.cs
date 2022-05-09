@@ -208,7 +208,7 @@ namespace Aozora
             {5, "ヲ゛"},
         });
 
-        public enum chuuki_table_keys
+        public enum ChuukiTableKeys
         {
             chuki, kunoji, dakutenkunoji, newjis, accent,
         }
@@ -217,10 +217,10 @@ namespace Aozora
         protected IOutput @out;
         protected TextBuffer buffer;
         protected RubyBuffer ruby_buf;
-        public SectionKind section { get; set; }//現在処理中のセクション(:head,:head_end,:chuuki,:chuuki_in,:body,:tail)
+        public SectionKind Section { get; set; }//現在処理中のセクション(:head,:head_end,:chuuki,:chuuki_in,:body,:tail)
         protected Header header;
         protected StyleStack style_stack;//スタイルのスタック
-        protected Dictionary<chuuki_table_keys, bool> chuuki_table;//最後にどの注記を出すかを保持しておく
+        protected Dictionary<ChuukiTableKeys, bool> chuuki_table;//最後にどの注記を出すかを保持しておく
         protected List<(string, List<string>)> images;//使用した外字の画像保持用
         protected Stack<IIndentStackItem> indent_stack;//基本はシンボルだが、ぶらさげのときはdivタグの文字列が入る
         protected Stack<string> tag_stack;
@@ -240,9 +240,9 @@ namespace Aozora
         //kurema:
         //本来はstatic変数。しかし、parserに属した方が扱いやすいので移しました。
         //具体的にはマルチスレッドで同時に実行する時とかにstaticだと問題があります。
-        public bool use_jisx0213_accent { get; set; } = false;
-        public bool use_jisx0214_embed_gaiji { get; set; } = false;
-        public bool use_unicode_embed_gaiji { get; set; } = false;
+        public bool UseJisx0213Accent { get; set; } = false;
+        public bool UseJisx0214EmbedGaiji { get; set; } = false;
+        public bool UseUnicodeEmbedGaiji { get; set; } = false;
 
         protected string gaiji_dir;
         protected string[] css_files;
@@ -253,7 +253,7 @@ namespace Aozora
             @out = output;
             buffer = new();
             ruby_buf = new();
-            section = SectionKind.head;
+            Section = SectionKind.head;
             style_stack = new();
             chuuki_table = new();
             images = new();
@@ -278,25 +278,25 @@ namespace Aozora
             head, head_end, chuuki, chuuki_in, body, tail
         }
 
-        public int line_number => stream.line;
+        public int LineNumber => stream.Line;
 
-        public bool block_allowed_context => style_stack.empty;
+        public bool BlockAllowedContext => style_stack.IsEmpty;
 
         /// <summary>
         /// parseする
         /// 
         /// 終了時（終端まで来た場合）にはthrow :terminateで脱出する
         /// </summary>
-        public void process()
+        public void Process()
         {
             try
             {
-                parse();
+                Parse();
             }
             catch (Exceptions.AozoraException e)
             {
                 //kurema:原文と異なりexitしません。
-                warnChannel.println(e.GetMessageAozora(line_number));
+                warnChannel.PrintLine(e.GetMessageAozora(LineNumber));
                 return;
             }
             catch (Exceptions.TerminateException)
@@ -304,22 +304,22 @@ namespace Aozora
             }
             finally
             {
-                tail_output();
-                finalize();
-                close();
+                TailOutput();
+                FinalizeAozora();
+                Close();
             }
         }
 
-        public int new_midashi_id(int size) => midashi_counter.generate_id(size);
-        public int new_midashi_id(string size) => midashi_counter.generate_id(size);
+        public int GenerateNewMidashiId(int size) => midashi_counter.GenerateId(size);
+        public int GenerateNewMidashiId(string size) => midashi_counter.GenerateId(size);
 
-        public IBufferItem kuten2png(string substring)
+        public IBufferItem KutenToPng(string substring)
         {
             var desc = PAT_KUTEN.Replace(substring, "");
             var matched = new Regex(@"([12])-(\d{1,2})-(\d{1,2})").Match(desc);
             if (matched.Success && desc != NON_0213_GAIJI && !PAT_KUTEN_DUAL.IsMatch(desc))
             {
-                chuuki_table[chuuki_table_keys.newjis] = true;
+                chuuki_table[ChuukiTableKeys.newjis] = true;
                 var codes = new int[] { int.Parse(matched.Groups[1].Value), int.Parse(matched.Groups[2].Value), int.Parse(matched.Groups[3].Value) };
                 var folder = string.Format("{0,1}-{1:D2}", codes[0], codes[1]);//%1d-%02d
                 var code = string.Format("{0,1}-{1:D2}-{2:D2}", codes[0], codes[1], codes[2]);//%1d-%02d-%02d
@@ -336,7 +336,7 @@ namespace Aozora
         /// </summary>
         /// <param name="command"></param>
         /// <returns>[Symbol]</returns>
-        public static IndentTypeKey? detect_command_mode(string command)
+        public static IndentTypeKey? DetectCommandMode(string command)
         {
             //kurema:元は正規表現。途中でもマッチするはずなので==ではなくContains。
             if (command.Contains(INDENT_TYPE[IndentTypeKey.chitsuki] + END_MARK) || command.Contains(JIAGE_COMMAND + END_MARK))
@@ -355,48 +355,48 @@ namespace Aozora
         /// 一文字読み込む
         /// </summary>
         /// <returns></returns>
-        public virtual char? read_char() => stream.read_char();
+        public virtual char? ReadChar() => stream.ReadChar();
 
         //一行読み込む
-        public string? read_line() => stream.read_line();
+        public string? ReadLine() => stream.ReadLine();
 
-        protected TextBuffer read_accent()
+        protected TextBuffer ReadAccent()
         {
             return new AccentParser(stream, ACCENT_END, chuuki_table, images, @out, warnChannel, gaiji_dir, css_files)
             {
-                use_jisx0213_accent = this.use_jisx0213_accent,
-                use_jisx0214_embed_gaiji = this.use_jisx0214_embed_gaiji,
-                use_unicode_embed_gaiji = this.use_unicode_embed_gaiji
-            }.processAccent();
+                UseJisx0213Accent = this.UseJisx0213Accent,
+                UseJisx0214EmbedGaiji = this.UseJisx0214EmbedGaiji,
+                UseUnicodeEmbedGaiji = this.UseUnicodeEmbedGaiji
+            }.ProcessAccent();
         }
 
-        protected virtual (string, string) read_to_nest(char? endchar)
+        protected virtual (string, string) ReadToNest(char? endchar)
         {
             return new TagParser(stream, endchar, chuuki_table, images, @out, warnChannel: warnChannel, gaiji_dir: gaiji_dir)
             {
-                use_jisx0213_accent = this.use_jisx0213_accent,
-                use_jisx0214_embed_gaiji = this.use_jisx0214_embed_gaiji,
-                use_unicode_embed_gaiji = this.use_unicode_embed_gaiji
-            }.processTag();
+                UseJisx0213Accent = this.UseJisx0213Accent,
+                UseJisx0214EmbedGaiji = this.UseJisx0214EmbedGaiji,
+                UseUnicodeEmbedGaiji = this.UseUnicodeEmbedGaiji
+            }.ProcessTag();
         }
 
-        protected void finalize()
+        protected void FinalizeAozora()
         {
-            hyoki();
-            dynamic_contents();
-            @out.print("</body>\r\n</html>\r\n");
+            PrintHyoki();
+            DynamicContents();
+            @out.Print("</body>\r\n</html>\r\n");
         }
 
-        protected void dynamic_contents()
+        protected void DynamicContents()
         {
-            @out.print(DYNAMIC_CONTENTS);
+            @out.Print(DYNAMIC_CONTENTS);
         }
 
-        protected void close()
+        protected void Close()
         {
-            stream.close();
-            @out.close();
-            warnChannel.close();
+            stream.Close();
+            @out.Close();
+            warnChannel.Close();
         }
 
         /// <summary>
@@ -405,16 +405,16 @@ namespace Aozora
         /// </summary>
         /// <param name="type"></param>
         /// <returns></returns>
-        protected string convert_indent_type(IIndentStackItem type) => type switch
+        protected string ConvertIndentType(IIndentStackItem type) => type switch
         {
             IndentStackItemString typeString => typeString.Content,
-            IndentStackItemIndentTypeKey typeIndentTypeKey => convert_indent_type(typeIndentTypeKey.Content),
+            IndentStackItemIndentTypeKey typeIndentTypeKey => ConvertIndentType(typeIndentTypeKey.Content),
             _ => throw new Exception(),
         };
 
-        protected string convert_indent_type(IndentTypeKey type) => INDENT_TYPE.ContainsKey(type) ? INDENT_TYPE[type] : type.ToString();
+        protected string ConvertIndentType(IndentTypeKey type) => INDENT_TYPE.ContainsKey(type) ? INDENT_TYPE[type] : type.ToString();
 
-        protected string? check_close_match(IndentTypeKey type)
+        protected string? CheckCloseMatch(IndentTypeKey type)
         {
             IndentTypeKey? ind;
             if (indent_stack.FirstOrDefault() is IndentStackItemString)
@@ -431,15 +431,15 @@ namespace Aozora
                 ind = null;
             }
             if (ind == type) return null;
-            else return convert_indent_type(type);
+            else return ConvertIndentType(type);
         }
 
-        public bool implicit_close(IndentTypeKey type)
+        public bool ImplicitClose(IndentTypeKey type)
         {
             //kurema:apply_burasage()を見ると返り値bool扱いが良いっぽいけど、かなり妙。
             if (indent_stack.Count == 0) return false;
 
-            if (check_close_match(type) != null)
+            if (CheckCloseMatch(type) != null)
             {
                 //ok, nested multiline tags, go ahead
                 return false;
@@ -451,7 +451,7 @@ namespace Aozora
                 if (tag_stack.Count > 0)
                 {
                     var tag = tag_stack.Pop();
-                    push_chars(tag);
+                    PushChars(tag);
                 }
                 return true;
             }
@@ -460,49 +460,49 @@ namespace Aozora
         /// <summary>
         /// 本文が終わってよいかチェックし、終わっていなければ例外をあげる
         /// </summary>
-        public void ensure_close()
+        public void EnsureClose()
         {
             var n = indent_stack.FirstOrDefault();
             if (n is null) return;
 
-            throw new Exceptions.TerminateInStyleException(convert_indent_type(n));
+            throw new Exceptions.TerminateInStyleException(ConvertIndentType(n));
         }
 
-        public void explicit_close(IndentTypeKey type)
+        public void ExplicitClose(IndentTypeKey type)
         {
-            var n = check_close_match(type);
+            var n = CheckCloseMatch(type);
             if (n is not null) throw new Exceptions.InvalidClosingException(n);
 
             if (tag_stack.Count == 0) return;
             var tag = tag_stack.Pop();
-            push_chars(tag);
+            PushChars(tag);
         }
 
         /// <summary>
         /// main loop
         /// </summary>
         /// <exception cref="Exceptions.EncountUndefinedConditionException"></exception>
-        public virtual void parse()
+        public virtual void Parse()
         {
             while (true)
             {
-                switch (section)
+                switch (Section)
                 {
                     case SectionKind.head:
-                        parse_header();
+                        ParseHeader();
                         break;
                     case SectionKind.head_end:
-                        judge_chuuki();
+                        JudgeChuuki();
                         break;
                     case SectionKind.chuuki:
                     case SectionKind.chuuki_in:
-                        parse_chuuki();
+                        ParseChuuki();
                         break;
                     case SectionKind.body:
-                        parse_body();
+                        ParseBody();
                         break;
                     case SectionKind.tail:
-                        parse_tail();
+                        ParseTail();
                         break;
                     default:
                         throw new Exceptions.EncountUndefinedConditionException();
@@ -510,56 +510,56 @@ namespace Aozora
             }
         }
 
-        public void judge_chuuki()
+        public void JudgeChuuki()
         {
             //注記が入るかどうかチェック
             int i = 0;
             while (true)
             {
-                switch (stream.peek_char(i))
+                switch (stream.PeekChar(i))
                 {
                     case '-': i++; break;
                     case '\n':
-                        section = i == 0 ? SectionKind.body : SectionKind.chuuki;
+                        Section = i == 0 ? SectionKind.body : SectionKind.chuuki;
                         return;
                     default:
-                        section = SectionKind.body;
-                        @out.print("<br />\r\n");
+                        Section = SectionKind.body;
+                        @out.Print("<br />\r\n");
                         return;
                 }
             }
         }
 
-        public void parse_header()
+        public void ParseHeader()
         {
-            var @string = read_line();
+            var @string = ReadLine();
             // refine from Tomita 09/06/14
             if (string.IsNullOrEmpty(@string))
             {
                 //空行がくれば、そこでヘッダー終了とみなす
-                section = SectionKind.head_end;
-                @out.print(header.to_html(jQueryPath));
+                Section = SectionKind.head_end;
+                @out.Print(header.ToHtml(jQueryPath));
             }
             else
             {
                 @string = @string!.Replace(new string(RUBY_PREFIX, 1), string.Empty);
                 @string = PAT_RUBY.Replace(@string, string.Empty);
-                header.push(@string);
+                header.Push(@string);
             }
         }
 
-        public void parse_chuuki()
+        public void ParseChuuki()
         {
-            var @string = read_line();
+            var @string = ReadLine();
             if (!Regex.IsMatch(@string, @"^-+$")) return;
 
-            switch (section)
+            switch (Section)
             {
                 case SectionKind.chuuki:
-                    section = SectionKind.chuuki_in;
+                    Section = SectionKind.chuuki_in;
                     break;
                 case SectionKind.chuuki_in:
-                    section = SectionKind.body;
+                    Section = SectionKind.body;
                     break;
             }
         }
@@ -571,9 +571,9 @@ namespace Aozora
         /// 改行コードに当たったら溜め込んだものをgeneral_outputする
         /// </summary>
         /// <exception cref="Exception"></exception>
-        public void parse_body()
+        public void ParseBody()
         {
-            object? @char = read_char();
+            object? @char = ReadChar();
             @char ??= ":eof";//kurema:C#版では:eofをnullで代用してるが、下では普通に@charがnullになりえるので適当な":eof"で仮置き。
             bool check = true;
 
@@ -581,30 +581,30 @@ namespace Aozora
             {
                 case ACCENT_BEGIN:
                     check = false;
-                    @char = read_accent();
+                    @char = ReadAccent();
                     break;
                 case GAIJI_MARK:
-                    @char = dispatch_gaiji();
+                    @char = DispatchGaiji();
                     break;
                 case COMMAND_BEGIN:
-                    @char = dispatch_aozora_command();
+                    @char = DispatchAozoraCommand();
                     break;
                 case KU:
-                    assign_kunoji();
+                    AssignKunoji();
                     break;
                 case RUBY_BEGIN_MARK:
-                    @char = apply_ruby();
+                    @char = ApplyRuby();
                     break;
                 default:
                     //kurema:TEIHON_MARK[0]は定数じゃないので普通に条件分岐で。
                     if ((char?)@char == TEIHON_MARK[0])
                     {
-                        if (buffer.Count == 0) ending_check();
+                        if (buffer.Count == 0) EndingCheck();
                     }
                     break;
             }
 
-            if (@char is BufferItemString bufferItemString) @char = bufferItemString.to_html();
+            if (@char is BufferItemString bufferItemString) @char = bufferItemString.ToHtml();
             if (@char is string s)
             {
                 if (s.Length == 0) @char = null;
@@ -614,46 +614,46 @@ namespace Aozora
             switch (@char)
             {
                 case '\n':
-                    general_output();
+                    GeneralOutput();
                     break;
                 case RUBY_PREFIX:
-                    ruby_buf.dump_into(buffer);
-                    ruby_buf.@protected = true;
+                    ruby_buf.DumpInto(buffer);
+                    ruby_buf.IsProtected = true;
                     break;
                 case null:
                     //noop
                     break;
                 default:
                     if ((@char is ":eof" && endchar is null) || (@char is char c && c == endchar) || (@char is string s2 && s2.Length is 1 && s2[0] == endchar)
-                        || (@char is BufferItemString bufferS && bufferS.Length == 1 && bufferS.to_html()[0] == endchar))
+                        || (@char is BufferItemString bufferS && bufferS.Length == 1 && bufferS.ToHtml()[0] == endchar))
                     {
                         //suddenly finished the file
-                        warnChannel.println(string.Format(I18n.MSG["warn_unexpected_terminator"], line_number));
+                        warnChannel.PrintLine(string.Format(I18n.MSG["warn_unexpected_terminator"], LineNumber));
                         throw new Exceptions.TerminateException();//kurema:例外で大域脱出したくない…。
                     }
 
                     if (@char is char charChar)
                     {
-                        if (check) Utils.illegal_char_check(charChar, line_number, warnChannel);
-                        push_chars(escape_special_chars(new string(charChar, 1)));
+                        if (check) Utils.IllegalCharCheck(charChar, LineNumber, warnChannel);
+                        PushChars(EscapeSpecialChars(new string(charChar, 1)));
                         break;
                     }
                     if (@char is string charString)
                     {
-                        if (check) foreach (var charItem in charString) Utils.illegal_char_check(charItem, line_number, warnChannel);
-                        push_chars(escape_special_chars(charString));
+                        if (check) foreach (var charItem in charString) Utils.IllegalCharCheck(charItem, LineNumber, warnChannel);
+                        PushChars(EscapeSpecialChars(charString));
                     }
                     else if (@char is IBufferItem bufferItem)
                     {
-                        if (check) Utils.illegal_char_check(bufferItem, line_number, warnChannel);
-                        push_chars(bufferItem);
+                        if (check) Utils.IllegalCharCheck(bufferItem, LineNumber, warnChannel);
+                        PushChars(bufferItem);
                     }
                     else if (@char is TextBuffer textBuffer)
                     {
                         foreach (var item in textBuffer)
                         {
-                            if (check) Utils.illegal_char_check(item, line_number, warnChannel);
-                            push_chars(item);
+                            if (check) Utils.IllegalCharCheck(item, LineNumber, warnChannel);
+                            PushChars(item);
                         }
                     }
                     break;
@@ -663,42 +663,42 @@ namespace Aozora
         /// <summary>
         /// 本文が終了したかどうかチェックする
         /// </summary>
-        public void ending_check()
+        public void EndingCheck()
         {
             //`底本：`でフッタ(:tail)に遷移
-            if (stream.peek_char(0) != TEIHON_MARK[1] || stream.peek_char(1) != TEIHON_MARK[2]) return;
+            if (stream.PeekChar(0) != TEIHON_MARK[1] || stream.PeekChar(1) != TEIHON_MARK[2]) return;
 
-            section = SectionKind.tail;
-            ensure_close();
-            @out.print("</div>\r\n<div class=\"bibliographical_information\">\r\n<hr />\r\n<br />\r\n");
+            Section = SectionKind.tail;
+            EnsureClose();
+            @out.Print("</div>\r\n<div class=\"bibliographical_information\">\r\n<hr />\r\n<br />\r\n");
         }
 
         //kurema:
         //C#なので元とは結構違う実装方法。何が来るかまだ調査不足だけど後で良い。
-        public void push_chars(string text)
+        public void PushChars(string text)
         {
-            foreach (var item in text) push_char(item);
+            foreach (var item in text) PushChar(item);
         }
 
-        public void push_chars(IBufferItem item)
+        public void PushChars(IBufferItem item)
         {
-            if (item is BufferItemString) push_chars(item.to_html());
-            else if (item is BufferItemTag itemTag) push_char(itemTag.tag);
+            if (item is BufferItemString) PushChars(item.ToHtml());
+            else if (item is BufferItemTag itemTag) PushChar(itemTag.Content);
         }
 
-        public void push_chars(IEnumerable<IBufferItem> bufferItems)
+        public void PushChars(IEnumerable<IBufferItem> bufferItems)
         {
-            foreach (var item in bufferItems) push_chars(item);
+            foreach (var item in bufferItems) PushChars(item);
         }
 
-        public void push_char(char @char)
+        public void PushChar(char @char)
         {
-            ruby_buf.push_char(@char, buffer);
+            ruby_buf.PushChar(@char, buffer);
         }
 
-        public void push_char(Helpers.Tag.Tag tag)
+        public void PushChar(Helpers.Tag.Tag tag)
         {
-            ruby_buf.push_char(tag, buffer);
+            ruby_buf.PushChar(tag, buffer);
         }
 
         /// <summary>
@@ -709,11 +709,11 @@ namespace Aozora
         /// </summary>
         /// <exception cref="Exceptions.DontCrlfInStyleException"></exception>
         //@return [void]
-        public void general_output()
+        public void GeneralOutput()
         {
-            if (style_stack.last() is not null)
+            if (style_stack.Last() is not null)
             {
-                throw new Exceptions.DontCrlfInStyleException(style_stack.last_command() ?? "");
+                throw new Exceptions.DontCrlfInStyleException(style_stack.LastCommand() ?? "");
             }
 
             //bufferにインデントタグだけがあったら改行しない！
@@ -722,35 +722,35 @@ namespace Aozora
                 noprint = false;
                 return;
             }
-            ruby_buf.dump_into(buffer);
+            ruby_buf.DumpInto(buffer);
             var buf = buffer;
             buffer = new TextBuffer();
             var tail = new List<string>();
 
-            var indent_type = buf.blank_type();
-            var terpripLocal = buf.terpri() && terprip;
+            var indent_type = buf.BlankType();
+            var terpripLocal = buf.Terpri() && terprip;
             terprip = true;
 
-            if (indent_stack.FirstOrDefault() is not null and IndentStackItemString lastString && indent_type == TextBuffer.blank_type_result.@false)//kurema:indentの場合は含まない？
+            if (indent_stack.FirstOrDefault() is not null and IndentStackItemString lastString && indent_type == TextBuffer.BlankTypeResult.@false)//kurema:indentの場合は含まない？
             {
-                @out.print(lastString.Content);
+                @out.Print(lastString.Content);
             }
 
             foreach (var s in buf)
             {
                 if (s is BufferItemTag stag)
                 {
-                    if (stag.tag is Helpers.Tag.IOnelineIndent stagOI)
+                    if (stag.Content is Helpers.Tag.IOnelineIndent stagOI)
                     {
-                        tail.Insert(0, stagOI.close_tag());
+                        tail.Insert(0, stagOI.CloseTag());
                     }
-                    else if (stag.tag is Helpers.Tag.UnEmbedGaiji stagUEG && !stagUEG.escaped)
+                    else if (stag.Content is Helpers.Tag.UnEmbedGaiji stagUEG && !stagUEG.Escaped)
                     {
                         //消してあった※を復活させて
-                        @out.print(new string(GAIJI_MARK, 1));
+                        @out.Print(new string(GAIJI_MARK, 1));
                     }
                 }
-                @out.print(s.to_html());
+                @out.Print(s.ToHtml());
             }
 
             //最後はCRLFを出力する
@@ -763,19 +763,19 @@ namespace Aozora
                 //元は
                 //@out.print tail.map(&:to_s).join
                 //to_s必要？
-                @out.print(string.Join("", tail?.ToArray() ?? new string[0]));
-                if (indent_type == TextBuffer.blank_type_result.inline) @out.print("\r\n");
-                else if (indent_type == TextBuffer.blank_type_result.@true && terpripLocal) @out.print("<br />\r\n");
-                else @out.print("</div>\r\n");
+                @out.Print(string.Join("", tail?.ToArray() ?? new string[0]));
+                if (indent_type == TextBuffer.BlankTypeResult.inline) @out.Print("\r\n");
+                else if (indent_type == TextBuffer.BlankTypeResult.@true && terpripLocal) @out.Print("<br />\r\n");
+                else @out.Print("</div>\r\n");
             }
             else if (tail.Count == 0 && terpripLocal)
             {
-                @out.print("<br />\r\n");
+                @out.Print("<br />\r\n");
             }
             else
             {
-                @out.print(string.Join("", tail?.ToArray() ?? new string[0]));
-                @out.print("\r\n");
+                @out.Print(string.Join("", tail?.ToArray() ?? new string[0]));
+                @out.Print("\r\n");
             }
         }
 
@@ -788,10 +788,10 @@ namespace Aozora
         /// <returns></returns>
         //@return [TextBuffer|false]
         //kurema:元々はfalseを返していた場面でnullを返しています。タプルにするのも変なので。
-        public TextBuffer? search_front_reference(string @string)
+        public TextBuffer? SearchFrontReference(string @string)
         {
             if (string.IsNullOrEmpty(@string)) return null;
-            IList<IBufferItem> searching_buf = ruby_buf.present ? ruby_buf : buffer;
+            IList<IBufferItem> searching_buf = ruby_buf.IsPresent ? ruby_buf : buffer;
             var last_string = searching_buf.LastOrDefault();
             switch (last_string)
             {
@@ -799,9 +799,9 @@ namespace Aozora
                     if (last_string_string.Length == 0)
                     {
                         searching_buf.RemoveAt(searching_buf.Count - 1);
-                        return search_front_reference(@string);
+                        return SearchFrontReference(@string);
                     }
-                    else if (last_string_string.to_html().EndsWith(@string))
+                    else if (last_string_string.ToHtml().EndsWith(@string))
                     //else if (new Regex($"{Regex.Escape(@string)}$").IsMatch(last_string_string.to_html()))
                     //kurema:
                     //元はコレだけどあってる？
@@ -812,16 +812,16 @@ namespace Aozora
                         //tail = match.end(0)
                         //last_string[start,tail-start] = ""
                         searching_buf.RemoveAt(searching_buf.Count - 1);
-                        searching_buf.Add(new BufferItemString(new Regex($"{Regex.Escape(@string)}$").Replace(last_string_string.to_html(), "")));
+                        searching_buf.Add(new BufferItemString(new Regex($"{Regex.Escape(@string)}$").Replace(last_string_string.ToHtml(), "")));
                         return new TextBuffer(@string);
                     }
-                    else if (@string.EndsWith(last_string_string.to_html()))
+                    else if (@string.EndsWith(last_string_string.ToHtml()))
                     {
                         //部分一致
                         //kurema:元は再帰対策でlast_stringと同じものをtmpに置いてたっぽい。
                         var tmp = searching_buf[searching_buf.Count - 1];
                         searching_buf.RemoveAt(searching_buf.Count - 1);
-                        var found = search_front_reference(new Regex($"{Regex.Escape(last_string_string.to_html())}$").Replace(@string, ""));//kurema:不安
+                        var found = SearchFrontReference(new Regex($"{Regex.Escape(last_string_string.ToHtml())}$").Replace(@string, ""));//kurema:不安
                         if (found != null)
                         {
                             found.Add(tmp);
@@ -834,8 +834,8 @@ namespace Aozora
                         }
                     }
                     break;
-                case BufferItemTag last_string_tag when last_string_tag.tag is Helpers.Tag.ReferenceMentioned referenceMentioned:
-                    var inner = referenceMentioned.target_html;
+                case BufferItemTag last_string_tag when last_string_tag.Content is Helpers.Tag.ReferenceMentioned referenceMentioned:
+                    var inner = referenceMentioned.TargetHtml;
                     if (inner == @string)
                     {
                         //完全一致
@@ -847,7 +847,7 @@ namespace Aozora
                         //部分一致
                         var tmp = searching_buf[searching_buf.Count - 1];
                         searching_buf.RemoveAt(searching_buf.Count - 1);
-                        var found = search_front_reference(new Regex($"{Regex.Escape(inner)}$").Replace(@string, ""));
+                        var found = SearchFrontReference(new Regex($"{Regex.Escape(inner)}$").Replace(@string, ""));
                         if (found != null)
                         {
                             found.Add(tmp);
@@ -874,12 +874,12 @@ namespace Aozora
         /// </summary>
         /// <param name="reference"></param>
         //@return [void]
-        public void recovery_front_reference(TextBuffer reference)
+        public void RecoveryFrontReference(TextBuffer reference)
         {
             foreach (var elt in reference)
             {
                 //if @ruby_buf.protected
-                if (ruby_buf.present)
+                if (ruby_buf.IsPresent)
                 {
                     ruby_buf.Add(elt);
                 }
@@ -887,7 +887,7 @@ namespace Aozora
                 {
                     if (elt is BufferItemString elt_string)
                     {
-                        buffer_last_string.Append(elt_string.to_html());
+                        buffer_last_string.Append(elt_string.ToHtml());
                     }
                     else
                     {
@@ -901,7 +901,7 @@ namespace Aozora
             }
         }
 
-        public Helpers.Tag.UnEmbedGaiji? escape_gaiji(string command)
+        public Helpers.Tag.UnEmbedGaiji? EscapeGaiji(string command)
         {
             var match = PAT_GAIJI.Match(command);
             if (!match.Success || match.Groups.Count < 3) return null;
@@ -921,20 +921,20 @@ namespace Aozora
             return new Helpers.Tag.UnEmbedGaiji(command);
         }
 
-        public IBufferItem dispatch_gaiji()
+        public IBufferItem DispatchGaiji()
         {
             //「※」の次が「［」でなければ外字ではない
-            if (stream.peek_char(0) != COMMAND_BEGIN) return new BufferItemString(new string(GAIJI_MARK, 1));
+            if (stream.PeekChar(0) != COMMAND_BEGIN) return new BufferItemString(new string(GAIJI_MARK, 1));
 
             //「［」を読み捨てる
-            read_char();
+            ReadChar();
             //embed?
-            var (command, _) = read_to_nest(COMMAND_END);
-            var try_emb = kuten2png(command);
-            if (try_emb is not BufferItemString try_emb_string || try_emb_string.to_html() != command) return try_emb;
+            var (command, _) = ReadToNest(COMMAND_END);
+            var try_emb = KutenToPng(command);
+            if (try_emb is not BufferItemString try_emb_string || try_emb_string.ToHtml() != command) return try_emb;
 
             var matched = Regex.Match(command, @"U\+([0-9A-F]{4,5})");
-            if (matched.Success && use_unicode_embed_gaiji)
+            if (matched.Success && UseUnicodeEmbedGaiji)
             {
                 var unicode_num = matched.Groups[1].Value;
                 return new BufferItemTag(new Helpers.Tag.EmbedGaiji(this, null, null, command, gaiji_dir, unicode_num));
@@ -942,23 +942,23 @@ namespace Aozora
             else
             {
                 //Unemb
-                return new BufferItemTag(escape_gaiji(command) ?? throw new ArgumentNullException());
+                return new BufferItemTag(EscapeGaiji(command) ?? throw new ArgumentNullException());
             }
         }
 
         /// <summary>
         /// 注記記法の場合分け
         /// </summary>
-        public IBufferItem? dispatch_aozora_command()
+        public IBufferItem? DispatchAozoraCommand()
         {
             //「［」の次が「＃」でなければ注記ではない
-            if (stream.peek_char(0) != IGETA_MARK)
+            if (stream.PeekChar(0) != IGETA_MARK)
             {
                 return new BufferItemString(new string(COMMAND_BEGIN, 1));
             }
             //「＃」を読み捨てる
-            read_char();
-            var (command, raw) = read_to_nest(COMMAND_END);
+            ReadChar();
+            var (command, raw) = ReadToNest(COMMAND_END);
             //適用順序はこれで大丈夫か？　誤爆怖いよ誤爆
 
             static IBufferItem? GetReturnValue(Helpers.Tag.Tag? tag)
@@ -968,46 +968,46 @@ namespace Aozora
 
             if (command.Contains(ORIKAESHI_COMMAND))
             {
-                apply_burasage(command);
+                ApplyBurasage(command);
                 return null;
             }
             else if (command.StartsWith(OPEN_MARK))
             {
-                return GetReturnValue(exec_block_start_command(command));
+                return GetReturnValue(ExecBlockStartCommand(command));
             }
             else if (command.StartsWith(CLOSE_MARK))
             {
-                return GetReturnValue(exec_block_end_command(command));
+                return GetReturnValue(ExecBlockEndCommand(command));
             }
             else if (command.Contains(WARICHU_COMMAND))
             {
-                apply_warichu(command);
+                ApplyWarichu(command);
                 return null;
             }
             else if (command.Contains(JISAGE_COMMAND))
             {
-                return GetReturnValue(apply_jisage(command));
+                return GetReturnValue(ApplyJisage(command));
             }
             else if (Regex.IsMatch(command, @"fig(\d)+_(\d)+\.png", RegexOptions.Compiled))
             {
-                return GetReturnValue(exec_img_command(command, raw));
+                return GetReturnValue(ExecImgCommand(command, raw));
             }//avoid to try complex ruby -- escape to notes
             else if (PAT_REST_NOTES.IsMatch(command))
             {
-                return GetReturnValue(apply_rest_notes(command));
+                return GetReturnValue(ApplyRestNotes(command));
             }
             else if (command.EndsWith(END_MARK))
             {
-                exec_inline_end_command(command);
+                ExecInlineEndCommand(command);
                 return null;
             }
             else if (PAT_REF.IsMatch(command))
             {
-                return exec_frontref_command(command);
+                return ExecFrontrefCommand(command);
             }
             else if (Regex.IsMatch(command, @"1-7-8[2345]"))//kurema:正規表現を二度実行するのは微妙。
             {
-                return GetReturnValue(apply_dakuten_katakana(command));
+                return GetReturnValue(ApplyDakutenKatakana(command));
             }
             else if (PAT_KAERITEN.IsMatch(command))
             {
@@ -1019,27 +1019,27 @@ namespace Aozora
             }
             else if (PAT_CHITSUKI.IsMatch(command))
             {
-                return GetReturnValue(apply_chitsuki(command));
+                return GetReturnValue(ApplyChitsuki(command));
             }
-            else if (exec_inline_start_command(command))
+            else if (ExecInlineStartCommand(command))
             {
                 return null;
             }
             else//rubocop:disable Lint/DuplicateBranch
             {
-                return GetReturnValue(apply_rest_notes(command));
+                return GetReturnValue(ApplyRestNotes(command));
             }
         }
 
-        public void apply_burasage(string command)
+        public void ApplyBurasage(string command)
         {
-            if (implicit_close(IndentTypeKey.jisage))//kurema:implicit_close()は別にbool返してないっぽいけど…
+            if (ImplicitClose(IndentTypeKey.jisage))//kurema:implicit_close()は別にbool返してないっぽいけど…
             {
                 terprip = false;
-                general_output();
+                GeneralOutput();
             }
             noprint = true; //always no print
-            command = Utils.convert_japanese_number(command);
+            command = Utils.ConvertJapaneseNumber(command);
             string? tag;
             if (command.Contains(TENTSUKI_COMMAND))
             {
@@ -1060,9 +1060,9 @@ namespace Aozora
             tag_stack.Push(string.Empty); //dummy
         }
 
-        public int? jisage_width(string command)
+        public int? GetJisageWidth(string command)
         {
-            var matched = new Regex(@$"(\d*)(?:{JISAGE_COMMAND})").Match(Utils.convert_japanese_number(command));
+            var matched = new Regex(@$"(\d*)(?:{JISAGE_COMMAND})").Match(Utils.ConvertJapaneseNumber(command));
             if (!matched.Success || matched.Groups.Count < 1) return null;
             if (int.TryParse(matched.Groups[1].Value, out int num))
             {
@@ -1071,47 +1071,47 @@ namespace Aozora
             return null;
         }
 
-        public Helpers.Tag.MultilineJisage? apply_jisage(string command)
+        public Helpers.Tag.MultilineJisage? ApplyJisage(string command)
         {
             if (command.Contains(MADE_MARK) | command.Contains(END_MARK))
             {
                 //字下げ終わり
-                explicit_close(IndentTypeKey.jisage);
+                ExplicitClose(IndentTypeKey.jisage);
                 indent_stack.Pop();
                 return null;
             }
             else if (command.Contains(ONELINE_COMMAND))
             {
                 //1行だけ
-                buffer.Insert(0, new BufferItemTag(new Helpers.Tag.OnelineJisage(this, jisage_width(command) ?? 0)));
+                buffer.Insert(0, new BufferItemTag(new Helpers.Tag.OnelineJisage(this, GetJisageWidth(command) ?? 0)));
                 return null;
             }
-            else if ((buffer.Count == 0) && (stream.peek_char(0) == '\n'))
+            else if ((buffer.Count == 0) && (stream.PeekChar(0) == '\n'))
             {
                 //commandのみ
                 terprip = false;
-                implicit_close(IndentTypeKey.jisage);
+                ImplicitClose(IndentTypeKey.jisage);
                 //adhook hack
                 noprint = false;
                 indent_stack.Push(new IndentStackItemIndentTypeKey(IndentTypeKey.jisage));
-                return new Helpers.Tag.MultilineJisage(this, jisage_width(command) ?? 0);
+                return new Helpers.Tag.MultilineJisage(this, GetJisageWidth(command) ?? 0);
             }
             else //rubocop:disable Lint/DuplicateBranch
             {
-                buffer.Insert(0, new BufferItemTag(new Helpers.Tag.OnelineJisage(this, jisage_width(command) ?? 0)));
+                buffer.Insert(0, new BufferItemTag(new Helpers.Tag.OnelineJisage(this, GetJisageWidth(command) ?? 0)));
                 return null;
             }
         }
 
-        public void apply_warichu(string command)
+        public void ApplyWarichu(string command)
         {
             if (command.Contains(END_MARK))
             {
-                if (stream.peek_char(0) != PAREN_END_MARK)
+                if (stream.PeekChar(0) != PAREN_END_MARK)
                 {
-                    push_char(PAREN_END_MARK);
+                    PushChar(PAREN_END_MARK);
                 }
-                push_chars("</span>");
+                PushChars("</span>");
             }
             else
             {
@@ -1119,22 +1119,22 @@ namespace Aozora
 
                 //NOTE: Do not remove duplicates!
                 //rubocop:disable Style/IdenticalConditionalBranches
-                if (check is BufferItemString itemString && itemString.to_html().EndsWith(new String(PAREN_BEGIN_MARK, 1)))
+                if (check is BufferItemString itemString && itemString.ToHtml().EndsWith(new String(PAREN_BEGIN_MARK, 1)))
                 {
-                    push_chars("<span class=\"warichu\">");
+                    PushChars("<span class=\"warichu\">");
                 }
                 else
                 {
-                    push_chars("<span class=\"warichu\">");
-                    push_char(PAREN_BEGIN_MARK);
+                    PushChars("<span class=\"warichu\">");
+                    PushChar(PAREN_BEGIN_MARK);
                 }
                 //rubocop:enable Style/IdenticalConditionalBranches
             }
         }
 
-        public int chitsuki_length(string command)
+        public int ChitsukiLength(string command)
         {
-            command = Utils.convert_japanese_number(command);
+            command = Utils.ConvertJapaneseNumber(command);
             var matched = PAT_JI_LEN.Match(command);
             if (matched.Success && int.TryParse(matched.Groups[1].Value, out int result))
             {
@@ -1146,22 +1146,22 @@ namespace Aozora
             }
         }
 
-        public Helpers.Tag.Chitsuki? apply_chitsuki(string @string, bool multiline = false)
+        public Helpers.Tag.Chitsuki? ApplyChitsuki(string @string, bool multiline = false)
         {
             if (@string.Contains(CLOSE_MARK + INDENT_TYPE[IndentTypeKey.chitsuki] + END_MARK) ||
                 @string.Contains(CLOSE_MARK + JIAGE_COMMAND + END_MARK))
             {
-                explicit_close(IndentTypeKey.chitsuki);
+                ExplicitClose(IndentTypeKey.chitsuki);
                 indent_stack.Pop();
                 return null;
             }
             else
             {
-                var len = chitsuki_length(@string);
+                var len = ChitsukiLength(@string);
                 if (multiline)
                 {
                     //複数行指定
-                    implicit_close(IndentTypeKey.chitsuki);
+                    ImplicitClose(IndentTypeKey.chitsuki);
                     indent_stack.Push(new IndentStackItemIndentTypeKey(IndentTypeKey.chitsuki));
                     return new Helpers.Tag.MultilineChitsuki(this, len);
                 }
@@ -1173,7 +1173,7 @@ namespace Aozora
             }
         }
 
-        public Helpers.Tag.MultilineMidashi apply_midashi(string command)
+        public Helpers.Tag.MultilineMidashi ApplyMidashi(string command)
         {
             indent_stack.Push(new IndentStackItemIndentTypeKey(IndentTypeKey.midashi));
             Utils.MidashiType midashi_type;
@@ -1193,40 +1193,40 @@ namespace Aozora
             return new Helpers.Tag.MultilineMidashi(this, command, midashi_type);
         }
 
-        public Helpers.Tag.MultilineYokogumi apply_yokogumi()
+        public Helpers.Tag.MultilineYokogumi ApplyYokogumi()
         {
             indent_stack.Push(new IndentStackItemIndentTypeKey(IndentTypeKey.yokogumi));
             return new Helpers.Tag.MultilineYokogumi(this);
         }
 
-        public Helpers.Tag.Keigakomi apply_keigakomi()
+        public Helpers.Tag.Keigakomi ApplyKeigakomi()
         {
             indent_stack.Push(new IndentStackItemIndentTypeKey(IndentTypeKey.keigakomi));
             return new Helpers.Tag.Keigakomi(this);
         }
 
-        public Helpers.Tag.MultilineCaption apply_caption()
+        public Helpers.Tag.MultilineCaption ApplyCaption()
         {
             indent_stack.Push(new IndentStackItemIndentTypeKey(IndentTypeKey.caption));
             return new Helpers.Tag.MultilineCaption(this);
         }
 
-        public Helpers.Tag.Jizume? apply_jizume(string command)
+        public Helpers.Tag.Jizume? ApplyJizume(string command)
         {
-            var matched = Regex.Match(Utils.convert_japanese_number(command), @$"(\d*)(?:{INDENT_TYPE[IndentTypeKey.jizume]})");
+            var matched = Regex.Match(Utils.ConvertJapaneseNumber(command), @$"(\d*)(?:{INDENT_TYPE[IndentTypeKey.jizume]})");
             if (!matched.Success || matched.Groups.Count < 2 || !int.TryParse(matched.Groups[1].Value, out int w)) return null;
             indent_stack.Push(new IndentStackItemIndentTypeKey(IndentTypeKey.jizume));
             return new Helpers.Tag.Jizume(this, w);
         }
 
-        public void push_block_tag(Helpers.Tag.Block? tag, StringBuilder closing)
+        public void PushBlockTag(Helpers.Tag.Block? tag, StringBuilder closing)
         {
             if (tag is null) throw new Exception($"{nameof(tag)} is empty");
-            push_chars(new BufferItemTag(tag));
-            closing.Append(tag.close_tag());
+            PushChars(new BufferItemTag(tag));
+            closing.Append(tag.CloseTag());
         }
 
-        public IndentTypeKey detect_style_size(string style)
+        public IndentTypeKey DetectStyleSize(string style)
         {
             if (style.Contains("小"))
             {
@@ -1238,85 +1238,85 @@ namespace Aozora
             }
         }
 
-        public bool exec_inline_start_command(string command)
+        public bool ExecInlineStartCommand(string command)
         {
             switch (command)
             {
                 case CHUUKI_COMMAND:
-                    style_stack.push(command, "</ruby>");
-                    push_chars("<ruby><rb>");
+                    style_stack.Push(command, "</ruby>");
+                    PushChars("<ruby><rb>");
                     return true;
                 case TCY_COMMAND:
-                    style_stack.push(command, "</span>");
-                    push_chars("<span dir=\"ltr\">");
+                    style_stack.Push(command, "</span>");
+                    PushChars("<span dir=\"ltr\">");
                     return true;
                 case KEIGAKOMI_COMMAND:
-                    style_stack.push(command, "</span>");
-                    push_chars("<span class=\"keigakomi\">");
+                    style_stack.Push(command, "</span>");
+                    PushChars("<span class=\"keigakomi\">");
                     return true;
                 case YOKOGUMI_COMMAND:
-                    style_stack.push(command, "</span>");
-                    push_chars("<span class=\"yokogumi\">");
+                    style_stack.Push(command, "</span>");
+                    PushChars("<span class=\"yokogumi\">");
                     return true;
                 case CAPTION_COMMAND:
-                    style_stack.push(command, "</span>");
-                    push_chars("<span class=\"caption\">");
+                    style_stack.Push(command, "</span>");
+                    PushChars("<span class=\"caption\">");
                     return true;
                 case WARIGAKI_COMMAND:
-                    style_stack.push(command, "</span>");
-                    push_chars("<span class=\"warigaki\">");
+                    style_stack.Push(command, "</span>");
+                    PushChars("<span class=\"warigaki\">");
                     return true;
                 case OMIDASHI_COMMAND:
-                    style_stack.push(command, "</a></h3>");
+                    style_stack.Push(command, "</a></h3>");
                     terprip = false;
-                    push_chars($"<h3 class=\"o-midashi\"><a class=\"midashi_anchor\" id=\"midashi{midashi_counter.generate_id(100)}\">");
+                    PushChars($"<h3 class=\"o-midashi\"><a class=\"midashi_anchor\" id=\"midashi{midashi_counter.GenerateId(100)}\">");
                     return true;
                 case NAKAMIDASHI_COMMAND:
-                    style_stack.push(command, "</a></h4>");
+                    style_stack.Push(command, "</a></h4>");
                     terprip = false;
-                    push_chars($"<h4 class=\"naka-midashi\"><a class=\"midashi_anchor\" id=\"midashi{midashi_counter.generate_id(10)}\">");
+                    PushChars($"<h4 class=\"naka-midashi\"><a class=\"midashi_anchor\" id=\"midashi{midashi_counter.GenerateId(10)}\">");
                     return true;
                 case KOMIDASHI_COMMAND:
-                    style_stack.push(command, "</a></h5>");
+                    style_stack.Push(command, "</a></h5>");
                     terprip = false;
-                    push_chars($"<h5 class=\"ko-midashi\"><a class=\"midashi_anchor\" id=\"midashi{midashi_counter.generate_id(1)}\">");
+                    PushChars($"<h5 class=\"ko-midashi\"><a class=\"midashi_anchor\" id=\"midashi{midashi_counter.GenerateId(1)}\">");
                     return true;
                 case DOGYO_OMIDASHI_COMMAND:
-                    style_stack.push(command, "</a></h3>");
-                    push_chars($"<h3 class=\"dogyo-o-midashi\"><a class=\"midashi_anchor\" id=\"midashi{midashi_counter.generate_id(100)}\">");
+                    style_stack.Push(command, "</a></h3>");
+                    PushChars($"<h3 class=\"dogyo-o-midashi\"><a class=\"midashi_anchor\" id=\"midashi{midashi_counter.GenerateId(100)}\">");
                     return true;
                 case DOGYO_NAKAMIDASHI_COMMAND:
-                    style_stack.push(command, "</a></h4>");
-                    push_chars($"<h4 class=\"dogyo-naka-midashi\"><a class=\"midashi_anchor\" id=\"midashi{midashi_counter.generate_id(10)}\">");
+                    style_stack.Push(command, "</a></h4>");
+                    PushChars($"<h4 class=\"dogyo-naka-midashi\"><a class=\"midashi_anchor\" id=\"midashi{midashi_counter.GenerateId(10)}\">");
                     return true;
                 case DOGYO_KOMIDASHI_COMMAND:
-                    style_stack.push(command, "</a></h5>");
-                    push_chars($"<h5 class=\"dogyo-ko-midashi\"><a class=\"midashi_anchor\" id=\"midashi{@midashi_counter.generate_id(1)}\">");
+                    style_stack.Push(command, "</a></h5>");
+                    PushChars($"<h5 class=\"dogyo-ko-midashi\"><a class=\"midashi_anchor\" id=\"midashi{@midashi_counter.GenerateId(1)}\">");
                     return true;
                 case MADO_OMIDASHI_COMMAND:
-                    style_stack.push(command, "</a></h3>");
-                    push_chars($"<h3 class=\"mado-o-midashi\"><a class=\"midashi_anchor\" id=\"midashi{midashi_counter.generate_id(100)}\">");
+                    style_stack.Push(command, "</a></h3>");
+                    PushChars($"<h3 class=\"mado-o-midashi\"><a class=\"midashi_anchor\" id=\"midashi{midashi_counter.GenerateId(100)}\">");
                     return true;
                 case MADO_NAKAMIDASHI_COMMAND:
-                    style_stack.push(command, "</a></h4>");
-                    push_chars($"<h4 class=\"mado-naka-midashi\"><a class=\"midashi_anchor\" id=\"midashi{midashi_counter.generate_id(10)}\">");
+                    style_stack.Push(command, "</a></h4>");
+                    PushChars($"<h4 class=\"mado-naka-midashi\"><a class=\"midashi_anchor\" id=\"midashi{midashi_counter.GenerateId(10)}\">");
                     return true;
                 case MADO_KOMIDASHI_COMMAND:
-                    style_stack.push(command, "</a></h5>");
-                    push_chars($"<h5 class=\"mado-ko-midashi\"><a class=\"midashi_anchor\" id=\"midashi{midashi_counter.generate_id(1)}\">");
+                    style_stack.Push(command, "</a></h5>");
+                    PushChars($"<h5 class=\"mado-ko-midashi\"><a class=\"midashi_anchor\" id=\"midashi{midashi_counter.GenerateId(1)}\">");
                     return true;
                 default:
                     var matchedCharSize = PAT_CHARSIZE.Match(command);
                     if (matchedCharSize.Success)
                     {
-                        style_stack.push(command, "</span>");
+                        style_stack.Push(command, "</span>");
                         var nest = matchedCharSize.Groups[1].Value;
                         var style = matchedCharSize.Groups[2].Value;
-                        var times = int.Parse(Utils.convert_japanese_number(nest));
-                        var daisho = detect_style_size(style);
+                        var times = int.Parse(Utils.ConvertJapaneseNumber(nest));
+                        var daisho = DetectStyleSize(style);
                         var html_class = daisho.ToString() + times.ToString();
-                        var size = Utils.create_font_size(times, daisho);
-                        push_chars($"<span class=\"{html_class}\" style=\"font-size: {size};\">");
+                        var size = Utils.CreateFontSize(times, daisho);
+                        PushChars($"<span class=\"{html_class}\" style=\"font-size: {size};\">");
                         return true;
                     }
                     else
@@ -1351,14 +1351,14 @@ namespace Aozora
                         //found = [class, tag]
                         if (@class is not null)
                         {
-                            style_stack.push(command, $"</{tag}>");
-                            push_chars($"<{tag} class=\"{filter.Invoke(@class)}\">");
+                            style_stack.Push(command, $"</{tag}>");
+                            PushChars($"<{tag} class=\"{filter.Invoke(@class)}\">");
                             return true;
                         }
                         else
                         {
 #if DEBUG
-                            warnChannel.println(string.Format(I18n.MSG["warn_undefined_command"], line_number, key));
+                            warnChannel.PrintLine(string.Format(I18n.MSG["warn_undefined_command"], LineNumber, key));
 #endif
                             return false;
                         }
@@ -1366,38 +1366,38 @@ namespace Aozora
             }
         }
 
-        public void exec_inline_end_command(string command)
+        public void ExecInlineEndCommand(string command)
         {
             var encount = command.Replace(END_MARK, "");
             if (encount == MAIN_MARK)
             {
                 //force to finish main_text
-                section = SectionKind.tail;
-                ensure_close();
+                Section = SectionKind.tail;
+                EnsureClose();
                 noprint = true;
-                @out.print("</div>\r\n<div class=\"after_text\">\r\n<hr />\r\n");
+                @out.Print("</div>\r\n<div class=\"after_text\">\r\n<hr />\r\n");
             }
-            else if (encount.Contains(CHUUKI_COMMAND) && style_stack.last_command() == CHUUKI_COMMAND)
+            else if (encount.Contains(CHUUKI_COMMAND) && style_stack.LastCommand() == CHUUKI_COMMAND)
             {
                 //special inline ruby
-                style_stack.pop();
+                style_stack.Pop();
                 var matched = PAT_INLINE_RUBY.Match(encount);
                 //if (!matched.Success) throw new Exception("Regex failed.");
                 var ruby = (!matched.Success) ? "" : matched.Groups[1].Value;
-                push_chars($"</rb><rp>（</rp><rt>{ruby}</rt><rp>）</rp></ruby>");
+                PushChars($"</rb><rp>（</rp><rt>{ruby}</rt><rp>）</rp></ruby>");
 
             }
-            else if (style_stack.last_command()?.Contains(encount) == true)
+            else if (style_stack.LastCommand()?.Contains(encount) == true)
             {
-                push_chars(style_stack.pop().closingTag);
+                PushChars(style_stack.Pop().ClosingTag);
             }
             else
             {
-                throw new Exceptions.InvalidNestingException(encount, style_stack.last_command() ?? "");
+                throw new Exceptions.InvalidNestingException(encount, style_stack.LastCommand() ?? "");
             }
         }
 
-        public Helpers.Tag.EditorNote? exec_block_start_command(string command)
+        public Helpers.Tag.EditorNote? ExecBlockStartCommand(string command)
         {
             var original_command = command;//kurema:C#では普通string自体を書き換えません。つまりdup相当は不要。
             command = new Regex($"^{OPEN_MARK}").Replace(command, "");
@@ -1408,26 +1408,26 @@ namespace Aozora
                 if (command.Contains(INDENT_TYPE[key]))
                 {
                     if (pop && match_buf.Length != 0) indent_stack.Pop();
-                    push_block_tag(func(command), match_buf);
+                    PushBlockTag(func(command), match_buf);
                     action?.Invoke();
                 }
             }
 
             if (command.Contains(INDENT_TYPE[IndentTypeKey.jisage]))
             {
-                push_block_tag(apply_jisage(command), match_buf);
+                PushBlockTag(ApplyJisage(command), match_buf);
             }
             else if (new Regex($"({INDENT_TYPE[IndentTypeKey.chitsuki]}|{JIAGE_COMMAND})$").IsMatch(command))
             {
-                push_block_tag(apply_chitsuki(command, multiline: true) ?? throw new Exception(), match_buf);
+                PushBlockTag(ApplyChitsuki(command, multiline: true) ?? throw new Exception(), match_buf);
             }
 
             //kurema:繰り返しが多いので関数化しました。
-            push_item(command, match_buf, false, IndentTypeKey.midashi, a => apply_midashi(a));
-            push_item(command, match_buf, true, IndentTypeKey.jizume, a => apply_jizume(a));
-            push_item(command, match_buf, true, IndentTypeKey.yokogumi, a => apply_yokogumi());
-            push_item(command, match_buf, true, IndentTypeKey.keigakomi, a => apply_keigakomi());
-            push_item(command, match_buf, true, IndentTypeKey.caption, a => apply_caption());
+            push_item(command, match_buf, false, IndentTypeKey.midashi, a => ApplyMidashi(a));
+            push_item(command, match_buf, true, IndentTypeKey.jizume, a => ApplyJizume(a));
+            push_item(command, match_buf, true, IndentTypeKey.yokogumi, a => ApplyYokogumi());
+            push_item(command, match_buf, true, IndentTypeKey.keigakomi, a => ApplyKeigakomi());
+            push_item(command, match_buf, true, IndentTypeKey.caption, a => ApplyCaption());
             push_item(command, match_buf, true, IndentTypeKey.futoji, a => new Helpers.Tag.MultilineStyle(this, "futoji"),
                 () => { indent_stack.Push(new IndentStackItemIndentTypeKey(IndentTypeKey.futoji)); });
             push_item(command, match_buf, true, IndentTypeKey.shatai, a => new Helpers.Tag.MultilineStyle(this, "shatai"),
@@ -1440,15 +1440,15 @@ namespace Aozora
                     var nest = matched.Groups[1].Value;
                     var style = matched.Groups[2].Value;
                     if (match_buf.Length > 0) indent_stack.Pop();
-                    var daisho = detect_style_size(style);
-                    push_block_tag(new Helpers.Tag.FontSize(this, int.Parse(Utils.convert_japanese_number(nest)), daisho), match_buf);
+                    var daisho = DetectStyleSize(style);
+                    PushBlockTag(new Helpers.Tag.FontSize(this, int.Parse(Utils.ConvertJapaneseNumber(nest)), daisho), match_buf);
                     indent_stack.Push(new IndentStackItemIndentTypeKey(daisho));
                 }
             }
 
             if (match_buf.Length == 0)
             {
-                return apply_rest_notes(original_command);
+                return ApplyRestNotes(original_command);
             }
             else
             {
@@ -1457,16 +1457,16 @@ namespace Aozora
             }
         }
 
-        public Helpers.Tag.EditorNote? exec_block_end_command(string command)
+        public Helpers.Tag.EditorNote? ExecBlockEndCommand(string command)
         {
             var original_command = command;//kurema:C#では普通string自体を書き換えません。
             command = new Regex($@"^{CLOSE_MARK}").Replace(command, "");
             IIndentStackItem? matched = null;
-            var mode = detect_command_mode(command);
+            var mode = DetectCommandMode(command);
 
             if (mode != null)
             {
-                explicit_close(mode.Value);
+                ExplicitClose(mode.Value);
                 matched = indent_stack.Count == 0 ? null : indent_stack.Pop();
             }
 
@@ -1477,11 +1477,11 @@ namespace Aozora
             }
             else
             {
-                return apply_rest_notes(original_command);
+                return ApplyRestNotes(original_command);
             }
         }
 
-        public Helpers.Tag.Tag exec_img_command(string command, string raw)
+        public Helpers.Tag.Tag ExecImgCommand(string command, string raw)
         {
             var matched = PAT_IMAGE.Match(raw);
             if (matched.Success)
@@ -1496,16 +1496,16 @@ namespace Aozora
             }
             else
             {
-                return apply_rest_notes(command);
+                return ApplyRestNotes(command);
             }
         }
 
-        public IBufferItem exec_frontref_command(string command)
+        public IBufferItem ExecFrontrefCommand(string command)
         {
             var matched = PAT_FRONTREF.Match(command);
             if (!matched.Success)
             {
-                return new BufferItemTag(apply_rest_notes(command));
+                return new BufferItemTag(ApplyRestNotes(command));
                 //kurema:
                 //「吾輩は猫である」中にある「［＃「なります」」は底本では「なります。」］」対策。
                 //だったのだが、apply_rest_notes(command)で問題ないのでコメントアウト。
@@ -1521,17 +1521,17 @@ namespace Aozora
             var spec = spec1 + spec2;
             if (!string.IsNullOrEmpty(reference))
             {
-                var found = search_front_reference(reference);
+                var found = SearchFrontReference(reference);
                 if (found is not null)
                 {
-                    var tmp = exec_style(found, spec);
+                    var tmp = ExecStyle(found, spec);
                     if (tmp is not null) return tmp;
 
-                    recovery_front_reference(found);
+                    RecoveryFrontReference(found);
                 }
             }
             //comment out?
-            return new BufferItemTag(apply_rest_notes(command));
+            return new BufferItemTag(ApplyRestNotes(command));
         }
 
         /// <summary>
@@ -1540,7 +1540,7 @@ namespace Aozora
         /// <param name="bouki"></param>
         /// <param name="times"></param>
         /// <returns></returns>
-        public static string multiply(string bouki, int times)
+        public static string GetMultipliedText(string bouki, int times)
         {
             //kurema:もっとスマートに書けると思う。
             if (times == 0) return "";
@@ -1562,15 +1562,15 @@ namespace Aozora
         /// <param name="under_ruby"></param>
         /// <returns></returns>
         //complex ruby wrap up utilities -- don't erase! we will use soon ...
-        public Helpers.Tag.Ruby rearrange_ruby_tag(System.Collections.IEnumerable targets, string upper_ruby, string under_ruby)
+        public Helpers.Tag.Ruby RearrangeRubyTag(System.Collections.IEnumerable targets, string upper_ruby, string under_ruby)
         {
-            return Helpers.Tag.Ruby.rearrange_ruby(targets, upper_ruby, under_ruby);
+            return Helpers.Tag.Ruby.RearrangeRuby(targets, upper_ruby, under_ruby);
         }
 
-        public IBufferItem? exec_style(TextBuffer targets, string command)
+        public IBufferItem? ExecStyle(TextBuffer targets, string command)
         {
-            var try_kuten = kuten2png(command);
-            if (try_kuten.to_html() != command) { return try_kuten; }
+            var try_kuten = KutenToPng(command);
+            if (try_kuten.ToHtml() != command) { return try_kuten; }
             else if (command.Contains(TCY_COMMAND))
             {
                 return new BufferItemTag(new Helpers.Tag.Dir(targets));
@@ -1589,11 +1589,11 @@ namespace Aozora
             }
             else if (command.Contains(KAERITEN_COMMAND))
             {
-                return new BufferItemTag(new Helpers.Tag.Kaeriten(targets.to_html()));//kurema:to_html()して大丈夫？
+                return new BufferItemTag(new Helpers.Tag.Kaeriten(targets.ToHtml()));//kurema:to_html()して大丈夫？
             }
             else if (command.Contains(KUNTEN_OKURIGANA_COMMAND))
             {
-                return new BufferItemTag(new Helpers.Tag.Okurigana(targets.to_html()));
+                return new BufferItemTag(new Helpers.Tag.Okurigana(targets.ToHtml()));
             }
             else if (command.Contains(MIDASHI_COMMAND))
             {
@@ -1618,7 +1618,7 @@ namespace Aozora
                 {
                     var nest = match.Groups[1].Value;
                     var style = match.Groups[2].Value;
-                    return new BufferItemTag(new Helpers.Tag.InlineFontSize(targets, int.Parse(Utils.convert_japanese_number(nest)), detect_style_size(style)));
+                    return new BufferItemTag(new Helpers.Tag.InlineFontSize(targets, int.Parse(Utils.ConvertJapaneseNumber(nest)), DetectStyleSize(style)));
                 }
             }
             {
@@ -1626,16 +1626,16 @@ namespace Aozora
                 if (match.Success)
                 {
                     var under = match.Groups[2].Value;
-                    if (targets.Count == 1 && targets[0] is BufferItemTag targetFirstTag && targetFirstTag.tag is Helpers.Tag.Ruby tag)
+                    if (targets.Count == 1 && targets[0] is BufferItemTag targetFirstTag && targetFirstTag.Content is Helpers.Tag.Ruby tag)
                     {
-                        if (!string.IsNullOrEmpty(tag.under_ruby)) throw new Exceptions.DontAllowTripleRubyException();
+                        if (!string.IsNullOrEmpty(tag.RubyUnder)) throw new Exceptions.DontAllowTripleRubyException();
 
-                        tag.under_ruby = under;
+                        tag.RubyUnder = under;
                         return new BufferItemTag(tag);
                     }
                     else
                     {
-                        return new BufferItemTag(rearrange_ruby_tag(targets, "", under));
+                        return new BufferItemTag(RearrangeRubyTag(targets, "", under));
                     }
                 }
             }
@@ -1643,14 +1643,14 @@ namespace Aozora
                 var match = PAT_CHUUKI.Match(command);
                 if (match.Success)
                 {
-                    return new BufferItemTag(rearrange_ruby_tag(targets, match.Groups[1].Value, ""));
+                    return new BufferItemTag(RearrangeRubyTag(targets, match.Groups[1].Value, ""));
                 }
             }
             {
                 var match = PAT_BOUKI.Match(command);
                 if (match.Success)
                 {
-                    return new BufferItemTag(rearrange_ruby_tag(targets, multiply(match.Groups[1].Value, targets.to_html().Length), ""));
+                    return new BufferItemTag(RearrangeRubyTag(targets, GetMultipliedText(match.Groups[1].Value, targets.ToHtml().Length), ""));
                 }
             }
             {//kurema:else相当
@@ -1693,20 +1693,20 @@ namespace Aozora
             }
         }
 
-        public Helpers.Tag.Tag? apply_dakuten_katakana(string command)
+        public Helpers.Tag.Tag? ApplyDakutenKatakana(string command)
         {
             var match = Regex.Match(command, "1-7-8([2345])");
             if (!match.Success) return null;
             var n = int.Parse(match.Groups[1].Value);
             var frontref = DAKUTEN_KATAKANA_TABLE[n];
-            var found = search_front_reference(frontref);
+            var found = SearchFrontReference(frontref);
             if (found is not null)
             {
                 return new Helpers.Tag.DakutenKatakana(n, String.Join("", found), gaiji_dir);
             }
             else
             {
-                return apply_rest_notes(command);
+                return ApplyRestNotes(command);
             }
         }
 
@@ -1715,48 +1715,48 @@ namespace Aozora
         /// 
         /// くの字点は現状そのまま出力するのでフッタの「表記について」で出力するかどうかのフラグ処理だけ行う
         /// </summary>
-        public void assign_kunoji()
+        public void AssignKunoji()
         {
-            var second = stream.peek_char(0);
+            var second = stream.PeekChar(0);
             switch (second)
             {
-                case NOJI: chuuki_table[chuuki_table_keys.kunoji] = true; break;
+                case NOJI: chuuki_table[ChuukiTableKeys.kunoji] = true; break;
                 case DAKUTEN:
-                    if (stream.peek_char(1) == NOJI)
+                    if (stream.PeekChar(1) == NOJI)
                     {
-                        chuuki_table[chuuki_table_keys.dakutenkunoji] = true;
+                        chuuki_table[ChuukiTableKeys.dakutenkunoji] = true;
                     }
                     break;
             }
         }
 
-        public Helpers.Tag.EditorNote apply_rest_notes(string command)
+        public Helpers.Tag.EditorNote ApplyRestNotes(string command)
         {
-            chuuki_table[chuuki_table_keys.chuki] = true;
+            chuuki_table[ChuukiTableKeys.chuki] = true;
             return new Helpers.Tag.EditorNote(command);
         }
 
         //｜が来たときは文字種を無視してruby_bufを守らなきゃいけない
-        public string? apply_ruby()
+        public string? ApplyRuby()
         {
-            ruby_buf.@protected = false;
-            var (ruby, _) = read_to_nest(RUBY_END_MARK);
+            ruby_buf.IsProtected = false;
+            var (ruby, _) = ReadToNest(RUBY_END_MARK);
             if (ruby.Length == 0)
             {
                 return new string(RUBY_BEGIN_MARK, RUBY_END_MARK);
             }
 
-            buffer.AddRange(ruby_buf.create_ruby(ruby));
+            buffer.AddRange(ruby_buf.CreateRuby(ruby));
             return null;
         }
 
         /// <summary>
         /// parse_bodyのフッタ版
         /// </summary>
-        public void parse_tail()
+        public void ParseTail()
         {
             //kurema:色々怪しい
-            var @char = read_char();
+            var @char = ReadChar();
             bool check = true;
             bool escape = true;//kurema:read_accent()は文字列を返すので強引にエスケープしない指示をする。
             IBufferItem[] otherBuffer = new IBufferItem[0];
@@ -1766,25 +1766,25 @@ namespace Aozora
                     check = false;
                     @char = null;
                     escape = false;
-                    otherBuffer = read_accent().ToArray();
+                    otherBuffer = ReadAccent().ToArray();
                     break;
                 case GAIJI_MARK:
                     @char = null;
-                    otherBuffer = new[] { dispatch_gaiji() };
+                    otherBuffer = new[] { DispatchGaiji() };
                     break;
                 case COMMAND_BEGIN:
                     {
                         @char = null;
-                        var result = dispatch_aozora_command();
+                        var result = DispatchAozoraCommand();
                         if (result is not null) otherBuffer = new[] { result };
                     }
                     break;
                 case KU:
-                    assign_kunoji();
+                    AssignKunoji();
                     break;
                 case RUBY_BEGIN_MARK:
                     @char = null;
-                    otherBuffer = new[] { new BufferItemString(apply_ruby() ?? "") };
+                    otherBuffer = new[] { new BufferItemString(ApplyRuby() ?? "") };
                     break;
                 default:
                     if (@char == endchar)
@@ -1803,7 +1803,7 @@ namespace Aozora
                 }
                 else if (otherString.Length == 1)
                 {
-                    @char = otherString.to_html()[0];
+                    @char = otherString.ToHtml()[0];
                     otherBuffer = new IBufferItem[0];
                 }
             }
@@ -1811,11 +1811,11 @@ namespace Aozora
             switch (@char)
             {
                 case '\n':
-                    tail_output();
+                    TailOutput();
                     break;
                 case RUBY_PREFIX:
-                    ruby_buf.dump_into(buffer);
-                    ruby_buf.@protected = true;
+                    ruby_buf.DumpInto(buffer);
+                    ruby_buf.IsProtected = true;
                     break;
                 case null when otherBuffer.Length == 0:
                     //noop
@@ -1823,15 +1823,15 @@ namespace Aozora
                 default:
                     if (otherBuffer.Length == 0)
                     {
-                        if (check) Utils.illegal_char_check(@char ?? ' ', line_number, warnChannel);
-                        if (escape) push_chars(escape_special_chars(@char ?? ' ')); else push_chars(new string(@char ?? ' ', 1));
+                        if (check) Utils.IllegalCharCheck(@char ?? ' ', LineNumber, warnChannel);
+                        if (escape) PushChars(EscapeSpecialChars(@char ?? ' ')); else PushChars(new string(@char ?? ' ', 1));
                     }
                     else
                     {
                         foreach (var itemBuffer in otherBuffer)
                         {
-                            if (check) Utils.illegal_char_check(itemBuffer, line_number, warnChannel);
-                            if (escape) push_chars(escape_special_chars(itemBuffer)); else push_chars(itemBuffer);
+                            if (check) Utils.IllegalCharCheck(itemBuffer, LineNumber, warnChannel);
+                            if (escape) PushChars(EscapeSpecialChars(itemBuffer)); else PushChars(itemBuffer);
                         }
                     }
                     break;
@@ -1841,10 +1841,10 @@ namespace Aozora
         /// <summary>
         /// general_outputのフッタ版
         /// </summary>
-        public void tail_output()
+        public void TailOutput()
         {
-            ruby_buf.dump_into(buffer);
-            var @string = string.Join(string.Empty, buffer.Select(a => a.to_html()));
+            ruby_buf.DumpInto(buffer);
+            var @string = string.Join(string.Empty, buffer.Select(a => a.ToHtml()));
             buffer = new TextBuffer();
             @string = @string.Replace("info@aozora.gr.jp", "<a href=\"mailto: info@aozora.gr.jp\">info@aozora.gr.jp</a>");
             {
@@ -1856,87 +1856,87 @@ namespace Aozora
             }
             if (Regex.IsMatch(@string, @"(<br />$|</p>$|</h\d>$|<div.*>$|</div>$|^<[^>]*>$)"))
             {
-                @out.print(@string);
-                @out.print("\r\n");
+                @out.Print(@string);
+                @out.Print("\r\n");
             }
             else
             {
-                @out.print(@string);
-                @out.print("<br />\r\n");
+                @out.Print(@string);
+                @out.Print("<br />\r\n");
             }
         }
 
         /// <summary>
         /// `●表記について`で使用した注記等を出力する
         /// </summary>
-        public void hyoki()
+        public void PrintHyoki()
         {
             //<br /> times fix
-            @out.print("<br />\r\n</div>\r\n<div class=\"notation_notes\">\r\n<hr />\r\n<br />\r\n●表記について<br />\r\n<ul>\r\n");
-            @out.print("\t<li>このファイルは W3C 勧告 XHTML1.1 にそった形式で作成されています。</li>\r\n");
+            @out.Print("<br />\r\n</div>\r\n<div class=\"notation_notes\">\r\n<hr />\r\n<br />\r\n●表記について<br />\r\n<ul>\r\n");
+            @out.Print("\t<li>このファイルは W3C 勧告 XHTML1.1 にそった形式で作成されています。</li>\r\n");
 
-            void printCondition(chuuki_table_keys key, string text)
+            void printCondition(ChuukiTableKeys key, string text)
             {
-                if (checkChuukiTable(key)) @out.print(text);
+                if (checkChuukiTable(key)) @out.Print(text);
             }
 
-            bool checkChuukiTable(chuuki_table_keys key)
+            bool checkChuukiTable(ChuukiTableKeys key)
             {
                 return chuuki_table.ContainsKey(key) && chuuki_table[key];
             }
 
-            printCondition(chuuki_table_keys.chuki, "\t<li>［＃…］は、入力者による注を表す記号です。</li>\r\n");
-            if (checkChuukiTable(chuuki_table_keys.kunoji))
+            printCondition(ChuukiTableKeys.chuki, "\t<li>［＃…］は、入力者による注を表す記号です。</li>\r\n");
+            if (checkChuukiTable(ChuukiTableKeys.kunoji))
             {
-                if (checkChuukiTable(chuuki_table_keys.dakutenkunoji))
+                if (checkChuukiTable(ChuukiTableKeys.dakutenkunoji))
                 {
-                    @out.print($"\t<li>「くの字点」は「{KU + NOJI}」で、「濁点付きくの字点」は「{KU + DAKUTEN + NOJI}」で表しました。</li>\r\n");
+                    @out.Print($"\t<li>「くの字点」は「{KU + NOJI}」で、「濁点付きくの字点」は「{KU + DAKUTEN + NOJI}」で表しました。</li>\r\n");
                 }
                 else
                 {
-                    @out.print($"\t<li>「くの字点」は「{KU + NOJI}」で表しました。</li>\r\n");
+                    @out.Print($"\t<li>「くの字点」は「{KU + NOJI}」で表しました。</li>\r\n");
                 }
             }
-            else if (checkChuukiTable(chuuki_table_keys.dakutenkunoji))
+            else if (checkChuukiTable(ChuukiTableKeys.dakutenkunoji))
             {
-                @out.print($"\t<li>「濁点付きくの字点」は「{KU + DAKUTEN + NOJI}」で表しました。</li>\r\n");
+                @out.Print($"\t<li>「濁点付きくの字点」は「{KU + DAKUTEN + NOJI}」で表しました。</li>\r\n");
             }
-            if (!use_jisx0214_embed_gaiji) printCondition(chuuki_table_keys.newjis, "\t<li>「くの字点」をのぞくJIS X 0213にある文字は、画像化して埋め込みました。</li>\r\n");
-            if (!use_unicode_embed_gaiji) printCondition(chuuki_table_keys.accent, "\t<li>アクセント符号付きラテン文字は、画像化して埋め込みました。</li>\r\n");
+            if (!UseJisx0214EmbedGaiji) printCondition(ChuukiTableKeys.newjis, "\t<li>「くの字点」をのぞくJIS X 0213にある文字は、画像化して埋め込みました。</li>\r\n");
+            if (!UseUnicodeEmbedGaiji) printCondition(ChuukiTableKeys.accent, "\t<li>アクセント符号付きラテン文字は、画像化して埋め込みました。</li>\r\n");
             if (images.Count > 0)
             {
-                @out.print("\t<li>この作品には、JIS X 0213にない、以下の文字が用いられています。（数字は、底本中の出現「ページ-行」数。）これらの文字は本文内では「※［＃…］」の形で示しました。</li>\r\n</ul>\r\n<br />\r\n\t\t<table class=\"gaiji_list\">\r\n");
+                @out.Print("\t<li>この作品には、JIS X 0213にない、以下の文字が用いられています。（数字は、底本中の出現「ページ-行」数。）これらの文字は本文内では「※［＃…］」の形で示しました。</li>\r\n</ul>\r\n<br />\r\n\t\t<table class=\"gaiji_list\">\r\n");
                 foreach (var cell in images)
                 {
                     var k = cell.Item1;
                     var vs = string.Join("、", cell.Item2);
                     //kurema:ヒアドキュメント(逐語的文字列)に変換する場合は、Visual Studioを使用して下の行でクイック操作(Ctrl+.)を押してください。
-                    @out.print($"\t\t\t<tr>\r\n\t\t\t\t<td>\r\n\t\t\t\t{k}\r\n\t\t\t\t</td>\r\n\t\t\t\t<td>&nbsp;&nbsp;</td>\r\n\t\t\t\t<td>\r\n{vs}\t\t\t\t</td>\r\n\t\t\t\t<!--\r\n\t\t\t\t<td>\r\n\t\t\t\t　　<img src=\"../../../gaiji/others/xxxx.png\" alt=\"{k}\" width=32 height=32 />\r\n\t\t\t\t</td>\r\n\t\t\t\t-->\r\n\t\t\t</tr>\r\n");
+                    @out.Print($"\t\t\t<tr>\r\n\t\t\t\t<td>\r\n\t\t\t\t{k}\r\n\t\t\t\t</td>\r\n\t\t\t\t<td>&nbsp;&nbsp;</td>\r\n\t\t\t\t<td>\r\n{vs}\t\t\t\t</td>\r\n\t\t\t\t<!--\r\n\t\t\t\t<td>\r\n\t\t\t\t　　<img src=\"../../../gaiji/others/xxxx.png\" alt=\"{k}\" width=32 height=32 />\r\n\t\t\t\t</td>\r\n\t\t\t\t-->\r\n\t\t\t</tr>\r\n");
                 }
-                @out.print("\t\t</table>\r\n");
+                @out.Print("\t\t</table>\r\n");
             }
             else
             {
-                @out.print("</ul>\r\n");
+                @out.Print("</ul>\r\n");
             }
-            @out.print("</div>\r\n");
+            @out.Print("</div>\r\n");
 
         }
 
-        public IBufferItem escape_special_chars(IBufferItem text)
+        public static IBufferItem EscapeSpecialChars(IBufferItem text)
         {
-            if (text is BufferItemString @string) return new BufferItemString(escape_special_chars(@string.to_html()));
+            if (text is BufferItemString @string) return new BufferItemString(EscapeSpecialChars(@string.ToHtml()));
             else return text;
         }
 
 
         //Original Aozora2Html#push_chars does not convert "'" into '&#39;'; it's old behaivor of CGI.escapeHTML().
-        public string escape_special_chars(string text)
+        public static string EscapeSpecialChars(string text)
         {
-            return Regex.Replace(text, @"[&"" <>]", a => escape_special_chars(a.Value[0]));
+            return Regex.Replace(text, @"[&"" <>]", a => EscapeSpecialChars(a.Value[0]));
         }
 
-        public string escape_special_chars(char @char) => @char switch
+        public static string EscapeSpecialChars(char @char) => @char switch
         {
             '&' => "&amp;",
             '"' => "&quot;",

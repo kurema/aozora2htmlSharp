@@ -17,7 +17,9 @@ public static class UnitTestException
     [Fact]
     public static void TestRaiseAozoraException()
     {
+#pragma warning disable IDE0059 // 値の不必要な代入
         bool raised = false;
+#pragma warning restore IDE0059 // 値の不必要な代入
         try
         {
             throw new AozoraException();

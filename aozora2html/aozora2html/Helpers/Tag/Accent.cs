@@ -13,29 +13,29 @@ public class Accent : Inline, IHtmlProvider
     public Accent(Aozora2Html parser, string code, string name, string gaiji_dir) : base()
     {
         Parser = parser ?? throw new ArgumentNullException(nameof(parser));
-        this.code = code ?? throw new ArgumentNullException(nameof(code));
-        this.name = name ?? throw new ArgumentNullException(nameof(name));
-        this.gaiji_dir = gaiji_dir ?? throw new ArgumentNullException(nameof(gaiji_dir));
+        this.Code = code ?? throw new ArgumentNullException(nameof(code));
+        this.Name = name ?? throw new ArgumentNullException(nameof(name));
+        this.GaijiDir = gaiji_dir ?? throw new ArgumentNullException(nameof(gaiji_dir));
     }
 
-    public string code { get; }
-    public string name { get; }
-    public string gaiji_dir { get; }
+    public string Code { get; }
+    public string Name { get; }
+    public string GaijiDir { get; }
 
     //kurema:Jisx0213_to_unicodeはEmbedGaijiとAccent内にありましたが、合わせてGaijiに移動しました。
 
-    public override CharType char_type => CharType.Hankaku;
+    public override CharType CharType => CharType.Hankaku;
 
-    public string to_html()
+    public string ToHtml()
     {
-        if (Parser.use_jisx0213_accent)
+        if (Parser.UseJisx0213Accent)
         {
             var regex = new Regex(".*/");
-            return Gaiji.Jisx0213_to_unicode(regex.Replace(code, "", 1));
+            return Gaiji.ConvertJisx0213ToUnicode(regex.Replace(Code, "", 1));
         }
         else
         {
-            return $"<img src=\"{gaiji_dir}{code}.png\" alt=\"{Aozora2Html.GAIJI_MARK}({name})\" class=\"gaiji\" />";
+            return $"<img src=\"{GaijiDir}{Code}.png\" alt=\"{Aozora2Html.GAIJI_MARK}({Name})\" class=\"gaiji\" />";
         }
     }
 

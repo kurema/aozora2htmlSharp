@@ -14,6 +14,7 @@ namespace TestProject;
 public static class UnitTestFontSizeTag
 {
     [Fact]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0150:型のチェックよりも 'null 値' チェックを優先する", Justification = "<保留中>")]
     public static void TestNew()
     {
         var tag = new FontSize(Helper.GetAozora2HtmlPlaceholder(), 1, Aozora2Html.IndentTypeKey.dai);
@@ -42,21 +43,21 @@ public static class UnitTestFontSizeTag
     public static void TestToHtml1()
     {
         var tag = new FontSize(Helper.GetAozora2HtmlPlaceholder(), 1, Aozora2Html.IndentTypeKey.dai);
-        Assert.Equal("<div class=\"dai1\" style=\"font-size: large;\">", tag.to_html());
+        Assert.Equal("<div class=\"dai1\" style=\"font-size: large;\">", tag.ToHtml());
     }
 
     [Fact]
     public static void TestToHtml2()
     {
         var tag = new FontSize(Helper.GetAozora2HtmlPlaceholder(), 2, Aozora2Html.IndentTypeKey.dai);
-        Assert.Equal("<div class=\"dai2\" style=\"font-size: x-large;\">", tag.to_html());
+        Assert.Equal("<div class=\"dai2\" style=\"font-size: x-large;\">", tag.ToHtml());
     }
 
     [Fact]
     public static void TestToHtml3()
     {
         var tag = new FontSize(Helper.GetAozora2HtmlPlaceholder(), 3, Aozora2Html.IndentTypeKey.sho);
-        Assert.Equal("<div class=\"sho3\" style=\"font-size: xx-small;\">", tag.to_html());
+        Assert.Equal("<div class=\"sho3\" style=\"font-size: xx-small;\">", tag.ToHtml());
     }
 
 }

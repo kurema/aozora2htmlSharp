@@ -21,7 +21,7 @@ public class MultilineCaption : Block, IHtmlProvider, IMultiline
     {
     }
 
-    public string to_html() => "<div class=\"caption\">";
+    public string ToHtml() => "<div class=\"caption\">";
 }
 
 /// <summary>
@@ -49,20 +49,20 @@ public class MultilineJisage : Jisage, IMultiline
 /// </summary>
 public class MultilineMidashi : Block, IHtmlProvider, IMultiline
 {
-    public string tag { get; }
-    public int id { get; }
-    public string @class { get; }
+    public string Tag { get; }
+    public int Id { get; }
+    public string Class { get; }
 
     public MultilineMidashi(INewMidashiIdProvider parser, string size, Utils.MidashiType type) : base(parser)
     {
-        tag = Utils.create_midashi_tag(size);
-        id = parser.new_midashi_id(size);
-        @class = Utils.create_midashi_class(type, tag);
+        Tag = Utils.CreateMidashiTag(size);
+        Id = parser.GenerateNewMidashiId(size);
+        Class = Utils.CreateMidashiClass(type, Tag);
     }
 
-    public string to_html() => $"<{tag} class=\"{@class}\"><a class=\"midashi_anchor\" id=\"midashi{id}\">";
+    public string ToHtml() => $"<{Tag} class=\"{Class}\"><a class=\"midashi_anchor\" id=\"midashi{Id}\">";
 
-    public override string close_tag() => $"</a></{tag}>";
+    public override string CloseTag() => $"</a></{Tag}>";
 }
 
 /// <summary>
@@ -70,14 +70,14 @@ public class MultilineMidashi : Block, IHtmlProvider, IMultiline
 /// </summary>
 public class MultilineStyle : Block, IHtmlProvider, IMultiline
 {
-    public string style { get; }
+    public string Style { get; }
 
     public MultilineStyle(INewMidashiIdProvider parser, string style) : base(parser)
     {
-        this.style = style;
+        this.Style = style;
     }
 
-    public string to_html() => $"<div class=\"{style}\">";
+    public string ToHtml() => $"<div class=\"{Style}\">";
 }
 
 /// <summary>
@@ -89,5 +89,5 @@ public class MultilineYokogumi : Block, IHtmlProvider, IMultiline
     {
     }
 
-    public string to_html() => "<div class=\"yokogumi\">";
+    public string ToHtml() => "<div class=\"yokogumi\">";
 }

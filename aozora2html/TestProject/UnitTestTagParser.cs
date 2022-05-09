@@ -18,7 +18,7 @@ public static class UnitTestTagParser
     {
         using var sr = new System.IO.StringReader("テスト！あいうえお\r\n");
         var stream = new Jstream(sr);
-        var (command, _) = new TagParser(stream, '！', new(), new(), new OutputDummy()).processTag();
+        var (command, _) = new TagParser(stream, '！', new(), new(), new OutputDummy()).ProcessTag();
         Assert.Equal("テスト", command);
     }
 
@@ -27,7 +27,7 @@ public static class UnitTestTagParser
     {
         using var sr = new System.IO.StringReader("腹がへっても［＃「腹がへっても」に傍点］、ひもじゅうない［＃「ひもじゅうない」に傍点］とかぶりを振っている…\r\n");
         var stream = new Jstream(sr);
-        var (command, _) = new TagParser(stream, '…', new(), new(), new OutputDummy()).processTag();
+        var (command, _) = new TagParser(stream, '…', new(), new(), new OutputDummy()).ProcessTag();
         Assert.Equal("<em class=\"sesame_dot\">腹がへっても</em>、<em class=\"sesame_dot\">ひもじゅうない</em>とかぶりを振っている", command);
     }
 
@@ -36,7 +36,7 @@ public static class UnitTestTagParser
     {
         using var sr = new System.IO.StringReader("※［＃「口＋世」、ページ数-行数］…\r\n");
         var stream = new Jstream(sr);
-        var (command, _) = new TagParser(stream, '…', new(), new(), new OutputDummy(), gaiji_dir: "g_dir/").processTag();
+        var (command, _) = new TagParser(stream, '…', new(), new(), new OutputDummy(), gaiji_dir: "g_dir/").ProcessTag();
         Assert.Equal("※<span class=\"notes\">［＃「口＋世」、ページ数-行数］</span>", command);
     }
 
@@ -45,7 +45,7 @@ public static class UnitTestTagParser
     {
         using var sr = new System.IO.StringReader("※［＃二の字点、1-2-22］…\r\n");
         var stream = new Jstream(sr);
-        var (command, _) = new TagParser(stream, '…', new(), new(), new OutputDummy(), gaiji_dir: "g_dir/").processTag();
+        var (command, _) = new TagParser(stream, '…', new(), new(), new OutputDummy(), gaiji_dir: "g_dir/").ProcessTag();
         Assert.Equal("<img src=\"g_dir/1-02/1-02-22.png\" alt=\"※(二の字点、1-2-22)\" class=\"gaiji\" />", command);
     }
 
@@ -54,7 +54,7 @@ public static class UnitTestTagParser
     {
         using var sr = new System.IO.StringReader("自［＃二］女王國［＃一］東度［＃レ］海千餘里。…\r\n");
         var stream = new Jstream(sr);
-        var (command, _) = new TagParser(stream, '…', new(), new(), new OutputDummy(), gaiji_dir: "g_dir/").processTag();
+        var (command, _) = new TagParser(stream, '…', new(), new(), new OutputDummy(), gaiji_dir: "g_dir/").ProcessTag();
         Assert.Equal("自<sub class=\"kaeriten\">二</sub>女王國<sub class=\"kaeriten\">一</sub>東度<sub class=\"kaeriten\">レ</sub>海千餘里。", command);
     }
 
@@ -63,7 +63,7 @@ public static class UnitTestTagParser
     {
         using var sr = new System.IO.StringReader("※［＃「てへん＋劣」、第3水準1-84-77］…\r\n");
         var stream = new Jstream(sr);
-        var (command, _) = new TagParser(stream, '…', new(), new(), new OutputDummy(), gaiji_dir: "g_dir/") { use_jisx0214_embed_gaiji = true }.processTag();
+        var (command, _) = new TagParser(stream, '…', new(), new(), new OutputDummy(), gaiji_dir: "g_dir/") { UseJisx0214EmbedGaiji = true }.ProcessTag();
         Assert.Equal("&#x6318;", command);
     }
 }

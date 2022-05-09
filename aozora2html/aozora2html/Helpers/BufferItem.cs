@@ -10,16 +10,16 @@ namespace Aozora.Helpers
 
     public class BufferItemTag : IBufferItem
     {
-        public Tag.Tag tag { get; }
+        public Tag.Tag Content { get; }
 
         public BufferItemTag(Tag.Tag tag)
         {
-            this.tag = tag;
+            this.Content = tag;
         }
 
-        public string to_html()
+        public string ToHtml()
         {
-            return Tag.Tag.GetHtml(tag);
+            return Tag.Tag.GetHtml(Content);
         }
 
         public override string ToString()
@@ -33,26 +33,26 @@ namespace Aozora.Helpers
 
         public BufferItemString(string text)
         {
-            buffer = new StringBuilder(text);
+            Buffer = new StringBuilder(text);
         }
 
-        public StringBuilder buffer { get; }
+        public StringBuilder Buffer { get; }
 
         public void Append(string value)
         {
-            buffer.Append(value);
+            Buffer.Append(value);
         }
 
-        public int Length => buffer.Length;
+        public int Length => Buffer.Length;
 
-        public string to_html()
+        public string ToHtml()
         {
             return ToString();
         }
 
         public override string ToString()
         {
-            return buffer.ToString();
+            return Buffer.ToString();
         }
     }
 }

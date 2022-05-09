@@ -14,6 +14,7 @@ namespace TestProject;
 public static class UnitTestJizumeTag
 {
     [Fact]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0150:型のチェックよりも 'null 値' チェックを優先する", Justification = "<保留中>")]
     public static void TestNew()
     {
         var tag = new Jizume(Helper.GetAozora2HtmlPlaceholder(), 50);
@@ -27,8 +28,8 @@ public static class UnitTestJizumeTag
     public static void TestToHtml()
     {
         var tag = new Jizume(Helper.GetAozora2HtmlPlaceholder(), 50);
-        Assert.Equal("<div class=\"jizume_50\" style=\"width: 50em\">", tag.to_html());
-        Assert.Equal("</div>", tag.close_tag());
+        Assert.Equal("<div class=\"jizume_50\" style=\"width: 50em\">", tag.ToHtml());
+        Assert.Equal("</div>", tag.CloseTag());
     }
 }
 

@@ -14,6 +14,7 @@ namespace TestProject;
 public static class UnitTestMultilineStyleTag
 {
     [Fact]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0150:型のチェックよりも 'null 値' チェックを優先する", Justification = "<保留中>")]
     public static void TestNew()
     {
         var tag = new MultilineStyle(Helper.GetAozora2HtmlPlaceholder(), "style1");
@@ -28,8 +29,8 @@ public static class UnitTestMultilineStyleTag
     public static void TestToHtml()
     {
         var tag = new MultilineStyle(Helper.GetAozora2HtmlPlaceholder(), "s1");
-        Assert.Equal("<div class=\"s1\">", tag.to_html());
-        Assert.Equal("</div>", tag.close_tag());
+        Assert.Equal("<div class=\"s1\">", tag.ToHtml());
+        Assert.Equal("</div>", tag.CloseTag());
     }
 }
 

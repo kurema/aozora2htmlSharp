@@ -14,6 +14,7 @@ namespace TestProject;
 public static class UnitTestInlineKeigakomiTag
 {
     [Fact]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0150:型のチェックよりも 'null 値' チェックを優先する", Justification = "<保留中>")]
     public static void TestNew()
     {
         var tag = new InlineKeigakomi("aaa");
@@ -27,6 +28,6 @@ public static class UnitTestInlineKeigakomiTag
     public static void TestToHtml()
     {
         var tag = new InlineKeigakomi("テスト");
-        Assert.Equal("<span class=\"keigakomi\">テスト</span>", tag.to_html());
+        Assert.Equal("<span class=\"keigakomi\">テスト</span>", tag.ToHtml());
     }
 }

@@ -15,7 +15,7 @@ public static class Utils
     public const string ZENKAKU_NUMS = "０-９";
     public const string ZENKAKU_NUMS_FULL = "０１２３４５６７８９";
 
-    public static string create_font_size(int times, Aozora2Html.IndentTypeKey daisho)
+    public static string CreateFontSize(int times, Aozora2Html.IndentTypeKey daisho)
     {
         string size = times switch
         {
@@ -35,7 +35,7 @@ public static class Utils
 
     //module_function :create_font_size
 
-    public static string create_midashi_tag(string size)
+    public static string CreateMidashiTag(string size)
     {
         if (size.Contains(new string(Aozora2Html.SIZE_SMALL, 1))) return "h5";
         else if (size.Contains(new string(Aozora2Html.SIZE_MIDDLE, 1))) return "h4";
@@ -51,7 +51,7 @@ public static class Utils
         normal, dogyo, mado,
     }
 
-    public static string create_midashi_class(MidashiType type, string tag)
+    public static string CreateMidashiClass(MidashiType type, string tag)
     {
         var normal_midashi_tag = new Dictionary<string, string>()
         {
@@ -85,7 +85,7 @@ public static class Utils
 
     //module_function :create_midashi_class
 
-    public static string convert_japanese_number(string command)
+    public static string ConvertJapaneseNumber(string command)
     {
         static string addBrancket(string original)
         {
@@ -106,36 +106,36 @@ public static class Utils
     }
     //module_function :convert_japanese_number
 
-    public enum illegal_char_check_result
+    public enum IllegalCharCheckResult
     {
         jis_gaiji, chuki, onebyte, legal
     }
 
-    public static void illegal_char_check(IBufferItem bufferItem, int line, IOutput output)
+    public static void IllegalCharCheck(IBufferItem bufferItem, int line, IOutput output)
     {
         if (bufferItem is not BufferItemString bufferItemString) return;
-        foreach (var item in bufferItemString.to_html()) illegal_char_check(item, line, output);
+        foreach (var item in bufferItemString.ToHtml()) IllegalCharCheck(item, line, output);
     }
 
     //kurema:
     //Rubyユーザーへの注記
     //C#で変数名の前に付ける@は無視されます。
     //予約語避けの為に使われます。
-    public static illegal_char_check_result illegal_char_check(char @char, int line, IOutput output)
+    public static IllegalCharCheckResult IllegalCharCheck(char @char, int line, IOutput output)
     {
-        var result = illegal_char_check(@char);
+        var result = IllegalCharCheck(@char);
         switch (result)
         {
-            case illegal_char_check_result.jis_gaiji:
-                output.println(string.Format(I18n.MSG["warn_jis_gaiji"], line, @char));
+            case IllegalCharCheckResult.jis_gaiji:
+                output.PrintLine(string.Format(I18n.MSG["warn_jis_gaiji"], line, @char));
                 break;
-            case illegal_char_check_result.chuki:
-                output.println(string.Format(I18n.MSG["warn_chuki"], line, @char));
+            case IllegalCharCheckResult.chuki:
+                output.PrintLine(string.Format(I18n.MSG["warn_chuki"], line, @char));
                 break;
-            case illegal_char_check_result.onebyte:
-                output.println(string.Format(I18n.MSG["warn_onebyte"], line, @char));
+            case IllegalCharCheckResult.onebyte:
+                output.PrintLine(string.Format(I18n.MSG["warn_onebyte"], line, @char));
                 break;
-            case illegal_char_check_result.legal:
+            case IllegalCharCheckResult.legal:
             default:
                 break;
         }
@@ -152,7 +152,7 @@ public static class Utils
     //
     // @return [void]
     //
-    public static illegal_char_check_result illegal_char_check(char @char)
+    public static IllegalCharCheckResult IllegalCharCheck(char @char)
     {
         var code = new Unpacked(@char);
 
@@ -167,12 +167,12 @@ public static class Utils
             (code == "2b") ||
             ((code >= "7b") && (code <= "7d")))
         {
-            return illegal_char_check_result.onebyte;
+            return IllegalCharCheckResult.onebyte;
         }
 
         if (code == "81f2")
         {
-            return illegal_char_check_result.chuki;
+            return IllegalCharCheckResult.chuki;
         }
 
         if (((code >= "81ad") && (code <= "81b7")) ||
@@ -203,10 +203,10 @@ public static class Utils
             ((code >= "ee40") && (code <= "eefc")) ||
             ((code >= "ef40") && (code <= "effc")))
         {
-            return illegal_char_check_result.jis_gaiji;
+            return IllegalCharCheckResult.jis_gaiji;
         }
 
-        return illegal_char_check_result.legal;
+        return IllegalCharCheckResult.legal;
     }
     //module_function :illegal_char_check
 

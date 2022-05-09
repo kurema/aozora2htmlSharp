@@ -9,29 +9,29 @@ namespace Aozora.Helpers
 {
     public interface IOutput
     {
-        void print(string words);
-        void println(string words);
-        void close();
+        void Print(string words);
+        void PrintLine(string words);
+        void Close();
     }
 
     public class OutputDummy : IOutput
     {
-        public void close() { }
-        public void print(string words) { }
+        public void Close() { }
+        public void Print(string words) { }
 
-        public void println(string words) { }
+        public void PrintLine(string words) { }
     }
 
     public class OutputConsole : IOutput
     {
-        public void close() { }
+        public void Close() { }
 
-        public void print(string words)
+        public void Print(string words)
         {
             Console.Write(words);
         }
 
-        public void println(string words)
+        public void PrintLine(string words)
         {
             Console.WriteLine(words);
         }
@@ -39,16 +39,16 @@ namespace Aozora.Helpers
 
     public class OutputConsoleError : IOutput
     {
-        public void close()
+        public void Close()
         {
         }
 
-        public void print(string words)
+        public void Print(string words)
         {
             Console.Error.Write(words);
         }
 
-        public void println(string words)
+        public void PrintLine(string words)
         {
             Console.Error.WriteLine(words);
         }
@@ -63,7 +63,7 @@ namespace Aozora.Helpers
             Content = content ?? throw new ArgumentNullException(nameof(content));
         }
 
-        public void close()
+        public void Close()
         {
             Content?.Flush();
             Content?.Close();
@@ -71,12 +71,12 @@ namespace Aozora.Helpers
             Content = null;
         }
 
-        public void print(string words)
+        public void Print(string words)
         {
             Content?.Write(words);
         }
 
-        public void println(string words)
+        public void PrintLine(string words)
         {
             Content?.Write(words);
             Content?.Write("\r\n");
@@ -86,16 +86,16 @@ namespace Aozora.Helpers
     public class OutputString : IOutput
     {
         readonly StringBuilder content = new();
-        public void close()
+        public void Close()
         {
         }
 
-        public void print(string words)
+        public void Print(string words)
         {
             content.Append(words);
         }
 
-        public void println(string words)
+        public void PrintLine(string words)
         {
             content.Append(words);
             content.Append("\r\n");

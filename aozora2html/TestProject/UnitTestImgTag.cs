@@ -14,6 +14,7 @@ namespace TestProject;
 public static class UnitTestImgTag
 {
     [Fact]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0150:型のチェックよりも 'null 値' チェックを優先する", Justification = "<保留中>")]
     public static void TestNew()
     {
         var tag = new Img("foo.png", "img1", "alt img1", "40", "50");
@@ -26,6 +27,6 @@ public static class UnitTestImgTag
     public static void TestToHtml()
     {
         var tag = new Img("foo.png", "img1", "alt img1", "40", "50");
-        Assert.Equal("<img class=\"img1\" width=\"40\" height=\"50\" src=\"foo.png\" alt=\"alt img1\" />",tag.to_html());
+        Assert.Equal("<img class=\"img1\" width=\"40\" height=\"50\" src=\"foo.png\" alt=\"alt img1\" />",tag.ToHtml());
     }
 }

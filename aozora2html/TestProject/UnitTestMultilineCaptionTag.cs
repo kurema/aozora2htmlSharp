@@ -14,6 +14,7 @@ namespace TestProject;
 public static class UnitTestMultilineCaptionTag
 {
     [Fact]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0150:型のチェックよりも 'null 値' チェックを優先する", Justification = "<保留中>")]
     public static void TestNew()
     {
         var tag = new MultilineCaption(Helper.GetAozora2HtmlPlaceholder());
@@ -28,8 +29,8 @@ public static class UnitTestMultilineCaptionTag
     public static void TestToHtml()
     {
         var tag = new MultilineCaption(Helper.GetAozora2HtmlPlaceholder());
-        Assert.Equal("<div class=\"caption\">", tag.to_html());
-        Assert.Equal("</div>", tag.close_tag());
+        Assert.Equal("<div class=\"caption\">", tag.ToHtml());
+        Assert.Equal("</div>", tag.CloseTag());
     }
 }
 

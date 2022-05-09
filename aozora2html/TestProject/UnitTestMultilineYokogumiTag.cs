@@ -14,6 +14,7 @@ namespace TestProject;
 public static class UnitTestMultilineYokogumiTag
 {
     [Fact]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0150:型のチェックよりも 'null 値' チェックを優先する", Justification = "<保留中>")]
     public static void TestNew()
     {
         var tag = new MultilineYokogumi(Helper.GetAozora2HtmlPlaceholder());
@@ -28,8 +29,8 @@ public static class UnitTestMultilineYokogumiTag
     public static void TestToHtml()
     {
         var tag = new MultilineYokogumi(Helper.GetAozora2HtmlPlaceholder());
-        Assert.Equal("<div class=\"yokogumi\">", tag.to_html());
-        Assert.Equal("</div>", tag.close_tag());
+        Assert.Equal("<div class=\"yokogumi\">", tag.ToHtml());
+        Assert.Equal("</div>", tag.CloseTag());
     }
 }
 

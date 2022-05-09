@@ -14,6 +14,7 @@ namespace TestProject;
 public static class UnitTestRubyTag
 {
     [Fact]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0150:型のチェックよりも 'null 値' チェックを優先する", Justification = "<保留中>")]
     public static void TestNew()
     {
         var tag = new Ruby("aaa", "bb");
@@ -27,7 +28,7 @@ public static class UnitTestRubyTag
     public static void TestToHtml()
     {
         var tag = new Ruby("テスト", "てすと");
-        Assert.Equal("<ruby><rb>テスト</rb><rp>（</rp><rt>てすと</rt><rp>）</rp></ruby>", tag.to_html());
+        Assert.Equal("<ruby><rb>テスト</rb><rp>（</rp><rt>てすと</rt><rp>）</rp></ruby>", tag.ToHtml());
     }
 }
 

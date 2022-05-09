@@ -14,6 +14,7 @@ namespace TestProject;
 public static class UnitTestEditorNoteTag
 {
     [Fact]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0150:型のチェックよりも 'null 値' チェックを優先する", Justification = "<保留中>")]
     public static void TestNew()
     {
         var tag = new EditorNote("注記のテスト");
@@ -26,6 +27,6 @@ public static class UnitTestEditorNoteTag
     public static void TestToHtml()
     {
         var tag = new EditorNote("注記のテスト");
-        Assert.Equal("<span class=\"notes\">［＃注記のテスト］</span>", tag.to_html());
+        Assert.Equal("<span class=\"notes\">［＃注記のテスト］</span>", tag.ToHtml());
     }
 }

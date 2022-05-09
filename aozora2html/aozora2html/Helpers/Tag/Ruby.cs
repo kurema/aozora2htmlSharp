@@ -15,24 +15,24 @@ namespace Aozora.Helpers.Tag;
 /// </summary>
 public class Ruby : ReferenceMentioned, IHtmlProvider
 {
-    public string ruby { get; set; }
-    public string under_ruby { get; set; }
+    public string RubyUpper { get; set; }
+    public string RubyUnder { get; set; }
 
     public Ruby(object? @string, string ruby, string under_ruby = "") : base(@string)
     {
-        this.ruby = ruby ?? throw new ArgumentNullException(nameof(ruby));
-        this.under_ruby = under_ruby ?? throw new ArgumentNullException(nameof(under_ruby));
+        this.RubyUpper = ruby ?? throw new ArgumentNullException(nameof(ruby));
+        this.RubyUnder = under_ruby ?? throw new ArgumentNullException(nameof(under_ruby));
     }
 
-    public string to_html() => $"<ruby><rb>{target_html}</rb><rp>{Aozora2Html.PAREN_BEGIN_MARK}</rp><rt>{ruby}</rt><rp>{Aozora2Html.PAREN_END_MARK}</rp></ruby>";
+    public string ToHtml() => $"<ruby><rb>{TargetHtml}</rb><rp>{Aozora2Html.PAREN_BEGIN_MARK}</rp><rt>{RubyUpper}</rt><rp>{Aozora2Html.PAREN_END_MARK}</rp></ruby>";
 
-    public static bool include_ruby(System.Collections.IEnumerable array)
+    public static bool IncludeRuby(System.Collections.IEnumerable array)
     {
         static bool CaseReferenceMentioned(ReferenceMentioned referenceMentioned)
         {
             //kurema:ちょっと微妙だけど関数内関数化した。
-            if (referenceMentioned.target is System.Collections.IEnumerable eltArray) return include_ruby(eltArray);
-            else return referenceMentioned.target is Ruby;
+            if (referenceMentioned.Target is System.Collections.IEnumerable eltArray) return IncludeRuby(eltArray);
+            else return referenceMentioned.Target is Ruby;
         }
 
         if (array is null) return false;
@@ -43,9 +43,9 @@ public class Ruby : ReferenceMentioned, IHtmlProvider
         {
             switch (elt)
             {
-                case BufferItemTag itemTag when itemTag.tag is Ruby:
+                case BufferItemTag itemTag when itemTag.Content is Ruby:
                 case Ruby: return true;
-                case BufferItemTag itemTag when itemTag.tag is ReferenceMentioned eltRM1:
+                case BufferItemTag itemTag when itemTag.Content is ReferenceMentioned eltRM1:
                     return CaseReferenceMentioned(eltRM1);
                 case ReferenceMentioned eltRM2:
                     //kurema:原文通りだけど、falseの場合継続とかじゃなくて即returnで良いの？
@@ -56,9 +56,9 @@ public class Ruby : ReferenceMentioned, IHtmlProvider
     }
 
     //rubyタグの再割り当て
-    public static Ruby rearrange_ruby(System.Collections.IEnumerable targets, string upper_ruby, string under_ruby)
+    public static Ruby RearrangeRuby(System.Collections.IEnumerable targets, string upper_ruby, string under_ruby)
     {
-        if (!include_ruby(targets))
+        if (!IncludeRuby(targets))
         {
             return new Ruby(targets, upper_ruby, under_ruby);
         }
@@ -76,34 +76,34 @@ public class Ruby : ReferenceMentioned, IHtmlProvider
 
         void caseRuby(Ruby ruby, StringBuilder new_under, StringBuilder new_upper)
         {
-            if (ruby.target is System.Collections.IEnumerable) throw new Exceptions.DontUseDoubleRubyException();
-            if (string.IsNullOrEmpty(ruby.ruby))
+            if (ruby.Target is System.Collections.IEnumerable) throw new Exceptions.DontUseDoubleRubyException();
+            if (string.IsNullOrEmpty(ruby.RubyUpper))
             {
                 if (!new_under_is_array) throw new Exceptions.DontUseDoubleRubyException();
-                new_under.Append(ruby.under_ruby);
+                new_under.Append(ruby.RubyUnder);
             }
             else
             {
                 if (!new_upper_is_array) throw new Exceptions.DontUseDoubleRubyException();
-                new_upper.Append(ruby.ruby);
+                new_upper.Append(ruby.RubyUpper);
             }
         }
 
         void caseMentioned(ReferenceMentioned mentioned, StringBuilder new_under, StringBuilder new_upper, List<object?> new_targets, object? x)
         {
-            if (mentioned.target is System.Collections.IEnumerable targetArray)
+            if (mentioned.Target is System.Collections.IEnumerable targetArray)
             {
                 // recursive
-                var ruby2 = rearrange_ruby(targetArray, "", "");
-                var target2 = ruby2.target;
-                var upper_ruby2 = ruby2.ruby;
-                var under_ruby2 = ruby2.under_ruby;
+                var ruby2 = RearrangeRuby(targetArray, "", "");
+                var target2 = ruby2.Target;
+                var upper_ruby2 = ruby2.RubyUpper;
+                var under_ruby2 = ruby2.RubyUnder;
                 // rotation!!
-                if (ruby2.target is not System.Collections.IEnumerable targetArray2) throw new Exception("Unexpected code path.");
+                if (ruby2.Target is not System.Collections.IEnumerable targetArray2) throw new Exception("Unexpected code path.");
                 foreach (var y in targetArray2)
                 {
                     ReferenceMentioned tmp = (ReferenceMentioned)mentioned.Clone();
-                    tmp.target = y;
+                    tmp.Target = y;
                     new_targets.Add(tmp);
                 }
                 if (new_under_is_array) new_under.Append(under_ruby2);
@@ -126,7 +126,7 @@ public class Ruby : ReferenceMentioned, IHtmlProvider
         {
             switch (x)
             {
-                case BufferItemTag tag when tag.tag is Ruby ruby:
+                case BufferItemTag tag when tag.Content is Ruby ruby:
                     caseRuby(ruby, new_under, new_upper);
                     break;
                 case Ruby ruby:
@@ -147,7 +147,7 @@ public class Ruby : ReferenceMentioned, IHtmlProvider
 
     public override object Clone()
     {
-        return new Ruby(target, ruby, under_ruby);
+        return new Ruby(Target, RubyUpper, RubyUnder);
     }
 
     /*

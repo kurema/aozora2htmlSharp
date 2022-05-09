@@ -13,14 +13,14 @@ public abstract class ReferenceMentioned : Inline, System.ICloneable
     //rubocop:disable Lint/MissingSuper
     public ReferenceMentioned(object? target)
     {
-        this.target = target;
-        if (target is null || !block_element(target)) return;
-        syntax_error();
+        this.Target = target;
+        if (target is null || !BlockElement(target)) return;
+        ThrowSyntaxError();
     }
 
-    public object? target { get; set; }
+    public object? Target { get; set; }
 
-    public static bool block_element(object elt)
+    public static bool BlockElement(object elt)
     {
         switch (elt)
         {
@@ -29,7 +29,7 @@ public abstract class ReferenceMentioned : Inline, System.ICloneable
             case System.Collections.IEnumerable enumerable:
                 foreach (var item in enumerable)
                 {
-                    if (block_element(item)) return true;
+                    if (BlockElement(item)) return true;
                 }
                 return false;
             default: return elt is Block;
@@ -45,14 +45,14 @@ public abstract class ReferenceMentioned : Inline, System.ICloneable
     //}
 
     //kurema:挙動に自信がない。
-    public string target_html
+    public string TargetHtml
     {
         get
         {
-            switch (target)
+            switch (Target)
             {
                 case string text: return text;
-                case ReferenceMentioned reference: return reference.target_html;
+                case ReferenceMentioned reference: return reference.TargetHtml;
                 case System.Collections.IEnumerable enumerable:
                     {
                         var sb = new StringBuilder();
@@ -61,10 +61,10 @@ public abstract class ReferenceMentioned : Inline, System.ICloneable
                             switch (item)
                             {
                                 case ReferenceMentioned reference:
-                                    sb.Append(reference.target_html);
+                                    sb.Append(reference.TargetHtml);
                                     break;
                                 case IHtmlProvider htmlProvider:
-                                    sb.Append(htmlProvider.to_html() ?? "");
+                                    sb.Append(htmlProvider.ToHtml() ?? "");
                                     break;
                                 default:
                                     sb.Append(item?.ToString() ?? "");
@@ -73,8 +73,8 @@ public abstract class ReferenceMentioned : Inline, System.ICloneable
                         }
                         return sb.ToString();
                     }
-                case IHtmlProvider html: return html.to_html();
-                default: return target?.ToString() ?? "";
+                case IHtmlProvider html: return html.ToHtml();
+                default: return Target?.ToString() ?? "";
             }
         }
     }

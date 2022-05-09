@@ -26,11 +26,11 @@ public static class Helper
         using var sr = new System.IO.StringReader(input);
         var stream = new Jstream(sr);
         var output = new OutputString();
-        var parser = new Aozora2Html(stream, output, null, null, null) { section = Aozora2Html.SectionKind.tail };
+        var parser = new Aozora2Html(stream, output, null, null, null) { Section = Aozora2Html.SectionKind.tail };
         action?.Invoke(parser);
         try
         {
-            while (true) parser.parse();
+            while (true) parser.Parse();
         }
         catch (Aozora.Exceptions.TerminateException)
         {
@@ -42,16 +42,16 @@ public static class Helper
     {
         public MidashiIdProviderPlaceholder(int midashi_id, bool block_allowed_context)
         {
-            this.midashi_id = midashi_id;
-            this.block_allowed_context = block_allowed_context;
+            this.MidashiId = midashi_id;
+            this.BlockAllowedContext = block_allowed_context;
         }
 
-        public int midashi_id { get; set; }
+        public int MidashiId { get; set; }
 
-        public bool block_allowed_context { get; set; }
+        public bool BlockAllowedContext { get; set; }
 
-        public int new_midashi_id(int size) => midashi_id;
+        public int GenerateNewMidashiId(int size) => MidashiId;
 
-        public int new_midashi_id(string size) => midashi_id;
+        public int GenerateNewMidashiId(string size) => MidashiId;
     }
 }

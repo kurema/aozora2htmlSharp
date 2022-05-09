@@ -136,11 +136,11 @@ public static class Functions
 
         var aozora = new Aozora.Aozora2Html(jstream, output, new Aozora.Helpers.OutputConsoleError(), gaijiDirRelative, cssFilesRelative.Length == 0 ? null : cssFilesRelative)
         {
-            use_jisx0213_accent = useJisx0213,
-            use_jisx0214_embed_gaiji = useJisx0213,
-            use_unicode_embed_gaiji = useUnicode,
+            UseJisx0213Accent = useJisx0213,
+            UseJisx0214EmbedGaiji = useJisx0213,
+            UseUnicodeEmbedGaiji = useUnicode,
         };
-        aozora.process();
+        aozora.Process();
     }
 
 

@@ -10,13 +10,13 @@ namespace Aozora.Helpers
     {
         public Style(string command, string closingTag)
         {
-            this.command = command ?? throw new ArgumentNullException(nameof(command));
-            this.closingTag = closingTag ?? throw new ArgumentNullException(nameof(closingTag));
+            this.Command = command ?? throw new ArgumentNullException(nameof(command));
+            this.ClosingTag = closingTag ?? throw new ArgumentNullException(nameof(closingTag));
         }
 
-        public string command { get; set; }
+        public string Command { get; set; }
 
-        public string closingTag { get; set; }
+        public string ClosingTag { get; set; }
     }
 
     public class StyleStack
@@ -26,33 +26,33 @@ namespace Aozora.Helpers
             stack = new List<Style>();
         }
 
-        public void push(Style elem)
+        public void Push(Style elem)
         {
             stack.Add(elem);
         }
 
-        public void push(string command, string closingTag)
+        public void Push(string command, string closingTag)
         {
             stack.Add(new Style(command, closingTag));
         }
 
-        public bool empty => stack.Count == 0;
+        public bool IsEmpty => stack.Count == 0;
 
-        public Style pop()
+        public Style Pop()
         {
             var result = stack.Last();
             stack.Remove(result);
             return result;
         }
 
-        public Style? last()
+        public Style? Last()
         {
             return stack.LastOrDefault();
         }
 
-        public string? last_command()
+        public string? LastCommand()
         {
-            return stack.LastOrDefault()?.command;
+            return stack.LastOrDefault()?.Command;
         }
 
         private readonly List<Style> stack;

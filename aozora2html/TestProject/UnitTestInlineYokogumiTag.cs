@@ -14,6 +14,7 @@ namespace TestProject;
 public static class UnitTestInlineYokogumiTag
 {
     [Fact]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0150:型のチェックよりも 'null 値' チェックを優先する", Justification = "<保留中>")]
     public static void TestNew()
     {
         var tag = new InlineYokogumi("aaa");
@@ -27,7 +28,7 @@ public static class UnitTestInlineYokogumiTag
     public static void TestToHtml()
     {
         var tag = new InlineYokogumi("テスト");
-        Assert.Equal("<span class=\"yokogumi\">テスト</span>", tag.to_html());
+        Assert.Equal("<span class=\"yokogumi\">テスト</span>", tag.ToHtml());
     }
 }
 

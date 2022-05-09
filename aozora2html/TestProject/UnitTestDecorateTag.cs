@@ -14,6 +14,7 @@ namespace TestProject;
 public static class UnitTestDecorateTag
 {
     [Fact]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0150:型のチェックよりも 'null 値' チェックを優先する", Justification = "<保留中>")]
     public static void TestNew()//kurema:コピペが簡単になるように名前を変更しました。他も同様。
     {
         var tag = new Decorate("テスト", "foo", "span");//kurema:原文の引数が明らかに変な型だったので変更しました。
@@ -27,6 +28,6 @@ public static class UnitTestDecorateTag
     {
         var tag = new Decorate("テスト", "foo", "span");
 
-        Assert.Equal("<span class=\"foo\">テスト</span>", tag.to_html());
+        Assert.Equal("<span class=\"foo\">テスト</span>", tag.ToHtml());
     }
 }

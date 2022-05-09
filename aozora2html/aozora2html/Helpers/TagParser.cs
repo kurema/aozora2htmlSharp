@@ -14,55 +14,55 @@ namespace Aozora.Helpers
 
         readonly StringBuilder _raw = new();//外字変換前の生テキストを残したいことがあるらしい
 
-        public TagParser(Jstream input, char? endchar, Dictionary<chuuki_table_keys, bool> chuuki, List<(string, List<string>)> images, IOutput output, IOutput? warnChannel = null, string? gaiji_dir = null, string[]? css_files = null) : base(input, output, warnChannel, gaiji_dir, css_files)
+        public TagParser(Jstream input, char? endchar, Dictionary<ChuukiTableKeys, bool> chuuki, List<(string, List<string>)> images, IOutput output, IOutput? warnChannel = null, string? gaiji_dir = null, string[]? css_files = null) : base(input, output, warnChannel, gaiji_dir, css_files)
         {
-            section = SectionKind.tail; //末尾処理と記法内はインデントをしないので等価
+            Section = SectionKind.tail; //末尾処理と記法内はインデントをしないので等価
             chuuki_table = chuuki;
             this.endchar = endchar; //改行を越えるべきか否か…
             this.images = images; //globalな環境を記録するアイテムは共有する必要あり
         }
 
         //method override!
-        public override char? read_char()
+        public override char? ReadChar()
         {
-            var c= base.read_char();
+            var c= base.ReadChar();
             _raw.Append(c);
             return c;
         }
 
-        protected override (string, string) read_to_nest(char? endchar)
+        protected override (string, string) ReadToNest(char? endchar)
         {
-            var ans = base.read_to_nest(endchar);
+            var ans = base.ReadToNest(endchar);
             _raw.Append(ans.Item2);
             return ans;
         }
 
         //出力は[String,String]返しで！
-        public (string,string) general_output_TagParser()
+        public (string,string) GeneralOutputTagParser()
         {
             //kurema:こちらも返り値が違うので名前変えてます。
-            ruby_buf.dump_into(buffer);
+            ruby_buf.DumpInto(buffer);
             var ans = new StringBuilder();
             foreach(var s in buffer)
             {
-                if((s as BufferItemTag)?.tag is Tag.UnEmbedGaiji gaiji && !gaiji.escaped)
+                if((s as BufferItemTag)?.Content is Tag.UnEmbedGaiji gaiji && !gaiji.Escaped)
                 {
                     //消してあった※を復活させ
                     ans.Append(GAIJI_MARK);
                 }
-                ans.Append(s.to_html());
+                ans.Append(s.ToHtml());
             }
             return (ans.ToString(), _raw.ToString());
         }
 
-        public (string, string) processTag()
+        public (string, string) ProcessTag()
         {
             try
             {
-                parse();
+                Parse();
             }
             catch (Exceptions.TerminateException){
-                return general_output_TagParser();
+                return GeneralOutputTagParser();
             }
             throw new Exception();//kurema:parse()から脱出する方法がないのでここには来ない。
         }
