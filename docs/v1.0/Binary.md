@@ -16,6 +16,8 @@ Binary.zipには以下の環境向けのバイナリが含まれています。
 * "osx.11.0-arm64"
 * "osx.10.10-x64"
 
+"tizen"はコンパイルに失敗したので含まれていません。
+
 ## コンパイル条件
 コンパイルは以下の条件で実行しています。
 
@@ -30,9 +32,9 @@ dotnet publish ${{env.ConsolePath}} --configuration Release --self-contained tru
 ローカルにインストールされた共有ランタイムを使いません。
 従って.NETのインストールは不要で、単なる実行ファイルとして扱えます。
 
-一方でファイルサイズが大きくなり、脆弱性修正や機能改善が取り込まれません。
+一方でバイナリサイズが大きくなり、脆弱性修正や機能改善が取り込まれません。
 
-## 単一ファイル配置
+### 単一ファイル配置
 [Microsoft](https://docs.microsoft.com/ja-jp/dotnet/core/deploying/single-file/overview)
 
 単一ファイルでコンパイルしています。
@@ -40,7 +42,7 @@ dotnet publish ${{env.ConsolePath}} --configuration Release --self-contained tru
 いくつかの非互換性がありますが、このプロジェクトとは無関係だと考えています。
 テストは全ての対応環境では行っていません。
 
-## トリミング
+### トリミング
 [Microsoft](https://docs.microsoft.com/ja-jp/dotnet/core/deploying/trimming/trim-self-contained)
 
 トリミングをオンにしています。
@@ -48,7 +50,7 @@ dotnet publish ${{env.ConsolePath}} --configuration Release --self-contained tru
 ただし、動的に読み込まれる場合などいくつかの大きな[非互換性](https://docs.microsoft.com/ja-jp/dotnet/core/deploying/trimming/incompatibilities)があります。
 この非互換性は本プロジェクトとは無関係だと考えています。
 
-## ReadyToRun
+### ReadyToRun
 [Microsoft](https://docs.microsoft.com/ja-jp/dotnet/core/deploying/ready-to-run)
 
 ReadyToRunをオンにしています。
@@ -63,3 +65,6 @@ v1.0.0時点のGitHub Actionsには以下の問題点があります。
 * テストが不十分
   * sampleとの比較テストが含まれていません。
   * `dotnet publish`で作成されたバイナリでテストをしていません。
+* nuget非対応。
+  * 現時点ではnugetに登録をしていません。自動登録も実装していません。
+  * コンソールとライブラリのバージョンが一致する理由もないのでそもそも同じレポジトリで行うのは無理があります。
