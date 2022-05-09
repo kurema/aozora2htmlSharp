@@ -8,7 +8,7 @@
 
 ## 公開対応
 nugetに登録。
-GitHub Actions設定。
+~GitHub Actions設定。~
 
 地味だけどめんどくさい。
 
