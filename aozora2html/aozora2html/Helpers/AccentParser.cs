@@ -93,7 +93,7 @@ namespace Aozora.Helpers
 
                 if (first == '\n')
                 {
-                    if (encount_accent) warnChannel?.PrintLine(String.Format(I18n.MSG["warn_invalid_accent_brancket"], LineNumber));
+                    if (encount_accent) warnChannel?.PrintLine(String.Format(I18n.Messages["warn_invalid_accent_brancket"], LineNumber));
                     throw new Exceptions.TerminateException();
                 }
                 else if (first == ACCENT_END)

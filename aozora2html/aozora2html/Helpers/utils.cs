@@ -127,13 +127,13 @@ public static class Utils
         switch (result)
         {
             case IllegalCharCheckResult.jis_gaiji:
-                output.PrintLine(string.Format(I18n.MSG["warn_jis_gaiji"], line, @char));
+                output.PrintLine(string.Format(I18n.Messages["warn_jis_gaiji"], line, @char));
                 break;
             case IllegalCharCheckResult.chuki:
-                output.PrintLine(string.Format(I18n.MSG["warn_chuki"], line, @char));
+                output.PrintLine(string.Format(I18n.Messages["warn_chuki"], line, @char));
                 break;
             case IllegalCharCheckResult.onebyte:
-                output.PrintLine(string.Format(I18n.MSG["warn_onebyte"], line, @char));
+                output.PrintLine(string.Format(I18n.Messages["warn_onebyte"], line, @char));
                 break;
             case IllegalCharCheckResult.legal:
             default:

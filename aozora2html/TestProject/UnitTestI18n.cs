@@ -23,6 +23,6 @@ public static class UnitTestI18n
     [Fact]
     public static void TestText()
     {
-        Assert.Equal("警告(123行目):JIS外字「①」が使われています", string.Format(I18n.MSG["warn_jis_gaiji"], 123, "①"));
+        Assert.Equal("警告(123行目):JIS外字「①」が使われています", string.Format(I18n.Messages["warn_jis_gaiji"], 123, "①"));
     }
 }
