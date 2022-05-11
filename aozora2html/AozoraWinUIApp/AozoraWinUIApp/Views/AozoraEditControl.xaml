@@ -8,15 +8,15 @@
     mc:Ignorable="d">
 
     <RichEditBox>
-        <!--<RichEditBox.ContextFlyout>
+        <RichEditBox.ContextFlyout>
             <MenuFlyout>
-                <MenuFlyoutItem Text="Hello"/>
+                <MenuFlyoutItem Text="Cut" />
             </MenuFlyout>
         </RichEditBox.ContextFlyout>
         <RichEditBox.SelectionFlyout>
             <MenuFlyout>
                 <MenuFlyoutItem Text="Hello"/>
             </MenuFlyout>
-        </RichEditBox.SelectionFlyout>-->
+        </RichEditBox.SelectionFlyout>
     </RichEditBox>
 </UserControl>
