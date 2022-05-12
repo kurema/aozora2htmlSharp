@@ -1,10 +1,152 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <xs:schema id="Chuki"
-    targetNamespace="http://tempuri.org/Chuki.xsd"
+    targetNamespace="https://github.com/kurema/aozora2htmlSharp/blob/master/tools/gaiji_chuki/GaijiChukiConvert/GaijiChukiConvert/Schemas/Chuki.xsd"
     elementFormDefault="qualified"
-    xmlns="http://tempuri.org/Chuki.xsd"
-    xmlns:mstns="http://tempuri.org/Chuki.xsd"
+    xmlns="https://github.com/kurema/aozora2htmlSharp/blob/master/tools/gaiji_chuki/GaijiChukiConvert/GaijiChukiConvert/Schemas/Chuki.xsd"
+    xmlns:mstns="https://github.com/kurema/aozora2htmlSharp/blob/master/tools/gaiji_chuki/GaijiChukiConvert/GaijiChukiConvert/Schemas/Chuki.xsd"
     xmlns:xs="http://www.w3.org/2001/XMLSchema"
 >
-	
+	<xs:element name="dictionary">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="kanji">
+					<xs:complexType>
+						<xs:sequence minOccurs="0" maxOccurs="unbounded">
+							<xs:element ref="mstns:page" />
+						</xs:sequence>
+					</xs:complexType>
+				</xs:element>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+
+	<xs:element name="page">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="radical">
+					<xs:complexType>
+						<xs:sequence>
+							<xs:element name="readings">
+								<xs:complexType>
+									<xs:sequence minOccurs="0" maxOccurs="unbounded">
+										<xs:element name="reading" type="xs:string" />
+									</xs:sequence>
+								</xs:complexType>
+							</xs:element>
+							<xs:element name="characters">
+								<xs:complexType>
+									<xs:sequence minOccurs="0" maxOccurs="unbounded">
+										<xs:element name="character" type="xs:string" />
+									</xs:sequence>
+								</xs:complexType>
+							</xs:element>
+						</xs:sequence>
+					</xs:complexType>
+				</xs:element>
+				<xs:element name="entries">
+					<xs:complexType>
+						<xs:choice minOccurs="0" maxOccurs="unbounded">
+							<xs:element ref="mstns:entry" />
+						</xs:choice>
+					</xs:complexType>
+				</xs:element>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+
+	<xs:element name="entry">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="characters">
+					<xs:complexType>
+						<xs:sequence minOccurs="0" maxOccurs="unbounded">
+							<xs:element name="character" type="mstns:singleCharacter" />
+						</xs:sequence>
+					</xs:complexType>
+				</xs:element>
+				<xs:choice>
+					<xs:element name="inputable"/>
+					<xs:element name="designVariant">
+						<xs:complexType>
+							<xs:attribute name="ref" type="mstns:singleCharacter" />
+						</xs:complexType>
+					</xs:element>
+					<xs:element name="inclusionApplication">
+						<xs:annotation>
+							<xs:documentation>包摂適用</xs:documentation>
+						</xs:annotation>
+						<xs:complexType>
+							<xs:attribute name="ref" type="mstns:singleCharacter" />
+						</xs:complexType>
+					</xs:element>
+					<xs:element name="integrationApplication">
+						<xs:annotation>
+							<xs:documentation>統合適用</xs:documentation>
+						</xs:annotation>
+						<xs:complexType>
+							<xs:attribute name="ref" type="mstns:singleCharacter" />
+						</xs:complexType>
+					</xs:element>
+					<xs:element name="Compatible78Inclusion">
+						<xs:annotation>
+							<xs:documentation>78互換包摂</xs:documentation>
+						</xs:annotation>
+						<xs:complexType>
+							<xs:attribute name="ref" type="mstns:singleCharacter" />
+						</xs:complexType>
+					</xs:element>
+				</xs:choice>
+				<xs:element ref="mstns:note" />
+				<xs:element name="UCV" minOccurs="0" maxOccurs="unbounded">
+					<xs:complexType>
+						<xs:attribute name="number" type="xs:nonNegativeInteger"/>
+					</xs:complexType>
+				</xs:element>
+			</xs:sequence>
+			<xs:attribute name="refPage" type="xs:nonNegativeInteger" default="0"/>
+			<xs:attribute name="docPage" type="xs:nonNegativeInteger" default="0" />
+			<xs:attribute type="xs:nonNegativeInteger" name="strokes" />
+			<xs:attribute type="xs:boolean" name="duplicate" default="false" />
+			<xs:attribute name="supplement" default="default">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:enumeration value="supplementOnly" />
+						<xs:enumeration value="supplementCommon" />
+						<xs:enumeration value="default" />
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:attribute>
+		</xs:complexType>
+	</xs:element>
+
+	<xs:element name="note">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="full" type="xs:string"/>
+				<xs:element name="description" type="xs:string"/>
+				<xs:choice minOccurs="0">
+					<xs:element name="jisx0213" >
+						<xs:complexType>
+							<xs:attribute name="level" type="xs:int"/>
+							<xs:attribute name="men" type="xs:int"/>
+							<xs:attribute name="ku" type="xs:int"/>
+							<xs:attribute name="ten" type="xs:int"/>
+						</xs:complexType>
+					</xs:element>
+					<xs:element name="unicode" >
+						<xs:complexType>
+							<xs:attribute name="code" type="xs:string"/>
+						</xs:complexType>
+					</xs:element>
+				</xs:choice>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+
+	<xs:simpleType name="singleCharacter">
+		<xs:restriction base="xs:string" >
+			<xs:length value="1" />
+		</xs:restriction>
+	</xs:simpleType>
+
 </xs:schema>

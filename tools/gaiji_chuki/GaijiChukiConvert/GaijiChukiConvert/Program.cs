@@ -4,5 +4,6 @@
 
 args = new[] { "gaiji_chuki.txt" };
 
-var gaiji = new GaijiChukiConvert.ChuukiReader(new StreamReader(args[0]));
-gaiji.Process();
+var gaiji = await GaijiChukiConvert.ChuukiReader.LoadDictionary(new StreamReader(args[0]));
+GaijiChukiConvert.ChuukiReader.WriteDictionary("out.xml", gaiji);
+
