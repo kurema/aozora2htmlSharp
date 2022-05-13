@@ -242,6 +242,16 @@ public static class ChuukiReader
             }
 
             {
+                var matches = Regex.Matches(line, @"UCV(\d+)");
+                var list = current.UCV?.ToList() ?? new List<Schemas.entryUCV>();
+                foreach (Match match in matches)
+                {
+                    list.Add(new Schemas.entryUCV() { number=match.Groups[1].Value });
+                }
+                current.UCV = list.ToArray();
+            }
+
+            {
                 if (line.Contains('★')) current.duplicate = true;
                 if (line.Contains("補助のみ")) current.supplement = Schemas.entrySupplement.supplementOnly;
                 if (line.Contains("補助漢字と共通")) current.supplement = Schemas.entrySupplement.supplementCommon;
