@@ -1,5 +1,0 @@
-﻿<xsd xmlns='http://microsoft.com/dotnet/tools/xsd/'>
-	<generateClasses language='CS' namespace='GaijiChukiConvert.Schemas' options='enableDataBinding'>
-		<schema>Chuki.xsd</schema>
-	</generateClasses>
-</xsd>
