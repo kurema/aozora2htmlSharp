@@ -64,7 +64,7 @@
 						</xs:sequence>
 					</xs:complexType>
 				</xs:element>
-				<xs:choice>
+				<xs:choice minOccurs="0">
 					<xs:element name="inputable"/>
 					<xs:element name="designVariant">
 						<xs:complexType>
@@ -76,7 +76,17 @@
 							<xs:documentation>包摂適用</xs:documentation>
 						</xs:annotation>
 						<xs:complexType>
-							<xs:attribute name="ref" type="mstns:singleCharacter" />
+							<xs:sequence>
+								<xs:choice>
+									<xs:element ref="mstns:note" />
+									<xs:element name="character" type="mstns:singleCharacter"/>
+								</xs:choice>
+								<xs:element name="reference" minOccurs="0" maxOccurs="unbounded">
+									<xs:complexType>
+										<xs:attribute name="page" type="xs:positiveInteger" />
+									</xs:complexType>
+								</xs:element>
+							</xs:sequence>
 						</xs:complexType>
 					</xs:element>
 					<xs:element name="integrationApplication">
@@ -84,7 +94,10 @@
 							<xs:documentation>統合適用</xs:documentation>
 						</xs:annotation>
 						<xs:complexType>
-							<xs:attribute name="ref" type="mstns:singleCharacter" />
+							<xs:choice>
+								<xs:element ref="mstns:note" />
+								<xs:element name="character" type="mstns:singleCharacter"/>
+							</xs:choice>
 						</xs:complexType>
 					</xs:element>
 					<xs:element name="Compatible78Inclusion">
@@ -92,11 +105,14 @@
 							<xs:documentation>78互換包摂</xs:documentation>
 						</xs:annotation>
 						<xs:complexType>
+							<!--<xs:choice minOccurs="0">
+								<xs:element ref="mstns:note" />
+							</xs:choice>-->
 							<xs:attribute name="ref" type="mstns:singleCharacter" />
 						</xs:complexType>
 					</xs:element>
 				</xs:choice>
-				<xs:element ref="mstns:note" />
+				<xs:element ref="mstns:note" minOccurs="0" />
 				<xs:element name="UCV" minOccurs="0" maxOccurs="unbounded">
 					<xs:complexType>
 						<xs:attribute name="number" type="xs:nonNegativeInteger"/>
@@ -145,7 +161,8 @@
 
 	<xs:simpleType name="singleCharacter">
 		<xs:restriction base="xs:string" >
-			<xs:length value="1" />
+			<!--<xs:length value="1" />-->
+			<!-- サロゲートペアを考えると一文字に指定しない方が賢明。 -->
 		</xs:restriction>
 	</xs:simpleType>
 

@@ -10,6 +10,8 @@ namespace GaijiChukiConvert;
 
 public static class ChuukiReader
 {
+    private const string NotePattern = @"※［＃([^］]+)］";
+
     public async static Task<Schemas.dictionary> LoadDictionary(TextReader reader)
     {
         Schemas.entry? current = null;
@@ -21,16 +23,34 @@ public static class ChuukiReader
 
         while (true)
         {
+            //先頭読み飛ばし
+            var line = await reader.ReadLineAsync();
+
+            if (line == null) break;
+            if (line.Contains('\f')) pageCnt++;
+            if (line.Contains("【十五・十六・十七画】")) break;
+        }
+
+        while (true)
+        {
             var line = await reader.ReadLineAsync();
 
             if (line == null) break;
 
-            while (line.Contains('［') && !line.Contains('］'))
+            //while (line.Contains('［') && !line.Contains('］'))
+            while (line.Count(a => a == '［') != line.Count(a => a == '］'))
             {
                 line = Regex.Replace(line, @"[\s　]+$", "");
                 line += await reader.ReadLineAsync();
             }
-            while (line.Contains('【') && !line.Contains('】'))
+
+            //while (line.Contains('【') && !line.Contains('】'))
+            while (line.Count(a => a == '【') != line.Count(a => a == '】'))
+            {
+                line = Regex.Replace(line, @"[\s　]+$", "");
+                line += await reader.ReadLineAsync();
+            }
+            if (line.Contains("包摂適用"))
             {
                 line = Regex.Replace(line, @"[\s　]+$", "");
                 line += await reader.ReadLineAsync();
@@ -60,7 +80,7 @@ public static class ChuukiReader
                     {
                         entries.Add(current);
                     }
-                    current = new Schemas.entry() { docPage = pageCnt.ToString() };
+                    current = new Schemas.entry() { docPage = pageCnt.ToString() ,characters=new Schemas.entryCharacters()};
                     current.strokes = match.Groups[1].Value;
                 }
             }
@@ -93,7 +113,117 @@ public static class ChuukiReader
             if (current is null) continue;
 
             {
-                var match = Regex.Match(line, @"([^\d+．]+)※［＃([^］]+)］");
+                var match = Regex.Match(line, @"([^］．]+)→[\s\t　]*［");
+                if (match.Success)
+                {
+                    var text = Regex.Replace(match.Groups[1].Value, @"[\s　]", "");
+                    if (text.Length > 0)
+                    {
+                        current.characters = new Schemas.entryCharacters() { character = EnumerateCharacters(text) };
+                    }
+                }
+            }
+
+            {
+                // language=regex
+                var regex = @"［包摂適用[\s　]+(.+)］[\s　]*([\d、]*)";
+                var match = Regex.Match(line, regex);
+                if (match.Success)
+                {
+                    var result = new Schemas.entryInclusionApplication();
+                    var match2 = Regex.Match(match.Groups[1].Value, NotePattern);
+                    if (match2.Success)
+                    {
+                        result.Item = GetNoteSerializable(match2.Groups[1].Value);
+                    }
+                    else
+                    {
+                        result.Item = match.Groups[1].Value;
+                    }
+
+                    {
+                        result.reference = match.Groups[2].Value.Split("、").Where(a=>!string.IsNullOrWhiteSpace(a))
+                            .Select(a => new Schemas.entryInclusionApplicationReference() { page = a }).ToArray();
+                    }
+
+                    line = line.Replace(match.Value, "");
+                    current.Item = result;
+                }
+            }
+
+            {
+                // language=regex
+                var regex = @"［統合適用[\s　]+(.+)］";
+                var match = Regex.Match(line, regex);
+                if (match.Success)
+                {
+                    var result = new Schemas.entryIntegrationApplication();
+                    var match2 = Regex.Match(match.Groups[1].Value, NotePattern);
+                    if (match2.Success)
+                    {
+                        result.Item = GetNoteSerializable(match2.Groups[1].Value);
+                    }
+                    else
+                    {
+                        result.Item = match.Groups[1].Value;
+                    }
+
+                    line = line.Replace(match.Value, "");
+                    current.Item = result;
+                }
+            }
+
+            {
+                // language=regex
+                var regex = @"［78互換包摂[\s　]+(.+)］";
+                var match = Regex.Match(line, regex);
+                if (match.Success)
+                {
+                    var result = new Schemas.entryCompatible78Inclusion
+                    {
+                        @ref = match.Groups[1].Value,
+                    };
+                    line = line.Replace(match.Value, "");
+                    current.Item = result;
+                }
+            }
+
+            {
+                // language=regex
+                var regex = @"［デザイン差[\s　]+(.+)］";
+                var match = Regex.Match(line, regex);
+                if (match.Success)
+                {
+                    var result = new Schemas.entryDesignVariant
+                    {
+                        @ref = match.Groups[1].Value
+                    };
+                    line = line.Replace(match.Value, "");
+                    current.Item = result;
+                }
+            }
+
+            {
+                // language=regex
+                var regex = @"([^］．\s　]+)[\s　]+入力可能";
+                var match = Regex.Match(line, regex);
+                if (match.Success)
+                {
+                    line = line.Replace(match.Value, "");
+                    current.Item = new object();//意味不明だけど、objectがinputableになるっぽい。
+                }
+
+                {
+                    var text = Regex.Replace(match.Groups[1].Value, @"[\s　]", "");
+                    if (text.Length > 0)
+                    {
+                        current.characters = new Schemas.entryCharacters() { character = EnumerateCharacters(text) };
+                    }
+                }
+            }
+
+            {
+                var match = Regex.Match(line, $@"([^\d+．]+){NotePattern}");
                 if (match.Success)
                 {
                     {
@@ -106,15 +236,7 @@ public static class ChuukiReader
                     }
 
                     {
-                        var texts = match.Groups[2].Value.Split('、');
-
-                        var note = new Schemas.note()
-                        {
-                            full = match.Groups[2].Value,
-                            description = texts[0],
-                        };
-                        if (texts.Length >= 2) note.Item = ConvertCharCode(texts[1]);
-                        current.note = note;
+                        current.note = GetNoteSerializable(match.Groups[2].Value);
                     }
                 }
             }
@@ -136,15 +258,28 @@ public static class ChuukiReader
         };
     }
 
-    public static void WriteDictionary(string path, Schemas.dictionary dictionary)
+    public static Schemas.note GetNoteSerializable(string text)
     {
-        using var writer = new StreamWriter(path, false);
-        var xs = new System.Xml.Serialization.XmlSerializer(typeof(Schemas.dictionary));
-        xs.Serialize(writer, dictionary);
-        writer.Close();
+        var texts = text.Split('、');
+
+        var note = new Schemas.note()
+        {
+            full = text,
+            description = texts[0],
+        };
+        if (texts.Length >= 2) note.Item = GetSerializableFromCharCode(texts[1]);
+        return note;
     }
 
-    public static object? ConvertCharCode(string text)
+    public static void WriteDictionary(string path, Schemas.dictionary dictionary)
+    {
+        using var writerXml = System.Xml.XmlWriter.Create(path, new System.Xml.XmlWriterSettings() { Indent = true });
+        var xs = new System.Xml.Serialization.XmlSerializer(typeof(Schemas.dictionary));
+        xs.Serialize(writerXml, dictionary);
+        writerXml.Close();
+    }
+
+    public static object? GetSerializableFromCharCode(string text)
     {
         {
             var match = Regex.Match(text, @"^U\+([\d+a-fA-F]+)");

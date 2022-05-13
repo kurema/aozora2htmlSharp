@@ -287,31 +287,13 @@ namespace GaijiChukiConvert.Schemas {
     public partial class entryInclusionApplication : object, System.ComponentModel.INotifyPropertyChanged {
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlAttributeAttribute()]
-        public string @ref;
-        
-        public event System.ComponentModel.PropertyChangedEventHandler PropertyChanged;
-        
-        protected void RaisePropertyChanged(string propertyName) {
-            System.ComponentModel.PropertyChangedEventHandler propertyChanged = this.PropertyChanged;
-            if ((propertyChanged != null)) {
-                propertyChanged(this, new System.ComponentModel.PropertyChangedEventArgs(propertyName));
-            }
-        }
-    }
-    
-    /// <remarks/>
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("xsd", "4.8.3928.0")]
-    [System.SerializableAttribute()]
-    [System.Diagnostics.DebuggerStepThroughAttribute()]
-    [System.ComponentModel.DesignerCategoryAttribute("code")]
-    [System.Xml.Serialization.XmlTypeAttribute(AnonymousType=true, Namespace="https://github.com/kurema/aozora2htmlSharp/blob/master/tools/gaiji_chuki/GaijiChu" +
-        "kiConvert/GaijiChukiConvert/Schemas/Chuki.xsd")]
-    public partial class entryIntegrationApplication : object, System.ComponentModel.INotifyPropertyChanged {
+        [System.Xml.Serialization.XmlElementAttribute("character", typeof(string))]
+        [System.Xml.Serialization.XmlElementAttribute("note", typeof(note))]
+        public object Item;
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlAttributeAttribute()]
-        public string @ref;
+        [System.Xml.Serialization.XmlElementAttribute("reference")]
+        public entryInclusionApplicationReference[] reference;
         
         public event System.ComponentModel.PropertyChangedEventHandler PropertyChanged;
         
@@ -418,6 +400,53 @@ namespace GaijiChukiConvert.Schemas {
         /// <remarks/>
         [System.Xml.Serialization.XmlAttributeAttribute()]
         public string code;
+        
+        public event System.ComponentModel.PropertyChangedEventHandler PropertyChanged;
+        
+        protected void RaisePropertyChanged(string propertyName) {
+            System.ComponentModel.PropertyChangedEventHandler propertyChanged = this.PropertyChanged;
+            if ((propertyChanged != null)) {
+                propertyChanged(this, new System.ComponentModel.PropertyChangedEventArgs(propertyName));
+            }
+        }
+    }
+    
+    /// <remarks/>
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("xsd", "4.8.3928.0")]
+    [System.SerializableAttribute()]
+    [System.Diagnostics.DebuggerStepThroughAttribute()]
+    [System.ComponentModel.DesignerCategoryAttribute("code")]
+    [System.Xml.Serialization.XmlTypeAttribute(AnonymousType=true, Namespace="https://github.com/kurema/aozora2htmlSharp/blob/master/tools/gaiji_chuki/GaijiChu" +
+        "kiConvert/GaijiChukiConvert/Schemas/Chuki.xsd")]
+    public partial class entryInclusionApplicationReference : object, System.ComponentModel.INotifyPropertyChanged {
+        
+        /// <remarks/>
+        [System.Xml.Serialization.XmlAttributeAttribute(DataType="positiveInteger")]
+        public string page;
+        
+        public event System.ComponentModel.PropertyChangedEventHandler PropertyChanged;
+        
+        protected void RaisePropertyChanged(string propertyName) {
+            System.ComponentModel.PropertyChangedEventHandler propertyChanged = this.PropertyChanged;
+            if ((propertyChanged != null)) {
+                propertyChanged(this, new System.ComponentModel.PropertyChangedEventArgs(propertyName));
+            }
+        }
+    }
+    
+    /// <remarks/>
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("xsd", "4.8.3928.0")]
+    [System.SerializableAttribute()]
+    [System.Diagnostics.DebuggerStepThroughAttribute()]
+    [System.ComponentModel.DesignerCategoryAttribute("code")]
+    [System.Xml.Serialization.XmlTypeAttribute(AnonymousType=true, Namespace="https://github.com/kurema/aozora2htmlSharp/blob/master/tools/gaiji_chuki/GaijiChu" +
+        "kiConvert/GaijiChukiConvert/Schemas/Chuki.xsd")]
+    public partial class entryIntegrationApplication : object, System.ComponentModel.INotifyPropertyChanged {
+        
+        /// <remarks/>
+        [System.Xml.Serialization.XmlElementAttribute("character", typeof(string))]
+        [System.Xml.Serialization.XmlElementAttribute("note", typeof(note))]
+        public object Item;
         
         public event System.ComponentModel.PropertyChangedEventHandler PropertyChanged;
         
