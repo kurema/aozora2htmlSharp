@@ -551,6 +551,7 @@ namespace Aozora
         public void ParseChuuki()
         {
             var @string = ReadLine();
+            if (@string is null) return;
             if (!Regex.IsMatch(@string, @"^-+$")) return;
 
             switch (Section)

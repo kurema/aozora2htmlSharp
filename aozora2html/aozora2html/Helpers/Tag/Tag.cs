@@ -44,7 +44,7 @@ public class Tag : ICharTypeProvider
     public static string GetHtml(Tag tag)
     {
         if (tag is IHtmlProvider provider) return provider.ToHtml();
-        else return tag.ToString();
+        else return tag?.ToString() ?? "";
     }
 }
 
