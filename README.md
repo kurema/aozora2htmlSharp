@@ -9,6 +9,7 @@ v2.0以降はその限りではありません。
 
 * [ドキュメント](docs/v1.0/readme.md)
 * [branch](https://github.com/kurema/aozora2htmlSharp/tree/v1.0)
+* [Release](https://github.com/kurema/aozora2htmlSharp/releases/tag/v1.0.0)
 
 ## 実行
 コマンドは`aozora2html`です。以下のように実行します。
