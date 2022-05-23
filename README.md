@@ -1,5 +1,14 @@
 # aozora2htmlSharp
-[aozora2html](https://github.com/aozorahack/aozora2html)のC#版です。
+[aozorahack/aozora2html](https://github.com/aozorahack/aozora2html)のC#版です。
+
+## v1.0
+移植元v3.0.0準拠の実装をv1.0系統にしています。
+挙動だけでなくメソッド名やテストもほぼ同じです。
+
+v2.0以降はその限りではありません。
+
+* [ドキュメント](docs/v1.0/readme.md)
+* [branch](https://github.com/kurema/aozora2htmlSharp/tree/v1.0)
 
 ## 実行
 コマンドは`aozora2html`です。以下のように実行します。
