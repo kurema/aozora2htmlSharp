@@ -11,6 +11,7 @@
   </PropertyGroup>
   <ItemGroup>
     <None Remove="Views\AozoraEditControl.xaml" />
+    <None Remove="Views\AozoraEditLineControl.xaml" />
   </ItemGroup>
   <ItemGroup>
     <Page Remove="Themes\Generic.xaml" />
@@ -27,6 +28,9 @@
     <None Update="Themes\Generic.xaml">
       <Generator>MSBuild:Compile</Generator>
     </None>
+    <Page Update="Views\AozoraEditLineControl.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Update="Views\AozoraEditControl.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>

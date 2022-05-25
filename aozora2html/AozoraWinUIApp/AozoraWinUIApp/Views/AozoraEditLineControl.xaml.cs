@@ -18,16 +18,11 @@ using Windows.Foundation.Collections;
 
 namespace AozoraWinUIApp.Views
 {
-    public sealed partial class AozoraEditControl : UserControl
+    public sealed partial class AozoraEditLineControl : UserControl
     {
-        public AozoraEditControl()
+        public AozoraEditLineControl()
         {
             this.InitializeComponent();
-
-            var rtb = new RichTextBlock();
-            
-            
-            
         }
     }
 }

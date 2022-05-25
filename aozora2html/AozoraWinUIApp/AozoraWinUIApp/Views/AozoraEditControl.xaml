@@ -7,16 +7,9 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
-    <RichEditBox>
-        <RichEditBox.ContextFlyout>
-            <MenuFlyout>
-                <MenuFlyoutItem Text="Cut" />
-            </MenuFlyout>
-        </RichEditBox.ContextFlyout>
-        <RichEditBox.SelectionFlyout>
-            <MenuFlyout>
-                <MenuFlyoutItem Text="Hello"/>
-            </MenuFlyout>
-        </RichEditBox.SelectionFlyout>
-    </RichEditBox>
+    <StackPanel x:Name="panel">
+        <local:AozoraEditLineControl/>
+        <local:AozoraEditLineControl/>
+        <local:AozoraEditLineControl/>
+    </StackPanel>
 </UserControl>
