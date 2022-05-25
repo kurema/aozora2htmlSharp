@@ -13,18 +13,18 @@ public static class Functions
     public static RootCommand GetCommand()
     {
         //kurema:DirectoryInfoを使った場合、C:\で../../gaiji_dirとかの指定ができないのでstringに。suggestionが機能しなくなる？
-        var optionGaiji = new Option<string?>("--gaiji-dir", () => null, "setting gaiji directory");
-        var optionCss = new Option<string[]>("--css-files", () => Array.Empty<string>(), "setting css directory") { Arity = ArgumentArity.ZeroOrMore };
-        var optionJisx = new Option<bool>("--use-jisx0213", () => false, "use JIS X 0213 character") { Arity = new ArgumentArity(0, 1) };
-        var optionUnicode = new Option<bool>("--use-unicode", () => false, "use Unicode character") { Arity = new ArgumentArity(0, 1) };
-        var argumentIn = new Argument<string>("text file",/* () => null,*/ "input file.");
-        var argumentOut = new Argument<FileInfo?>("html file", () => null, "output file").LegalFilePathsOnly();
+        var optionGaiji = new Option<string?>("--gaiji-dir", () => null, Resources.Resource.GaijiDir_Desc);
+        var optionCss = new Option<string[]>("--css-files", () => Array.Empty<string>(), Resources.Resource.CssFiles_Desc) { Arity = ArgumentArity.ZeroOrMore };
+        var optionJisx = new Option<bool>("--use-jisx0213", () => false, Resources.Resource.UseJisx0213_Desc) { Arity = new ArgumentArity(0, 1) };
+        var optionUnicode = new Option<bool>("--use-unicode", () => false, Resources.Resource.UseUnicode_Desc) { Arity = new ArgumentArity(0, 1) };
+        var argumentIn = new Argument<string>(Resources.Resource.TextFile_Title,/* () => null,*/ Resources.Resource.TextFile_Desc);
+        var argumentOut = new Argument<FileInfo?>(Resources.Resource.HtmlFile_Title, () => null, Resources.Resource.HtmlFile_Desc).LegalFilePathsOnly();
         //kurema:--error-utf8はC#環境下で余り意味ないと思ったので削除しました。
         //new Option<bool>("--error-utf8","show error messages in UTF-8, not Shift_JIS"),
 
-        var rootCommand = new RootCommand() { optionGaiji, optionCss, optionJisx, optionUnicode, argumentIn, argumentOut, };
+        var rootCommand = new RootCommand(Resources.Resource.Command_Desc) { optionGaiji, optionCss, optionJisx, optionUnicode, argumentIn, argumentOut, };
 
-        rootCommand.SetHandler((string? gaijiDir, string[] cssFiles, bool useJisx0213, bool useUnicode, string textFile, FileInfo? htmlFile) 
+        rootCommand.SetHandler((string? gaijiDir, string[] cssFiles, bool useJisx0213, bool useUnicode, string textFile, FileInfo? htmlFile)
             => Handle(gaijiDir, cssFiles, useJisx0213, useUnicode, textFile, htmlFile)
             , optionGaiji, optionCss, optionJisx, optionUnicode, argumentIn, argumentOut);
 
