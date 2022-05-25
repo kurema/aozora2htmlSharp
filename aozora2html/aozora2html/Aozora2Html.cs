@@ -629,7 +629,7 @@ namespace Aozora
                         || (@char is BufferItemString bufferS && bufferS.Length == 1 && bufferS.ToHtml()[0] == endchar))
                     {
                         //suddenly finished the file
-                        warnChannel.PrintLine(string.Format(I18n.Messages["warn_unexpected_terminator"], LineNumber));
+                        warnChannel.PrintLine(string.Format(Resources.Resource.WarnUnexpectedTerminator, LineNumber));
                         throw new Exceptions.TerminateException();//kurema:例外で大域脱出したくない…。
                     }
 
@@ -1359,7 +1359,7 @@ namespace Aozora
                         else
                         {
 #if DEBUG
-                            warnChannel.PrintLine(string.Format(I18n.Messages["warn_undefined_command"], LineNumber, key));
+                            warnChannel.PrintLine(string.Format(Resources.Resource.WarnUndefinedCommand, LineNumber, key));
 #endif
                             return false;
                         }

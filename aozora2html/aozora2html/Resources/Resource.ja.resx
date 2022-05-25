@@ -127,7 +127,8 @@
     <value>改行コードを、「CR+LF」にあらためてください</value>
   </data>
   <data name="ErrorStop" xml:space="preserve">
-    <value>エラー({0}行目):{1}. &#13;&#10;処理を停止します</value>
+    <value>エラー({0}行目):{1}. 
+処理を停止します</value>
   </data>
   <data name="InvalidFontSize" xml:space="preserve">
     <value>文字サイズの指定が不正です</value>
@@ -170,5 +171,11 @@
   </data>
   <data name="WarnInvalidAccentBrancket" xml:space="preserve">
     <value>警告({0}行目):アクセント分解の亀甲括弧の始めと終わりが、行中で揃っていません</value>
+  </data>
+  <data name="AuthorTwice" xml:space="preserve">
+    <value>著者名が二回指定されています</value>
+  </data>
+  <data name="EncountUndefinedCondition" xml:space="preserve">
+    <value>未定義の状態に遭遇しました</value>
   </data>
 </root>

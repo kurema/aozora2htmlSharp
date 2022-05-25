@@ -38,98 +38,98 @@ namespace Aozora.Exceptions
 
         public string GetMessageAozora(int n = 0)
         {
-            return string.Format(Helpers.I18n.Messages["error_stop"], n, this.Message);
+            return string.Format(System.Text.RegularExpressions.Regex.Replace( Resources.Resource.ErrorStop, @"(?:[^\r\n])\r(?:[^\r\n])|(?:[^\r\n])\n(?:[^\r\n])", "\r\n"), n, this.Message);
         }
     }
 
     [Serializable]
     public class UseCRLFException : AozoraException
     {
-        public UseCRLFException() : base(Helpers.I18n.Messages["use_crlf"]) { }
+        public UseCRLFException() : base(Resources.Resource.UseCrlf) { }
         protected UseCRLFException(SerializationInfo info, StreamingContext context) : base(info, context) { }
     }
 
     [Serializable]
     public class AuthorTwiceException : AozoraException
     {
-        public AuthorTwiceException() : base("parser encounted author twice") { }
+        public AuthorTwiceException() : base(Resources.Resource.AuthorTwice) { }
         protected AuthorTwiceException(SerializationInfo info, StreamingContext context) : base(info, context) { }
     }
 
     [Serializable]
     public class EncountUndefinedConditionException : AozoraException
     {
-        public EncountUndefinedConditionException() : base("encount undefined condition") { }
+        public EncountUndefinedConditionException() : base(Resources.Resource.EncountUndefinedCondition) { }
         protected EncountUndefinedConditionException(SerializationInfo info, StreamingContext context) : base(info, context) { }
     }
 
     [Serializable]
     public class TagSyntaxException : AozoraException
     {
-        public TagSyntaxException() : base(Helpers.I18n.Messages["tag_syntax_error"]) { }
+        public TagSyntaxException() : base(Resources.Resource.TagSyntaxError) { }
         protected TagSyntaxException(SerializationInfo info, StreamingContext context) : base(info, context) { }
     }
 
     [Serializable]
     public class InvalidFontSizeException : AozoraException
     {
-        public InvalidFontSizeException() : base(Helpers.I18n.Messages["invalid_font_size"]) { }
+        public InvalidFontSizeException() : base(Resources.Resource.InvalidFontSize) { }
         protected InvalidFontSizeException(SerializationInfo info, StreamingContext context) : base(info, context) { }
     }
 
     [Serializable]
     public class UndefinedHeaderException : AozoraException
     {
-        public UndefinedHeaderException() : base(Helpers.I18n.Messages["undefined_header"]) { }
+        public UndefinedHeaderException() : base(Resources.Resource.UndefinedHeader) { }
         protected UndefinedHeaderException(SerializationInfo info, StreamingContext context) : base(info, context) { }
     }
 
     [Serializable]
     public class DontAllowTripleRubyException : AozoraException
     {
-        public DontAllowTripleRubyException() : base(Helpers.I18n.Messages["dont_allow_triple_ruby"]) { }
+        public DontAllowTripleRubyException() : base(Resources.Resource.DontAllowTripleRuby) { }
         protected DontAllowTripleRubyException(SerializationInfo info, StreamingContext context) : base(info, context) { }
     }
 
     [Serializable]
     public class DontUseDoubleRubyException : AozoraException
     {
-        public DontUseDoubleRubyException() : base(Helpers.I18n.Messages["dont_use_double_ruby"]) { }
+        public DontUseDoubleRubyException() : base(Resources.Resource.DontUseDoubleRuby) { }
         protected DontUseDoubleRubyException(SerializationInfo info, StreamingContext context) : base(info, context) { }
     }
 
     [Serializable]
     public class TerminateInStyleException : AozoraException
     {
-        public TerminateInStyleException(string arg1) : base(string.Format(Helpers.I18n.Messages["terminate_in_style"], arg1)) { }
+        public TerminateInStyleException(string arg1) : base(string.Format(Resources.Resource.TerminateInStyle, arg1)) { }
         protected TerminateInStyleException(SerializationInfo info, StreamingContext context) : base(info, context) { }
     }
 
     [Serializable]
     public class InvalidClosingException : AozoraException
     {
-        public InvalidClosingException(string arg1) : base(string.Format(Helpers.I18n.Messages["invalid_closing"], arg1)) { }
+        public InvalidClosingException(string arg1) : base(string.Format(Resources.Resource.InvalidClosing, arg1)) { }
         protected InvalidClosingException(SerializationInfo info, StreamingContext context) : base(info, context) { }
     }
 
     [Serializable]
     public class UnsupportedRubyException : AozoraException
     {
-        public UnsupportedRubyException() : base(Helpers.I18n.Messages["unsupported_ruby"]) { }
+        public UnsupportedRubyException() : base(Resources.Resource.UnsupportedRuby) { }
         protected UnsupportedRubyException(SerializationInfo info, StreamingContext context) : base(info, context) { }
     }
 
     [Serializable]
     public class DontCrlfInStyleException : AozoraException
     {
-        public DontCrlfInStyleException(string arg1) : base(string.Format(Helpers.I18n.Messages["dont_crlf_in_style"], arg1)) { }
+        public DontCrlfInStyleException(string arg1) : base(string.Format(Resources.Resource.DontCrlfInStyle, arg1)) { }
         protected DontCrlfInStyleException(SerializationInfo info, StreamingContext context) : base(info, context) { }
     }
 
     [Serializable]
     public class InvalidNestingException : AozoraException
     {
-        public InvalidNestingException(string arg1, string arg2) : base(string.Format(Helpers.I18n.Messages["invalid_nesting"], arg1, arg2)) { }
+        public InvalidNestingException(string arg1, string arg2) : base(string.Format(Resources.Resource.InvalidNesting, arg1, arg2)) { }
         protected InvalidNestingException(SerializationInfo info, StreamingContext context) : base(info, context) { }
     }
 }

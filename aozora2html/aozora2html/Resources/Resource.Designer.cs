@@ -61,6 +61,15 @@ namespace Aozora.Resources {
         }
         
         /// <summary>
+        ///   parser encounted author twice に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string AuthorTwice {
+            get {
+                return ResourceManager.GetString("AuthorTwice", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Don&apos;t add 3 ruby ​​characters to one word に類似しているローカライズされた文字列を検索します。
         /// </summary>
         public static string DontAllowTripleRuby {
@@ -84,6 +93,15 @@ namespace Aozora.Resources {
         public static string DontUseDoubleRuby {
             get {
                 return ResourceManager.GetString("DontUseDoubleRuby", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   encount undefined condition に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string EncountUndefinedCondition {
+            get {
+                return ResourceManager.GetString("EncountUndefinedCondition", resourceCulture);
             }
         }
         

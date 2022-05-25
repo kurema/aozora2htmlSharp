@@ -173,4 +173,10 @@ Stoped processing</value>
   <data name="WarnInvalidAccentBrancket" xml:space="preserve">
     <value>Warning (line {0}): The beginning and end of the hexagonal brackets for accent decomposition are not paired in the line</value>
   </data>
+  <data name="AuthorTwice" xml:space="preserve">
+    <value>parser encounted author twice</value>
+  </data>
+  <data name="EncountUndefinedCondition" xml:space="preserve">
+    <value>encount undefined condition</value>
+  </data>
 </root>
