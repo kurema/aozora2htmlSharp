@@ -38,7 +38,8 @@ namespace Aozora.Exceptions
 
         public string GetMessageAozora(int n = 0)
         {
-            return string.Format(System.Text.RegularExpressions.Regex.Replace( Resources.Resource.ErrorStop, @"(?:[^\r\n])\r(?:[^\r\n])|(?:[^\r\n])\n(?:[^\r\n])", "\r\n"), n, this.Message);
+            //kurema:(?:)系の正規表現にミスがあったので、手軽で確実な置換に置き換えました。
+            return string.Format(System.Text.RegularExpressions.Regex.Replace(Resources.Resource.ErrorStop, @"\r\n?", "\n").Replace("\n", "\r\n"), n, this.Message);
         }
     }
 
