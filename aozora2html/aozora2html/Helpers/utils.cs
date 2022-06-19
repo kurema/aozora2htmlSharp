@@ -91,7 +91,7 @@ public static class Utils
         {
             var sb = new System.Text.StringBuilder("[");
             sb.Append(original);
-            sb.Append("]");
+            sb.Append(']');
             return sb.ToString();
         }
 

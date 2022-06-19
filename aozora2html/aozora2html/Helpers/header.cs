@@ -15,7 +15,7 @@ namespace Aozora.Helpers
         public Header(string[]? css_files)
         {
             header = new List<string>();
-            this.css_files = css_files ?? new string[0];
+            this.css_files = css_files ?? Array.Empty<string>();
         }
 
         public void Push(string line)
@@ -23,7 +23,7 @@ namespace Aozora.Helpers
             header.Add(line);
         }
 
-        public string OutHeaderInfo(Dictionary<HeaderElementTypeKind, string> hash, HeaderElementTypeKind attr, string? true_name = null)
+        public static string OutHeaderInfo(Dictionary<HeaderElementTypeKind, string> hash, HeaderElementTypeKind attr, string? true_name = null)
         {
             if (hash.ContainsKey(attr))
             {
@@ -36,7 +36,7 @@ namespace Aozora.Helpers
             }
         }
 
-        public HeaderElementTypeKind Header_element_type(string text)
+        public static HeaderElementTypeKind HeaderElementType(string text)
         {
             bool original = true;
             foreach (var ch in text)
@@ -79,7 +79,7 @@ namespace Aozora.Helpers
 
         public HeaderElementTypeKind ProcessPerson(string word, Dictionary<HeaderElementTypeKind, string> header_info)
         {
-            var type = Header_element_type(word);
+            var type = HeaderElementType(word);
             switch (type)
             {
                 case HeaderElementTypeKind.editor:
@@ -121,7 +121,7 @@ namespace Aozora.Helpers
                     ProcessPerson(header[1], header_info);
                     break;
                 case 3:
-                    if (Header_element_type(header[1]) == HeaderElementTypeKind.original)
+                    if (HeaderElementType(header[1]) == HeaderElementTypeKind.original)
                     {
                         header_info[HeaderElementTypeKind.original_title] = header[1];
                         ProcessPerson(header[2], header_info);
@@ -136,7 +136,7 @@ namespace Aozora.Helpers
                     }
                     break;
                 case 4:
-                    if (Header_element_type(header[1]) == HeaderElementTypeKind.original)
+                    if (HeaderElementType(header[1]) == HeaderElementTypeKind.original)
                     {
                         header_info[HeaderElementTypeKind.original_title] = header[1];
                     }

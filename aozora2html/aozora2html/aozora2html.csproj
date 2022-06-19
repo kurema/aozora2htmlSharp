@@ -8,6 +8,7 @@
     <Nullable>enable</Nullable>
 	<IsTrimmable>true</IsTrimmable>
 	<EnableTrimAnalyzer>true</EnableTrimAnalyzer>
+	<NeutralLanguage>en</NeutralLanguage>
   </PropertyGroup>
 
   <ItemGroup>
@@ -31,10 +32,6 @@
       <Generator>PublicResXFileCodeGenerator</Generator>
       <LastGenOutput>Resource.Designer.cs</LastGenOutput>
     </EmbeddedResource>
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Epub\" />
   </ItemGroup>
 
 </Project>

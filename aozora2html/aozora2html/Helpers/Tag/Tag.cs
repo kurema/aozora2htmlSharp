@@ -36,7 +36,7 @@ public class Tag : ICharTypeProvider
 
     public virtual CharType CharType => CharType.Else;
 
-    public void ThrowSyntaxError()
+    public static void ThrowSyntaxError()
     {
         throw new Exceptions.TagSyntaxException();
     }
