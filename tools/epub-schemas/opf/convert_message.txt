@@ -1,0 +1,4 @@
+$ trang -I rng -O xsd opf.rng opf.xsd
+
+/mnt/e/Users/kurema/Documents/Software Data/GitHub/aozora2htmlSharp/tools/epub-schemas/opf.rng:339:15: warning: cannot represent an optional group of attributes; approximating
+/mnt/e/Users/kurema/Documents/Software Data/GitHub/aozora2htmlSharp/tools/epub-schemas/opf.rng:485:15: warning: choice between attributes and children cannot be represented; approximating
