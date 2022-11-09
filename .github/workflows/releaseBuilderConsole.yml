@@ -8,7 +8,7 @@ on:
 env:
   SolutionDirectory: aozora2html/
   ConsolePath: aozora2htmlConsole/aozora2htmlConsole.csproj
-  DotnetVersion: .0.x
+  DotnetVersion: 7.0.x
 #https://qiita.com/i-tanaka730/items/d46fdfb5c2f601e512c2
 
 jobs:
