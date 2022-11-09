@@ -28,7 +28,7 @@ namespace Aozora.Exceptions
     }
 
     [Serializable]
-    public class AozoraException : Exception
+    public partial class AozoraException : Exception
     {
         public AozoraException() : base() { }
         public AozoraException(string message) : base(message) { }
@@ -36,10 +36,21 @@ namespace Aozora.Exceptions
 
         protected AozoraException(SerializationInfo info, StreamingContext context) : base(info, context) { }
 
+#if NET7_0_OR_GREATER
+        [System.Text.RegularExpressions.GeneratedRegex(@"\r\n?")]
+        private static partial System.Text.RegularExpressions.Regex PAT_RETURN_GEN();
+#endif
+
         public string GetMessageAozora(int n = 0)
         {
             //kurema:(?:)系の正規表現にミスがあったので、手軽で確実な置換に置き換えました。
-            return string.Format(System.Text.RegularExpressions.Regex.Replace(Resources.Resource.ErrorStop, @"\r\n?", "\n").Replace("\n", "\r\n"), n, this.Message);
+            return string.Format(
+#if NET7_0_OR_GREATER
+                PAT_RETURN_GEN().Replace(Resources.Resource.ErrorStop, "\n")
+#else
+                System.Text.RegularExpressions.Regex.Replace(Resources.Resource.ErrorStop, @"\r\n?", "\n")
+#endif
+                .Replace("\n", "\r\n"), n, this.Message);
         }
     }
 

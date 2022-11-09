@@ -6,7 +6,7 @@ namespace Aozora.Helpers.Tag;
 /// <summary>
 /// 欧文アクセント文字用
 /// </summary>
-public class Accent : Inline, IHtmlProvider
+public partial class Accent : Inline, IHtmlProvider
 {
     readonly Aozora2Html Parser;
 
@@ -26,11 +26,20 @@ public class Accent : Inline, IHtmlProvider
 
     public override CharType CharType => CharType.Hankaku;
 
+#if NET7_0_OR_GREATER
+    [GeneratedRegex(".*/")]
+    private static partial Regex PAT_ToHtml_GEN();
+#endif
+
     public string ToHtml()
     {
         if (Parser.UseJisx0213Accent)
         {
+#if NET7_0_OR_GREATER
+            var regex = PAT_ToHtml_GEN();
+#else
             var regex = new Regex(".*/");
+#endif
             return Gaiji.ConvertJisx0213ToUnicode(regex.Replace(Code, "", 1));
         }
         else
