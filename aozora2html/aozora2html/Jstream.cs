@@ -12,7 +12,7 @@ namespace Aozora
     //when finished to read IO, return a symbol :eof.
     //kurema: No. It just returns null.
     //when found line terminator except CR+LF, exit.
-    public class Jstream
+    public class Jstream : IJstream
     {
         public const char CR = '\r';
         public const char LF = '\n';

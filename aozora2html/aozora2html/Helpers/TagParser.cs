@@ -14,7 +14,7 @@ namespace Aozora.Helpers
 
         readonly StringBuilder _raw = new();//外字変換前の生テキストを残したいことがあるらしい
 
-        public TagParser(Jstream input, char? endchar, Dictionary<ChuukiTableKeys, bool> chuuki, List<(string, List<string>)> images, IOutput output, IOutput? warnChannel = null, string? gaiji_dir = null, string[]? css_files = null) : base(input, output, warnChannel, gaiji_dir, css_files)
+        public TagParser(IJstream input, char? endchar, Dictionary<ChuukiTableKeys, bool> chuuki, List<(string, List<string>)> images, IOutput output, IOutput? warnChannel = null, string? gaiji_dir = null, string[]? css_files = null) : base(input, output, warnChannel, gaiji_dir, css_files)
         {
             Section = SectionKind.tail; //末尾処理と記法内はインデントをしないので等価
             chuuki_table = chuuki;

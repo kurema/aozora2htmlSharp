@@ -413,7 +413,7 @@ namespace Aozora
             chuki, kunoji, dakutenkunoji, newjis, accent,
         }
 
-        protected Jstream stream;
+        protected IJstream stream;
         protected IOutput @out;
         protected TextBuffer buffer;
         protected RubyBuffer ruby_buf;
@@ -447,7 +447,7 @@ namespace Aozora
         protected string gaiji_dir;
         protected string[] css_files;
 
-        public Aozora2Html(Jstream input, IOutput output, IOutput? warnChannel = null, string? gaiji_dir = null, string[]? css_files = null)
+        public Aozora2Html(IJstream input, IOutput output, IOutput? warnChannel = null, string? gaiji_dir = null, string[]? css_files = null)
         {
             stream = input;
             @out = output;
