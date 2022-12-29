@@ -37,14 +37,18 @@ public static class Utils
 
     public static string CreateMidashiTag(string size)
     {
-        if (size.Contains(new string(Aozora2Html.SIZE_SMALL, 1))) return "h5";
-        else if (size.Contains(new string(Aozora2Html.SIZE_MIDDLE, 1))) return "h4";
-        else if (size.Contains(new string(Aozora2Html.SIZE_LARGE, 1))) return "h3";
-        else throw new Exceptions.UndefinedHeaderException();
+        int hit = size.IndexOfAny(new[] { Aozora2Html.SIZE_SMALL, Aozora2Html.SIZE_MIDDLE, Aozora2Html.SIZE_LARGE });
+        if (hit < 0) throw new Exceptions.UndefinedHeaderException();
+        return size[hit] switch
+        {
+            Aozora2Html.SIZE_SMALL => "h5",
+            Aozora2Html.SIZE_MIDDLE => "h4",
+            Aozora2Html.SIZE_LARGE => "h3",
+            _ => throw new Exceptions.UndefinedHeaderException(),
+        };
     }
 
     //module_function :create_midashi_tag
-
 
     public enum MidashiType
     {

@@ -86,7 +86,7 @@ public static class Functions
                         System.Console.Error.WriteLine($"Download Error: {response.StatusCode}");
                         return;
                     }
-                    if (response.Content.Headers.ContentType?.MediaType?.ToUpperInvariant().StartsWith("APPLICATION/ZIP") == true)
+                    if (response.Content.Headers.ContentType?.MediaType?.StartsWith("APPLICATION/ZIP", StringComparison.InvariantCultureIgnoreCase) == true)
                     {
                         var sr = GetFirstEntryZip(await response.Content.ReadAsStreamAsync());
                         if (sr is null)
@@ -148,7 +148,7 @@ public static class Functions
     public static StreamReader? GetFirstEntryZip(Stream stream)
     {
         System.IO.Compression.ZipArchive archive = new(stream, System.IO.Compression.ZipArchiveMode.Read);
-        var text = archive.Entries.FirstOrDefault(a => a.Name.ToUpperInvariant().EndsWith(".TXT") && a.CompressedLength > 0);
+        var text = archive.Entries.FirstOrDefault(a => a.Name.EndsWith(".TXT", StringComparison.InvariantCultureIgnoreCase) && a.CompressedLength > 0);
         if (text is null) return null;
         return new StreamReader(text.Open(), Aozora2Html.ShiftJis);
         //if (forceShiftJis) return new StreamReader(text.Open(), Aozora2Html.ShiftJis);
