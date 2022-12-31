@@ -8,14 +8,14 @@ using System.Threading.Tasks;
 
 namespace Aozora
 {
-    public class JstreamString : IJstream
+    public partial class JstreamString : IJstream
     {
         public bool StrictReturnCode;
         private bool ReadAny = false;
 
         int _line;
         int position = 0;
-        char? current_char => text[position] == Jstream.CR ? Jstream.LF : text[position];
+        char? current_char => position < text.Length && position >= 0 ? text[position] == Jstream.CR ? Jstream.LF : text[position] : null;
         string text;
 
         public JstreamString(string input, bool strictReturnCode = false)
@@ -69,7 +69,7 @@ namespace Aozora
                 position++;
                 return char1;
             }
-            if(char1 is Jstream.CR)
+            if (char1 is Jstream.CR)
             {
                 _line++;
                 if (char2 is Jstream.LF)
@@ -95,49 +95,75 @@ namespace Aozora
             //kurema:なおSpanが使えるのはSystem.Text.Encoding.CodePagesがSystem.Memoryを参照しているから。
             //kurema:String.Concat()のようなものは使えない。
             ReadAny = true;
+            if (text.Length <= position) return null;
             var ros = text.AsSpan().Slice(position);
-            var index = ros.IndexOfAny(Jstream.CR, Jstream.LF, endchar);
+            var index = endchar is Jstream.CR or Jstream.LF ? ros.IndexOfAny(Jstream.CR, Jstream.LF) : ros.IndexOf(endchar);
+            ReadOnlySpan<char> ros2;
             if (index < 0)
             {
                 position += ros.Length;
                 if (ros.Length == 0) return null;
-                else return ros.ToString();
-            }
-            var char1 = GetCharAt(position + index);
-            var char2 = GetCharAt(position + index + 1);
-            if (char1 is Jstream.CR or Jstream.LF)
-            {
-                //kurema:ros2にはCRもLF含まれない。
-                var ros2 = ros.Slice(0, index);
-                if (char1 is Jstream.LF)
-                {
-                    if (StrictReturnCode) throw new Exceptions.UseCRLFException();
-                    position += index + 1;
-                }
-                else if (char1 is Jstream.CR)
-                {
-                    if (char2 is Jstream.LF)
-                    {
-                        position += index + 2;
-                    }
-                    else
-                    {
-                        if (StrictReturnCode) throw new Exceptions.UseCRLFException();
-                        position += index + 1;
-                    }
-                }
-                _line++;
-#if NET7_0_OR_GREATER
-                return string.Concat(ros2, Jstream.CRLF);
-#else
-                //kurema:ToString()したらReadOnlySpan使う意味がないが。
-                return ros2.ToString() + Jstream.CRLF;
-#endif
+                else ros2 = ros;
             }
             else
             {
-                position += index + 1;
-                return ros.Slice(0, index + 1).ToString();
+                position += index;
+                ReadIfReturn();
+                ros2 = ros.Slice(0, index);
+            }
+            if (ros2.IndexOfAny(Jstream.CR, Jstream.LF) < 0)
+            {
+                return ros2.ToString();
+            }
+            else
+            {
+                //kurema:実際は現時点でここが呼ばれることはないはずです。
+                //kurema:逆にこの部分は十分にテストがされないことになります。
+                //kurema:現時点ではReplaceした後改行文字の個数を数える非効率な実装になっています。
+                int originalLength = ros2.Length;
+#if NET7_0_OR_GREATER
+                var result = RegexNewLine().Replace(ros2.ToString(), "\r\n");
+#else
+                var result = RegeNewLine.Replace(ros2.ToString(), "\r\n");
+#endif
+                //kurema:CRLF例外の場合は文字サイズが増えることは確定しています。従って変換後の文字サイズ比較をしています。
+                //kurema:これもまた非効率な実装ですが、例外は一度しか呼ばれないのでそこまで拘る必要はないでしょう。
+                if(StrictReturnCode && result.Length != originalLength) throw new Exceptions.UseCRLFException();
+                _line += result.Count(a => a is '\r');
+                return result;
+            }
+        }
+
+        private void ReadIfReturn()
+        {
+            char? char1 = GetCharAt(position);
+            char? char2 = GetCharAt(position + 1);
+
+            if (StrictReturnCode)
+            {
+                // /^\r[^\n]|^\r/
+                if (char1 is Jstream.CR && char2 is not Jstream.LF || char1 is Jstream.LF)
+                {
+                    position++;
+                    throw new Exceptions.UseCRLFException();
+                }
+                else
+                {
+                    position += 2;
+                }
+            }
+            else
+            {
+                if (char1 is Jstream.CR && char2 is Jstream.LF)
+                {
+                    _line++;
+                    position += 2;
+                }
+                else if (char1 is Jstream.CR or Jstream.LF)
+                {
+                    _line++;
+                    position++;
+                }
             }
         }
 
@@ -159,6 +185,14 @@ namespace Aozora
             return;
         }
 
-        private char? GetCharAt(int position) => position < text.Length ? text[position] : null;
+        private char? GetCharAt(int position) => position < text.Length && position >= 0 ? text[position] : null;
+
+#if NET7_0_OR_GREATER
+        [GeneratedRegex("\\r\\n|\\r|\\n")]
+        private static partial Regex RegexNewLine();
+#else
+        private static Regex? _RegexNewLine;
+        private static Regex RegeNewLine => _RegexNewLine ??= new Regex(@"\r\n|\r|\n", RegexOptions.Singleline | RegexOptions.Compiled);
+#endif
     }
 }

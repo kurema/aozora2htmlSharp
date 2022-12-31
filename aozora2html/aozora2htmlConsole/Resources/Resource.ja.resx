@@ -144,4 +144,10 @@
   <data name="HtmlFile.Desc" xml:space="preserve">
     <value>出力ファイル</value>
   </data>
+  <data name="SaveMemory.Desc" xml:space="preserve">
+    <value>メモリ使用量を削減</value>
+  </data>
+  <data name="CheckNewline.Desc" xml:space="preserve">
+    <value>改行コードのチェックをします (CR+LFのみ許容)</value>
+  </data>
 </root>

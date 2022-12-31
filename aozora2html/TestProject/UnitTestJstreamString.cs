@@ -57,4 +57,19 @@ public static class UnitTestJstreamString
         Assert.Equal('b', stream.PeekChar(2));
         Assert.Equal('\n', stream.PeekChar(3));
     }
+
+    [Fact]
+    public static void TestReadTo()
+    {
+        {
+            var stream = new JstreamString("aあ５\r\n％\\bc\r\n");
+            Assert.Equal("aあ５\r\n％\\", stream.ReadTo('b'));
+            Assert.Equal(2, stream.Line);
+        }
+        {
+            var stream = new JstreamString("a\r\nあ\n５\r％\\bc\r\n",false);
+            Assert.Equal("a\r\nあ\r\n５\r\n％\\", stream.ReadTo('b'));
+            Assert.Equal(4, stream.Line);
+        }
+    }
 }

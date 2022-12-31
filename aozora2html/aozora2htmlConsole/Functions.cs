@@ -17,29 +17,41 @@ public static class Functions
         var optionCss = new Option<string[]>("--css-files", () => Array.Empty<string>(), Resources.Resource.CssFiles_Desc) { Arity = ArgumentArity.ZeroOrMore };
         var optionJisx = new Option<bool>("--use-jisx0213", () => false, Resources.Resource.UseJisx0213_Desc) { Arity = new ArgumentArity(0, 1) };
         var optionUnicode = new Option<bool>("--use-unicode", () => false, Resources.Resource.UseUnicode_Desc) { Arity = new ArgumentArity(0, 1) };
+        //kurema:新規。改行コードをCR+LFしか許容しないオプションです。デフォルトはオン。
+        var optionCheckReturnCode = new Option<bool>("--check-newline", () => true, Resources.Resource.CheckNewline_Desc) { Arity = new ArgumentArity(0, 1) };
+        //kurema:新規。メモリを節約するオプションです。オンの場合は従来通り、オフの場合はファイルを一括で読み込みます。デフォルトはオン。
+        //kurema:試してみたところ、1割程度の速度改善は確認できました。ただしデフォルトを変更する必要があるとは思えません。
+        var optionSaveMemory = new Option<bool>("--save-memory", () => true, Resources.Resource.SaveMemory_Desc) { Arity = new ArgumentArity(0, 1) };
         var argumentIn = new Argument<string>(Resources.Resource.TextFile_Title,/* () => null,*/ Resources.Resource.TextFile_Desc);
         var argumentOut = new Argument<FileInfo?>(Resources.Resource.HtmlFile_Title, () => null, Resources.Resource.HtmlFile_Desc).LegalFilePathsOnly();
         //kurema:--error-utf8はC#環境下で余り意味ないと思ったので削除しました。
         //new Option<bool>("--error-utf8","show error messages in UTF-8, not Shift_JIS"),
 
-        var rootCommand = new RootCommand(Resources.Resource.Command_Desc) { optionGaiji, optionCss, optionJisx, optionUnicode, argumentIn, argumentOut, };
+        var rootCommand = new RootCommand(Resources.Resource.Command_Desc) {
+            optionGaiji, optionCss, optionJisx, optionUnicode, optionCheckReturnCode, optionSaveMemory, argumentIn, argumentOut,
+        };
 
-        rootCommand.SetHandler((string? gaijiDir, string[] cssFiles, bool useJisx0213, bool useUnicode, string textFile, FileInfo? htmlFile)
-            => Handle(gaijiDir, cssFiles, useJisx0213, useUnicode, textFile, htmlFile)
-            , optionGaiji, optionCss, optionJisx, optionUnicode, argumentIn, argumentOut);
+        rootCommand.SetHandler((string? gaijiDir, string[] cssFiles, bool useJisx0213, bool useUnicode, bool checkNewline, bool saveMemory, string textFile, FileInfo? htmlFile)
+            => Handle(gaijiDir, cssFiles, useJisx0213, useUnicode, checkNewline, saveMemory, textFile, htmlFile)
+            , optionGaiji, optionCss, optionJisx, optionUnicode, optionCheckReturnCode, optionSaveMemory, argumentIn, argumentOut);
 
         return rootCommand;
     }
 
-    public static async Task Handle(string? gaijiDir, string[] cssFiles, bool useJisx0213, bool useUnicode, string textFile, FileInfo? htmlFile)
+    public static async Task Handle(string? gaijiDir, string[] cssFiles, bool useJisx0213, bool useUnicode, bool strictReturnCode, bool saveMemory, string textFile, FileInfo? htmlFile)
     {
-        bool strictReturnCode = true;
+        static IJstream getJstream(TextReader file_io, bool strictReturnCode, bool saveMemory)
+        {
+            if (saveMemory) return new Aozora.Jstream(file_io, strictReturnCode);
+            else return new JstreamString(file_io.ReadToEnd(), strictReturnCode);
+        }
 
-        Aozora.Jstream jstream;
+        //bool strictReturnCode = true;
+        Aozora.IJstream jstream;
         string? textFileDirectory = null;
         if (string.IsNullOrWhiteSpace(textFile))
         {
-            jstream = new Aozora.Jstream(System.Console.In, strictReturnCode);
+            jstream = getJstream(System.Console.In, strictReturnCode, saveMemory);
         }
         else
         {
@@ -55,11 +67,11 @@ public static class Functions
                         System.Console.Error.WriteLine($"The zip file is empty.");
                         return;
                     }
-                    jstream = new Aozora.Jstream(sr, strictReturnCode);
+                    jstream = getJstream(sr, strictReturnCode, saveMemory);
                 }
                 else
                 {
-                    jstream = new Aozora.Jstream(new StreamReader(textFile, Aozora.Aozora2Html.ShiftJis), strictReturnCode);
+                    jstream = getJstream(new StreamReader(textFile, Aozora.Aozora2Html.ShiftJis), strictReturnCode, saveMemory);
                 }
             }
             else if (Uri.TryCreate(textFile, new UriCreationOptions(), out Uri? uri))
@@ -94,11 +106,11 @@ public static class Functions
                             System.Console.Error.WriteLine($"The zip file is empty.");
                             return;
                         }
-                        jstream = new Aozora.Jstream(sr, strictReturnCode);
+                        jstream = getJstream(sr, strictReturnCode, saveMemory);
                     }
                     else
                     {
-                        jstream = new Aozora.Jstream(new StringReader(await response.Content.ReadAsStringAsync()), strictReturnCode);
+                        jstream = getJstream(new StringReader(await response.Content.ReadAsStringAsync()), strictReturnCode, saveMemory);
                     }
                 }
                 else

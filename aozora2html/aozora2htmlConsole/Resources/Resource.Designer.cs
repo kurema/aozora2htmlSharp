@@ -61,6 +61,15 @@ namespace Aozora.Console.Resources {
         }
         
         /// <summary>
+        ///   Check Newline (only allow CR+LF) に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string CheckNewline_Desc {
+            get {
+                return ResourceManager.GetString("CheckNewline.Desc", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Convert Aozora text format to html に類似しているローカライズされた文字列を検索します。
         /// </summary>
         public static string Command_Desc {
@@ -102,6 +111,15 @@ namespace Aozora.Console.Resources {
         public static string HtmlFile_Title {
             get {
                 return ResourceManager.GetString("HtmlFile.Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Reduce memory usage に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string SaveMemory_Desc {
+            get {
+                return ResourceManager.GetString("SaveMemory.Desc", resourceCulture);
             }
         }
         

@@ -68,5 +68,23 @@ public static class UnitTestJstream
         Assert.Equal('b', stream.PeekChar(2));
         Assert.Equal('\n', stream.PeekChar(3));
     }
+
+    [Fact]
+    public static void TestReadTo()
+    {
+        //kurema:以下は原文から追加されたテストです。
+        {
+            using var sr = new System.IO.StringReader("aあ５\r\n％\\bc\r\n");
+            var stream = new Jstream(sr);
+            Assert.Equal("aあ５\r\n％\\", stream.ReadTo('b'));
+            Assert.Equal(2, stream.Line);
+        }
+        {
+            using var sr = new System.IO.StringReader("a\r\nあ\n５\r％\\bc\r\n");
+            var stream = new Jstream(sr,false);
+            Assert.Equal("a\r\nあ\r\n５\r\n％\\", stream.ReadTo('b'));
+            Assert.Equal(4, stream.Line);
+        }
+    }
 }
 
