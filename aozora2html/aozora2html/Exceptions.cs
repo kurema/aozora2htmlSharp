@@ -144,4 +144,11 @@ namespace Aozora.Exceptions
         public InvalidNestingException(string arg1, string arg2) : base(string.Format(Resources.Resource.InvalidNesting, arg1, arg2)) { }
         protected InvalidNestingException(SerializationInfo info, StreamingContext context) : base(info, context) { }
     }
+
+    [Serializable]
+    public class FailedToLoadJIS2UCSException : AozoraException
+    {
+        public FailedToLoadJIS2UCSException() : base(Resources.Resource.FailedToLoadJIS2UCS) { }
+        protected FailedToLoadJIS2UCSException(SerializationInfo info, StreamingContext context) : base(info, context) { }
+    }
 }

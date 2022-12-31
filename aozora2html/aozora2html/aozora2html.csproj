@@ -12,12 +12,20 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="jis2ucs.gz" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="jis2ucs.gz" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="System.Text.Encoding.CodePages" Version="7.0.0" />
   </ItemGroup>
 
-  <ItemGroup Condition=" '$(Configuration)' == 'Debug' ">
+  <!--<ItemGroup Condition=" '$(Configuration)' == 'Debug' ">
     <ProjectReference Include="..\JIS2UCS\JIS2UCS.csproj" />
-  </ItemGroup>
+  </ItemGroup>-->
 
   <ItemGroup>
     <Compile Update="Resources\Resource.Designer.cs">

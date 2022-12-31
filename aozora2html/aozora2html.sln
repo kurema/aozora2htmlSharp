@@ -5,13 +5,11 @@ VisualStudioVersion = 17.1.32328.378
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "aozora2html", "aozora2html\aozora2html.csproj", "{18112F28-6521-48C8-95D5-7F7782581C9D}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JIS2UCS", "JIS2UCS\JIS2UCS.csproj", "{3663EE1C-8015-453F-89EE-D8FC6D08C095}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestProject", "TestProject\TestProject.csproj", "{F7573B51-D789-4DA8-AD74-010927315190}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "aozora2htmlConsole", "aozora2htmlConsole\aozora2htmlConsole.csproj", "{E981D45D-0FE2-4FCF-B9C9-45D7695B1F87}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "aozora2html.Epub", "aozora2html.Epub\aozora2html.Epub.csproj", "{0B7C45D6-A213-46A3-8E09-BC6EA23923C9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "aozora2html.Epub", "aozora2html.Epub\aozora2html.Epub.csproj", "{0B7C45D6-A213-46A3-8E09-BC6EA23923C9}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -41,22 +39,6 @@ Global
 		{18112F28-6521-48C8-95D5-7F7782581C9D}.Release|x64.Build.0 = Release|Any CPU
 		{18112F28-6521-48C8-95D5-7F7782581C9D}.Release|x86.ActiveCfg = Release|Any CPU
 		{18112F28-6521-48C8-95D5-7F7782581C9D}.Release|x86.Build.0 = Release|Any CPU
-		{3663EE1C-8015-453F-89EE-D8FC6D08C095}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{3663EE1C-8015-453F-89EE-D8FC6D08C095}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{3663EE1C-8015-453F-89EE-D8FC6D08C095}.Debug|arm64.ActiveCfg = Debug|Any CPU
-		{3663EE1C-8015-453F-89EE-D8FC6D08C095}.Debug|arm64.Build.0 = Debug|Any CPU
-		{3663EE1C-8015-453F-89EE-D8FC6D08C095}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{3663EE1C-8015-453F-89EE-D8FC6D08C095}.Debug|x64.Build.0 = Debug|Any CPU
-		{3663EE1C-8015-453F-89EE-D8FC6D08C095}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{3663EE1C-8015-453F-89EE-D8FC6D08C095}.Debug|x86.Build.0 = Debug|Any CPU
-		{3663EE1C-8015-453F-89EE-D8FC6D08C095}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{3663EE1C-8015-453F-89EE-D8FC6D08C095}.Release|Any CPU.Build.0 = Release|Any CPU
-		{3663EE1C-8015-453F-89EE-D8FC6D08C095}.Release|arm64.ActiveCfg = Release|Any CPU
-		{3663EE1C-8015-453F-89EE-D8FC6D08C095}.Release|arm64.Build.0 = Release|Any CPU
-		{3663EE1C-8015-453F-89EE-D8FC6D08C095}.Release|x64.ActiveCfg = Release|Any CPU
-		{3663EE1C-8015-453F-89EE-D8FC6D08C095}.Release|x64.Build.0 = Release|Any CPU
-		{3663EE1C-8015-453F-89EE-D8FC6D08C095}.Release|x86.ActiveCfg = Release|Any CPU
-		{3663EE1C-8015-453F-89EE-D8FC6D08C095}.Release|x86.Build.0 = Release|Any CPU
 		{F7573B51-D789-4DA8-AD74-010927315190}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{F7573B51-D789-4DA8-AD74-010927315190}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F7573B51-D789-4DA8-AD74-010927315190}.Debug|arm64.ActiveCfg = Debug|Any CPU

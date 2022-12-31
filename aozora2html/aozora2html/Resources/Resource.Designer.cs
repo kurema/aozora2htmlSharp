@@ -116,6 +116,15 @@ namespace Aozora.Resources {
         }
         
         /// <summary>
+        ///   Failed to load JIS X 0213 table. Is embedded resource supported? に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string FailedToLoadJIS2UCS {
+            get {
+                return ResourceManager.GetString("FailedToLoadJIS2UCS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Found the termination of {0}, but not in {0} に類似しているローカライズされた文字列を検索します。
         /// </summary>
         public static string InvalidClosing {

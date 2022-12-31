@@ -178,4 +178,7 @@
   <data name="EncountUndefinedCondition" xml:space="preserve">
     <value>未定義の状態に遭遇しました</value>
   </data>
+  <data name="FailedToLoadJIS2UCS" xml:space="preserve">
+    <value>JIS X 0213テーブルの読み込みに失敗しました。埋め込みリソースはサポートされていますか？</value>
+  </data>
 </root>
