@@ -12,6 +12,7 @@ public static partial class YamlValues
         //kurema:
         //コンパイルが重くなるので、Debugの場合のみ別プロジェクトに分離しました。
         //これで一々再コンパイルが不要になるので開発が楽。
+        //テスト結果で見ると、速度面でもメリットがあるように見えるが、実際のファイルで試すと遅い。
         return Aozora.External.YamlValues.JIS2UCS(num1, num2, num3);
 #elif NET7_0_OR_GREATER
         switch (num1)
