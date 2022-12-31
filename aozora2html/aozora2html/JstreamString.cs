@@ -118,19 +118,11 @@ namespace Aozora
             else
             {
                 //kurema:実際は現時点でここが呼ばれることはないはずです。
-                //kurema:逆にこの部分は十分にテストがされないことになります。
-                //kurema:現時点ではReplaceした後改行文字の個数を数える非効率な実装になっています。
-                int originalLength = ros2.Length;
-#if NET7_0_OR_GREATER
-                var result = RegexNewLine().Replace(ros2.ToString(), "\r\n");
-#else
-                var result = RegeNewLine.Replace(ros2.ToString(), "\r\n");
-#endif
-                //kurema:CRLF例外の場合は文字サイズが増えることは確定しています。従って変換後の文字サイズ比較をしています。
-                //kurema:これもまた非効率な実装ですが、例外は一度しか呼ばれないのでそこまで拘る必要はないでしょう。
-                if(StrictReturnCode && result.Length != originalLength) throw new Exceptions.UseCRLFException();
-                _line += result.Count(a => a is '\r');
-                return result;
+                //kurema:逆にこの部分は十分にテストがされないことになります(一応テストは追加しました)。
+                var (result, line, replaced) = Jstream.ReplaceReturnCode(ros2, Jstream.CRLF);
+                if(StrictReturnCode && replaced) throw new Exceptions.UseCRLFException();
+                _line += line;
+                return result.ToString();
             }
         }
 

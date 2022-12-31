@@ -3,6 +3,7 @@ using System.Linq;
 using System.Text;
 using System.Diagnostics;
 using System;
+using System.Text.Json;
 
 Console.WriteLine("""
 using System;
@@ -56,8 +57,8 @@ while (true)
         Console.WriteLine($"                    switch (num3)");
         Console.WriteLine($"                    {{");
     }
-    //Console.WriteLine($"                        case {num3}: return \"{Convert2UnicodeCS(match.Groups[4].Value)}\";");
-    Console.WriteLine($"                        case {num3}: return \"{(match.Groups[4].Value)}\"; // {input}");
+    Console.WriteLine($"                        case {num3}: return \"{Convert2UnicodeCS(match.Groups[4].Value)}\"; // {input}");
+    //Console.WriteLine($"                        case {num3}: return \"{(match.Groups[4].Value)}\"; // {input}");
 
     lastnum1 = num1;
     lastnum2 = num2;
@@ -84,32 +85,51 @@ partial class Program
 
     private static string Convert2UnicodeCS(string input)
     {
-        var matches = RegexUnicode().Matches(input);
-        var result = new StringBuilder();
-        foreach (Match item in matches)
+        //var matches = RegexUnicode().Matches(input);
+        //var result = new StringBuilder();
+        //foreach (Match item in matches)
+        //{
+        //    var uni = $@"\u{item.Groups[1].Value}";
+        //    result.Append(uni);
+        //}
+
+        string result = RegexUnicode().Replace(input, a =>
         {
-            var uni = $@"\u{item.Groups[1].Value}";
-            result.Append(uni);
-        }
+            var chars = System.Net.WebUtility.HtmlDecode(a.Value);
+            var sb = new StringBuilder();
+            foreach (var item2 in chars)
+            {
+                sb.Append($"\\u{((int)item2).ToString("x4").ToUpperInvariant()}");
+            }
+            //if (chars.Length > 1) { Console.Error.WriteLine($"{chars.Length} {sb.ToString()}"); }
+            return sb.ToString();
+        });
+
+        //var texts = System.Net.WebUtility.HtmlDecode(input);
+        //var result = new StringBuilder();
+        //foreach (var char1 in texts){
+        //    var text = System.Net.WebUtility.HtmlEncode(new string(char1, 1));
+        //    result.Append(RegexUnicode().Replace(text, "\\u$1"));
+        //}
 
         {
             string retra = Regex.Replace(Escape(Regex.Unescape(result.ToString())), @"\\u([a-z0-9A-Z]+)", "&#$1;");
             if (retra != input)
             {
-                Console.Error.WriteLine($@"""{retra}"" != ""{input}""");
+                Console.Error.WriteLine($@"""{retra}"" != ""{input}"" {result} ");
             }
-
         }
         return result.ToString();
     }
 
     private static string Escape(string input)
     {
-        var sb=new StringBuilder();
-        foreach(var item in input.EnumerateRunes())
+        var sb = new StringBuilder();
+        foreach (var item in input.EnumerateRunes())
         {
             sb.Append($"&#x{item.Value.ToString("x4").ToUpperInvariant()};");
         }
+        //if (input.Length > 1) Console.Error.WriteLine($"Length: {input.Length} {sb.ToString()} {input}");
         return sb.ToString();
     }
 }

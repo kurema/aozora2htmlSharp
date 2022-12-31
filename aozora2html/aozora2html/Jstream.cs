@@ -232,6 +232,56 @@ namespace Aozora
 
         private static char? IntToNullableChar(int number) => number < 0 ? null : (char)number;
 
+        public static (StringBuilder result, int count, bool replaced) ReplaceReturnCode(string text, char returnCode)
+        {
+            return ReplaceReturnCode(text.AsSpan(), returnCode);
+        }
+
+        public static (StringBuilder result, int count, bool replaced) ReplaceReturnCode(ReadOnlySpan<char> ros, char returnCode)
+        {
+            return ReplaceReturnCode(ros, new string(returnCode, 1));
+        }
+
+        public static (StringBuilder result, int count, bool replaced) ReplaceReturnCode(string text, string returnCode = CRLF)
+        {
+            return ReplaceReturnCode(text.AsSpan(), returnCode);
+        }
+
+        public static (StringBuilder result, int count, bool replaced) ReplaceReturnCode(ReadOnlySpan<char> ros, string returnCode = CRLF)
+        {
+            var sb = new StringBuilder();
+            int count = 0;
+            bool replaced = false;
+            while (true)
+            {
+                var index = ros.IndexOfAny(CR, LF);
+                if (index < 0)
+                {
+#if NET7_0_OR_GREATER
+                    sb.Append(ros);
+#else
+                    sb.Append(ros.ToString());
+#endif
+                    return (sb, count, replaced);
+                }
+                count++;
+                var ros2 = ros.Slice(0, index);
+#if NET7_0_OR_GREATER
+                sb.Append(ros2);
+#else
+                sb.Append(ros2.ToString());
+#endif
+                sb.Append(returnCode);
+                bool isCRLF = (ros[index] == CR && index + 1 < ros.Length && ros[index + 1] == LF);
+                replaced = replaced || returnCode switch
+                {
+                    CRLF => !isCRLF,
+                    _ => returnCode.Length != 1 || ros[index] != returnCode[0]
+                };
+                ros = ros.Slice(index + (isCRLF ? 2 : 1));
+            }
+        }
+
         #region ReadLineCRLF
         //kurema:標準で畳まれるようにregionで囲いました。
         //public static string ReadLineCRLF(StreamReader sr)
