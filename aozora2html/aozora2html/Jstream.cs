@@ -77,7 +77,7 @@ namespace Aozora
         //EOFまで到達すると :eof というシンボルを返す
         //
         //TODO: EOFの場合はnilを返すように変更する?
-        public char? ReadChar()
+        public Helpers.ITextFragment? ReadChar()
         {
             var @char = ReadFromFile();
             ReadAny = true;
@@ -106,14 +106,14 @@ namespace Aozora
             }
             else if (@char == -1)
             {
-                current_char = null;
+                current_char= null;
+                return null;
             }
             else
             {
                 current_char = (char)@char;
             }
-
-            return current_char;
+            return new Helpers.TextFragmentChar(current_char ?? ' ');
         }
 
         //kurema:あってるかなぁ？
@@ -195,13 +195,13 @@ namespace Aozora
         /// <param name="endchar">[String] endchar 終端文字</param>
         /// <returns></returns>
         //kurema:終端文字自体は含まない。
-        public string? ReadTo(char endchar)
+        public ReadOnlyMemory<char>? ReadTo(char endchar)
         {
             var buf = new StringBuilder();
             while (true)
             {
-                var @char = ReadChar();
-                if (@char == endchar) return buf.ToString();
+                var @char = ReadChar()?.Char;
+                if (@char == endchar) return buf.ToString().AsMemory();
                 //kurema:
                 //これは何をやってるのか分からない。
                 //if char.is_a?(Symbol)
@@ -211,7 +211,7 @@ namespace Aozora
                 {
                     var result = buf.ToString();
                     if (string.IsNullOrEmpty(result)) return null;
-                    return result;
+                    return result.AsMemory();
                 }
                 if (@char == LF) buf.Append(CRLF);
                 else buf.Append(@char);
@@ -222,7 +222,7 @@ namespace Aozora
         /// 1行読み込み
         /// </summary>
         /// <returns>[String] 読み込んだ文字列を返す</returns>
-        public string? ReadLine() => ReadTo(LF);
+        public ReadOnlyMemory<char>? ReadLine() => ReadTo(LF);
 
         public void Close()
         {

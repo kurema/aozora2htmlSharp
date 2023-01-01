@@ -12,7 +12,7 @@ namespace Aozora.Helpers
     {
         public string Raw => _raw.ToString();
 
-        readonly StringBuilder _raw = new();//外字変換前の生テキストを残したいことがあるらしい
+        readonly TextFragmentStringBuilder _raw = new();//外字変換前の生テキストを残したいことがあるらしい
 
         public TagParser(IJstream input, char? endchar, Dictionary<ChuukiTableKeys, bool> chuuki, List<(string, List<string>)> images, IOutput output, IOutput? warnChannel = null, string? gaiji_dir = null, string[]? css_files = null) : base(input, output, warnChannel, gaiji_dir, css_files)
         {
@@ -23,9 +23,10 @@ namespace Aozora.Helpers
         }
 
         //method override!
-        public override char? ReadChar()
+        public override Helpers.ITextFragment? ReadChar()
         {
-            var c= base.ReadChar();
+            var c = base.ReadChar();
+            //if(_raw_fragment?.TryAppend(c,ref _raw_fragment))
             _raw.Append(c);
             return c;
         }
@@ -38,14 +39,14 @@ namespace Aozora.Helpers
         }
 
         //出力は[String,String]返しで！
-        public (string,string) GeneralOutputTagParser()
+        public (string, string) GeneralOutputTagParser()
         {
             //kurema:こちらも返り値が違うので名前変えてます。
             ruby_buf.DumpInto(buffer);
             var ans = new StringBuilder();
-            foreach(var s in buffer)
+            foreach (var s in buffer)
             {
-                if((s as BufferItemTag)?.Content is Tag.UnEmbedGaiji gaiji && !gaiji.Escaped)
+                if ((s as BufferItemTag)?.Content is Tag.UnEmbedGaiji gaiji && !gaiji.Escaped)
                 {
                     //消してあった※を復活させ
                     ans.Append(GAIJI_MARK);
@@ -61,7 +62,8 @@ namespace Aozora.Helpers
             {
                 Parse();
             }
-            catch (Exceptions.TerminateException){
+            catch (Exceptions.TerminateException)
+            {
                 return GeneralOutputTagParser();
             }
             throw new Exception();//kurema:parse()から脱出する方法がないのでここには来ない。

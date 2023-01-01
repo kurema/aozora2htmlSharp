@@ -15,10 +15,14 @@ namespace Aozora
 
         int _line;
         int position = 0;
-        char? current_char => position < text.Length && position >= 0 ? text[position] == Jstream.CR ? Jstream.LF : text[position] : null;
-        string text;
+        char? current_char => position < text.Length && position >= 0 ? text.Span[position] == Jstream.CR ? Jstream.LF : text.Span[position] : null;
+        ReadOnlyMemory<char> text;
 
-        public JstreamString(string input, bool strictReturnCode = false)
+        public JstreamString(string input, bool strictReturnCode = false) : this(input.AsMemory(), strictReturnCode)
+        {
+        }
+
+        public JstreamString(ReadOnlyMemory<char> input, bool strictReturnCode = false)
         {
             _line = 0;
             text = input;
@@ -41,23 +45,25 @@ namespace Aozora
 
         public void Close()
         {
-            text = string.Empty;
+            text = ReadOnlyMemory<char>.Empty;
+            position = 0;
+            _line = 0;
         }
 
         public char? PeekChar(int pos)
         {
             if (position + pos >= text.Length) return null;
-            var peeked = text[position + pos];
+            var peeked = text.Span[position + pos];
             if (peeked == Jstream.CR)
             {
-                if (StrictReturnCode && !(position + pos + 1 < text.Length && text[position + pos + 1] == Jstream.LF))
+                if (StrictReturnCode && !(position + pos + 1 < text.Length && text.Span[position + pos + 1] == Jstream.LF))
                     throw new Exceptions.UseCRLFException();
                 peeked = Jstream.LF;
             }
             return peeked;
         }
 
-        public char? ReadChar()
+        public Helpers.ITextFragment? ReadChar()
         {
             ReadAny = true;
             var char1 = GetCharAt(position);
@@ -66,8 +72,7 @@ namespace Aozora
             {
                 _line++;
                 if (StrictReturnCode) throw new Exceptions.UseCRLFException();
-                position++;
-                return char1;
+                return new Helpers.TextFragmentSpan(text, position++);
             }
             if (char1 is Jstream.CR)
             {
@@ -81,24 +86,24 @@ namespace Aozora
                     if (StrictReturnCode) throw new Exceptions.UseCRLFException();
                     position++;
                 }
-                return Jstream.LF;
+                return new Helpers.TextFragmentChar(Jstream.LF);
             }
-            position++;
-            return char1;
+
+            return new Helpers.TextFragmentSpan(text, position++);
         }
 
-        public string? ReadLine() => ReadTo(Jstream.LF);
+        public ReadOnlyMemory<char>? ReadLine() => ReadTo(Jstream.LF);
 
-        public string? ReadTo(char endchar)
+        public ReadOnlyMemory<char>? ReadTo(char endchar)
         {
-            //kurema:ReadOnlySpanで返した方が良さそうな雰囲気あるけど、これが呼ばれる状況は少ないので気にしなくて良さそう。
+            //kurema:一応ReadOnlyMemory<char>で返すようにしたけど、互換性の点で不安。でも.ToString()で済むからReadToMemory()を足す必要は感じない。
             //kurema:なおSpanが使えるのはSystem.Text.Encoding.CodePagesがSystem.Memoryを参照しているから。
-            //kurema:String.Concat()のようなものは使えない。
+            //kurema:正直パフォーマンス上のメリットも特にないと思う。
             ReadAny = true;
             if (text.Length <= position) return null;
-            var ros = text.AsSpan().Slice(position);
-            var index = endchar is Jstream.CR or Jstream.LF ? ros.IndexOfAny(Jstream.CR, Jstream.LF) : ros.IndexOf(endchar);
-            ReadOnlySpan<char> ros2;
+            var ros = text.Slice(position);
+            var index = endchar is Jstream.CR or Jstream.LF ? ros.Span.IndexOfAny(Jstream.CR, Jstream.LF) : ros.Span.IndexOf(endchar);
+            ReadOnlyMemory<char> ros2;
             if (index < 0)
             {
                 position += ros.Length;
@@ -111,18 +116,18 @@ namespace Aozora
                 ReadIfReturn();
                 ros2 = ros.Slice(0, index);
             }
-            if (ros2.IndexOfAny(Jstream.CR, Jstream.LF) < 0)
+            if (ros2.Span.IndexOfAny(Jstream.CR, Jstream.LF) < 0)
             {
-                return ros2.ToString();
+                return ros2;
             }
             else
             {
                 //kurema:実際は現時点でここが呼ばれることはないはずです。
                 //kurema:逆にこの部分は十分にテストがされないことになります(一応テストは追加しました)。
-                var (result, line, replaced) = Jstream.ReplaceReturnCode(ros2, Jstream.CRLF);
-                if(StrictReturnCode && replaced) throw new Exceptions.UseCRLFException();
+                var (result, line, replaced) = Jstream.ReplaceReturnCode(ros2.Span, Jstream.CRLF);
+                if (StrictReturnCode && replaced) throw new Exceptions.UseCRLFException();
                 _line += line;
-                return result.ToString();
+                return result.ToString().AsMemory();
             }
         }
 
@@ -163,10 +168,10 @@ namespace Aozora
         {
             for (int i = 0; i < text.Length; i++)
             {
-                char ch = text[i];
+                char ch = text.Span[i];
                 if (ch == Jstream.CR)
                 {
-                    if (i + 1 < text.Length && text[i + 1] == Jstream.LF) return;
+                    if (i + 1 < text.Length && text.Span[i + 1] == Jstream.LF) return;
                     throw new Exceptions.UseCRLFException();
                 }
                 if (ch == Jstream.LF)
@@ -177,14 +182,6 @@ namespace Aozora
             return;
         }
 
-        private char? GetCharAt(int position) => position < text.Length && position >= 0 ? text[position] : null;
-
-#if NET7_0_OR_GREATER
-        [GeneratedRegex("\\r\\n|\\r|\\n")]
-        private static partial Regex RegexNewLine();
-#else
-        private static Regex? _RegexNewLine;
-        private static Regex RegeNewLine => _RegexNewLine ??= new Regex(@"\r\n|\r|\n", RegexOptions.Singleline | RegexOptions.Compiled);
-#endif
+        private char? GetCharAt(int position) => position < text.Length && position >= 0 ? text.Span[position] : null;
     }
 }

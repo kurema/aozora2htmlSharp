@@ -26,16 +26,16 @@ public static class UnitTestJstreamString
     public static void TestReadChar()
     {
         var stream = new JstreamString("aあ５\r\n％\\b\r\n");
-        Assert.Equal('a', stream.ReadChar());
-        Assert.Equal('あ', stream.ReadChar());
-        Assert.Equal('５', stream.ReadChar());
-        Assert.Equal('\n', stream.ReadChar());//kurema:char?型なので\n。\r\nではない。
-        Assert.Equal('％', stream.ReadChar());
-        Assert.Equal('\\', stream.ReadChar());
-        Assert.Equal('b', stream.ReadChar());
-        Assert.Equal('\n', stream.ReadChar());
-        Assert.Null(stream.ReadChar());//kurema:endcharではない。
-        Assert.Null(stream.ReadChar());//kurema:何度もread_charするとnullが複数回出る。
+        Assert.Equal('a', stream.ReadChar()?.Char);
+        Assert.Equal('あ', stream.ReadChar()?.Char);
+        Assert.Equal('５', stream.ReadChar()?.Char);
+        Assert.Equal('\n', stream.ReadChar()?.Char);//kurema:char?型なので\n。\r\nではない。
+        Assert.Equal('％', stream.ReadChar()?.Char);
+        Assert.Equal('\\', stream.ReadChar()?.Char);
+        Assert.Equal('b', stream.ReadChar()?.Char);
+        Assert.Equal('\n', stream.ReadChar()?.Char);
+        Assert.Null(stream.ReadChar()?.Char);//kurema:endcharではない。
+        Assert.Null(stream.ReadChar()?.Char);//kurema:何度もread_charするとnullが複数回出る。
     }
 
     [Fact]
@@ -47,11 +47,11 @@ public static class UnitTestJstreamString
         Assert.Equal('５', stream.PeekChar(2));
         Assert.Equal('\n', stream.PeekChar(3));
         //改行文字以降は正しい値を保証しない
-        Assert.Equal('a', stream.ReadChar());
+        Assert.Equal('a', stream.ReadChar()?.Char);
         Assert.Equal('あ', stream.PeekChar(0));
-        Assert.Equal('あ', stream.ReadChar());
-        Assert.Equal('５', stream.ReadChar());
-        Assert.Equal('\n', stream.ReadChar());
+        Assert.Equal('あ', stream.ReadChar()?.Char);
+        Assert.Equal('５', stream.ReadChar()?.Char);
+        Assert.Equal('\n', stream.ReadChar()?.Char);
         Assert.Equal('％', stream.PeekChar(0));
         Assert.Equal('\\', stream.PeekChar(1));
         Assert.Equal('b', stream.PeekChar(2));
@@ -63,12 +63,12 @@ public static class UnitTestJstreamString
     {
         {
             var stream = new JstreamString("aあ５\r\n％\\bc\r\n");
-            Assert.Equal("aあ５\r\n％\\", stream.ReadTo('b'));
+            Assert.Equal("aあ５\r\n％\\", stream.ReadTo('b').ToString());
             Assert.Equal(2, stream.Line);
         }
         {
             var stream = new JstreamString("a\r\nあ\n５\r％\\bc\r\n",false);
-            Assert.Equal("a\r\nあ\r\n５\r\n％\\", stream.ReadTo('b'));
+            Assert.Equal("a\r\nあ\r\n５\r\n％\\", stream.ReadTo('b').ToString());
             Assert.Equal(4, stream.Line);
         }
     }

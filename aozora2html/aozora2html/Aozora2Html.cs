@@ -566,10 +566,10 @@ namespace Aozora
         /// 一文字読み込む
         /// </summary>
         /// <returns></returns>
-        public virtual char? ReadChar() => stream.ReadChar();
+        public virtual Helpers.ITextFragment? ReadChar() => stream.ReadChar();
 
         //一行読み込む
-        public string? ReadLine() => stream.ReadLine();
+        public ReadOnlyMemory<char>? ReadLine() => stream.ReadLine();
 
         protected TextBuffer ReadAccent()
         {
@@ -623,7 +623,7 @@ namespace Aozora
             _ => throw new Exception(),
         };
 
-        protected string ConvertIndentType(IndentTypeKey type) => INDENT_TYPE.ContainsKey(type) ? INDENT_TYPE[type] : type.ToString();
+        protected string ConvertIndentType(IndentTypeKey type) => INDENT_TYPE.TryGetValue(type, out string value) ? value : type.ToString();
 
         protected string? CheckCloseMatch(IndentTypeKey type)
         {
@@ -745,7 +745,7 @@ namespace Aozora
         {
             var @string = ReadLine();
             // refine from Tomita 09/06/14
-            if (string.IsNullOrEmpty(@string))
+            if (@string is null or { IsEmpty: true })
             {
                 //空行がくれば、そこでヘッダー終了とみなす
                 Section = SectionKind.head_end;
@@ -753,9 +753,9 @@ namespace Aozora
             }
             else
             {
-                @string = @string!.Replace(new string(RUBY_PREFIX, 1), string.Empty);
-                @string = PAT_RUBY.Replace(@string, string.Empty);
-                header.Push(@string);
+                var result = @string!.ToString().Replace(new string(RUBY_PREFIX, 1), string.Empty);
+                result = PAT_RUBY.Replace(result, string.Empty);
+                header.Push(result);
             }
         }
 
@@ -769,9 +769,9 @@ namespace Aozora
             var @string = ReadLine();
             if (@string is null) return;
 #if NET7_0_OR_GREATER
-            if (!PAT_ParseChuuki_GEN().IsMatch(@string)) return;
+            if (!PAT_ParseChuuki_GEN().IsMatch(@string.Value.Span)) return;
 #else
-            if (!Regex.IsMatch(@string, @"^-+$")) return;
+            if (!Regex.IsMatch(@string.ToString(), @"^-+$")) return;
 #endif
 
             switch (Section)
@@ -794,7 +794,7 @@ namespace Aozora
         /// <exception cref="Exception"></exception>
         public void ParseBody()
         {
-            object? @char = ReadChar();
+            object? @char = ReadChar()?.Char;
             @char ??= ":eof";//kurema:C#版では:eofをnullで代用してるが、下では普通に@charがnullになりえるので適当な":eof"で仮置き。
             bool check = true;
 
@@ -901,6 +901,8 @@ namespace Aozora
             foreach (var item in text) PushChar(item);
         }
 
+
+
         public void PushChars(IBufferItem item)
         {
             if (item is BufferItemString) PushChars(item.ToHtml());
@@ -984,7 +986,7 @@ namespace Aozora
                 //元は
                 //@out.print tail.map(&:to_s).join
                 //to_s必要？
-                @out.Print(string.Join("", tail?.ToArray() ?? new string[0]));
+                @out.Print(string.Join("", tail?.ToArray() ?? Array.Empty<string>()));
                 if (indent_type == TextBuffer.BlankTypeResult.inline) @out.Print("\r\n");
                 else if (indent_type == TextBuffer.BlankTypeResult.@true && terpripLocal) @out.Print("<br />\r\n");
                 else @out.Print("</div>\r\n");
@@ -995,7 +997,7 @@ namespace Aozora
             }
             else
             {
-                @out.Print(string.Join("", tail?.ToArray() ?? new string[0]));
+                @out.Print(string.Join("", tail?.ToArray() ?? Array.Empty<string>()));
                 @out.Print("\r\n");
             }
         }
@@ -1485,7 +1487,7 @@ namespace Aozora
 
         public IndentTypeKey DetectStyleSize(string style)
         {
-            if (style.Contains("小"))
+            if (style.Contains('小'))
             {
                 return IndentTypeKey.sho;
             }
@@ -2046,10 +2048,10 @@ namespace Aozora
         public void ParseTail()
         {
             //kurema:色々怪しい
-            var @char = ReadChar();
+            var @char = ReadChar()?.Char;
             bool check = true;
             bool escape = true;//kurema:read_accent()は文字列を返すので強引にエスケープしない指示をする。
-            IBufferItem[] otherBuffer = new IBufferItem[0];
+            IBufferItem[] otherBuffer = Array.Empty<IBufferItem>();
             switch (@char)
             {
                 case ACCENT_BEGIN:
@@ -2089,12 +2091,12 @@ namespace Aozora
                 if (otherString.Length == 0)
                 {
                     @char = null;
-                    otherBuffer = new IBufferItem[0];
+                    otherBuffer = Array.Empty<IBufferItem>();
                 }
                 else if (otherString.Length == 1)
                 {
                     @char = otherString.ToHtml()[0];
-                    otherBuffer = new IBufferItem[0];
+                    otherBuffer = Array.Empty<IBufferItem>();
                 }
             }
 

@@ -1,4 +1,6 @@
-﻿namespace Aozora
+﻿using System;
+
+namespace Aozora
 {
     public interface IJstream
     {
@@ -7,9 +9,9 @@
 
         void Close();
         char? PeekChar(int pos);
-        char? ReadChar();
-        string? ReadLine();
-        string? ReadTo(char endchar);
+        Helpers.ITextFragment? ReadChar();
+        ReadOnlyMemory<char>? ReadLine();
+        ReadOnlyMemory<char>? ReadTo(char endchar);
         void RunInitialTest();
     }
 }

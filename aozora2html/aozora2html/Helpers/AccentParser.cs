@@ -38,7 +38,7 @@ namespace Aozora.Helpers
         {
             while (true)
             {
-                var first = ReadChar();
+                var first = ReadChar()?.Char;
                 var second = stream.PeekChar(0);
                 var third = stream.PeekChar(1);
                 var (code, name, depth) = YamlValues.AccentTable(first, second, third);
