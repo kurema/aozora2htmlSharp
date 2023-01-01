@@ -59,6 +59,31 @@ namespace Aozora.Helpers
             else RubyBuf.Add(new BufferItemString(value));
         }
 
+        public void Push(ReadOnlyMemory<char> value)
+        {
+            if (value.Length == 0) return;
+            if (Last is BufferItemString itemString) itemString.Append(value);
+            else RubyBuf.Add(new BufferItemString(value));
+        }
+
+        public void Push(ReadOnlySpan<char> value)
+        {
+            if (value.Length == 0) return;
+            if (Last is BufferItemString itemString) itemString.Append(value);
+            else RubyBuf.Add(new BufferItemString(value));
+        }
+
+        public void Push(ITextFragment value)
+        {
+            if (Last is BufferItemString itemString) itemString.Append(value);
+            else
+            {
+                var newItem = new BufferItemString(string.Empty);
+                newItem.Append(value);
+                RubyBuf.Add(newItem);
+            }
+        }
+
         public void Push(char @char)
         {
             Push(new string(@char, 1));
@@ -136,6 +161,32 @@ namespace Aozora.Helpers
                 Push(@char);
                 char_type = ctype;
             }
+        }
+
+        public void PushChar(ReadOnlySpan<char> span, TextBuffer buffer)
+        {
+            int startIndex = 0;
+            for (int i = 0; i < span.Length; i++)
+            {
+                var @char = span[i];
+                var ctype = Utils.GetCharType(@char);
+                if (ctype == Tag.CharType.HankakuTerminate && char_type == Tag.CharType.Hankaku)
+                {
+                    char_type = Tag.CharType.Else;
+                }
+                else if (IsProtected || ((ctype != Tag.CharType.Else) && (ctype == char_type)))
+                {
+                }
+                else
+                {
+                    //kurema:i==0でも正しく動作するはずだけど可読性。
+                    if (i - startIndex != 0) Push(span.Slice(startIndex, i - startIndex));
+                    DumpInto(buffer);
+                    char_type = ctype;
+                    startIndex = i;
+                }
+            }
+            if (span.Length - startIndex > 0) Push(span.Slice(startIndex));
         }
 
         public void PushChar(Tag.Tag @char, TextBuffer buffer)

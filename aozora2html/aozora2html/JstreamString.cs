@@ -63,7 +63,7 @@ namespace Aozora
             return peeked;
         }
 
-        public Helpers.ITextFragment? ReadChar()
+        public Helpers.ITextFragment? ReadCharAsTextFragment()
         {
             ReadAny = true;
             var char1 = GetCharAt(position);
@@ -91,6 +91,12 @@ namespace Aozora
 
             return new Helpers.TextFragmentSpan(text, position++);
         }
+
+        public char? ReadChar()
+        {
+            return ReadCharAsTextFragment()?.Char;
+        }
+
 
         public ReadOnlyMemory<char>? ReadLine() => ReadTo(Jstream.LF);
 

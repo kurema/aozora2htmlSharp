@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using System.Text;
 using System.Linq;
 using Aozora.Helpers;
+using System.Runtime.CompilerServices;
+using System.Collections;
 
 namespace Aozora
 {
@@ -566,7 +568,9 @@ namespace Aozora
         /// 一文字読み込む
         /// </summary>
         /// <returns></returns>
-        public virtual Helpers.ITextFragment? ReadChar() => stream.ReadChar();
+        public virtual char? ReadChar() => stream.ReadChar();
+
+        public virtual Helpers.ITextFragment? ReadCharAsTextFragment() => stream.ReadCharAsTextFragment();
 
         //一行読み込む
         public ReadOnlyMemory<char>? ReadLine() => stream.ReadLine();
@@ -616,14 +620,14 @@ namespace Aozora
         /// </summary>
         /// <param name="type"></param>
         /// <returns></returns>
-        protected string ConvertIndentType(IIndentStackItem type) => type switch
+        protected static string ConvertIndentType(IIndentStackItem type) => type switch
         {
             IndentStackItemString typeString => typeString.Content,
             IndentStackItemIndentTypeKey typeIndentTypeKey => ConvertIndentType(typeIndentTypeKey.Content),
             _ => throw new Exception(),
         };
 
-        protected string ConvertIndentType(IndentTypeKey type) => INDENT_TYPE.TryGetValue(type, out string value) ? value : type.ToString();
+        protected static string ConvertIndentType(IndentTypeKey type) => INDENT_TYPE.TryGetValue(type, out string? value) ? value ?? string.Empty : type.ToString();
 
         protected string? CheckCloseMatch(IndentTypeKey type)
         {
@@ -676,7 +680,7 @@ namespace Aozora
             var n = indent_stack.FirstOrDefault();
             if (n is null) return;
 
-            throw new Exceptions.TerminateInStyleException(ConvertIndentType(n));
+            throw new Exceptions.TerminateInStyleException(Aozora2Html.ConvertIndentType(n));
         }
 
         public void ExplicitClose(IndentTypeKey type)
@@ -753,7 +757,8 @@ namespace Aozora
             }
             else
             {
-                var result = @string!.ToString().Replace(new string(RUBY_PREFIX, 1), string.Empty);
+                var result = @string!.ToString()?.Replace(new string(RUBY_PREFIX, 1), string.Empty);
+                if (result is null) return;
                 result = PAT_RUBY.Replace(result, string.Empty);
                 header.Push(result);
             }
@@ -794,7 +799,7 @@ namespace Aozora
         /// <exception cref="Exception"></exception>
         public void ParseBody()
         {
-            object? @char = ReadChar()?.Char;
+            object? @char = ReadChar();
             @char ??= ":eof";//kurema:C#版では:eofをnullで代用してるが、下では普通に@charがnullになりえるので適当な":eof"で仮置き。
             bool check = true;
 
@@ -898,10 +903,55 @@ namespace Aozora
         //C#なので元とは結構違う実装方法。何が来るかまだ調査不足だけど後で良い。
         public void PushChars(string text)
         {
-            foreach (var item in text) PushChar(item);
+            PushChars(text.AsSpan());
+            //foreach (var item in text) PushChar(item);
+            //kurema:下はダメ。
+            //ruby_buf.Push(text);
         }
 
+        //kurema:Interpolated Stringsを使っている状況で、一々結合したstringが不要になるので速くなるかと試してみましたが、むしろ遅くなっているように見える。
+#if false && NET7_0_OR_GREATER
 
+        public void PushChars(MyHandler handler)
+        {
+            foreach(var item in handler)
+            {
+                PushChars(item);
+            }
+        }
+
+        [InterpolatedStringHandler]
+        public class MyHandler : IEnumerable<string>
+        {
+            List<string> buffer;
+
+            public MyHandler(int literalLength, int formattedCount)
+            {
+                buffer = new List<string>(formattedCount);
+            }
+
+            public void AppendLiteral(string s)
+            {
+                buffer.Add(s);
+            }
+
+            public void AppendFormatted<T>(T t)
+            {
+                var txt= t?.ToString();
+                if (txt is not null) buffer.Add(txt);
+            }
+
+            public IEnumerator<string> GetEnumerator()
+            {
+                return ((IEnumerable<string>)buffer).GetEnumerator();
+            }
+
+            IEnumerator IEnumerable.GetEnumerator()
+            {
+                return ((IEnumerable)buffer).GetEnumerator();
+            }
+        }
+#endif
 
         public void PushChars(IBufferItem item)
         {
@@ -914,10 +964,21 @@ namespace Aozora
             foreach (var item in bufferItems) PushChars(item);
         }
 
+        public void PushChars(ITextFragment fragment)
+        {
+            ruby_buf.PushChar(fragment.AsMemory().Span, buffer);
+        }
+
+        public void PushChars(ReadOnlySpan<char> span)
+        {
+            ruby_buf.PushChar(span, buffer);
+        }
+
         public void PushChar(char @char)
         {
             ruby_buf.PushChar(@char, buffer);
         }
+
 
         public void PushChar(Helpers.Tag.Tag tag)
         {
@@ -1313,7 +1374,7 @@ namespace Aozora
         [GeneratedRegex(@$"(\d*)(?:{JISAGE_COMMAND})")]
         private static partial Regex PAT_GetJisageWidth_GEN();
 #endif
-        public int? GetJisageWidth(string command)
+        public static int? GetJisageWidth(string command)
         {
             var matched =
 #if NET7_0_OR_GREATER
@@ -1342,7 +1403,7 @@ namespace Aozora
             else if (command.Contains(ONELINE_COMMAND))
             {
                 //1行だけ
-                buffer.Insert(0, new BufferItemTag(new Helpers.Tag.OnelineJisage(this, GetJisageWidth(command) ?? 0)));
+                buffer.Insert(0, new BufferItemTag(new Helpers.Tag.OnelineJisage(this, Aozora2Html.GetJisageWidth(command) ?? 0)));
                 return null;
             }
             else if ((buffer.Count == 0) && (stream.PeekChar(0) == '\n'))
@@ -1353,11 +1414,11 @@ namespace Aozora
                 //adhook hack
                 noprint = false;
                 indent_stack.Push(new IndentStackItemIndentTypeKey(IndentTypeKey.jisage));
-                return new Helpers.Tag.MultilineJisage(this, GetJisageWidth(command) ?? 0);
+                return new Helpers.Tag.MultilineJisage(this, Aozora2Html.GetJisageWidth(command) ?? 0);
             }
             else //rubocop:disable Lint/DuplicateBranch
             {
-                buffer.Insert(0, new BufferItemTag(new Helpers.Tag.OnelineJisage(this, GetJisageWidth(command) ?? 0)));
+                buffer.Insert(0, new BufferItemTag(new Helpers.Tag.OnelineJisage(this, Aozora2Html.GetJisageWidth(command) ?? 0)));
                 return null;
             }
         }
@@ -1391,7 +1452,7 @@ namespace Aozora
             }
         }
 
-        public int ChitsukiLength(string command)
+        public static int ChitsukiLength(string command)
         {
             command = Utils.ConvertJapaneseNumber(command);
             var matched = PAT_JI_LEN.Match(command);
@@ -1416,7 +1477,7 @@ namespace Aozora
             }
             else
             {
-                var len = ChitsukiLength(@string);
+                var len = Aozora2Html.ChitsukiLength(@string);
                 if (multiline)
                 {
                     //複数行指定
@@ -1485,7 +1546,7 @@ namespace Aozora
             closing.Append(tag.CloseTag());
         }
 
-        public IndentTypeKey DetectStyleSize(string style)
+        public static IndentTypeKey DetectStyleSize(string style)
         {
             if (style.Contains('小'))
             {
@@ -1572,7 +1633,7 @@ namespace Aozora
                         var nest = matchedCharSize.Groups[1].Value;
                         var style = matchedCharSize.Groups[2].Value;
                         var times = int.Parse(Utils.ConvertJapaneseNumber(nest));
-                        var daisho = DetectStyleSize(style);
+                        var daisho = Aozora2Html.DetectStyleSize(style);
                         var html_class = daisho.ToString() + times.ToString();
                         var size = Utils.CreateFontSize(times, daisho);
                         PushChars($"<span class=\"{html_class}\" style=\"font-size: {size};\">");
@@ -1711,7 +1772,7 @@ namespace Aozora
                     var nest = matched.Groups[1].Value;
                     var style = matched.Groups[2].Value;
                     if (match_buf.Length > 0) indent_stack.Pop();
-                    var daisho = DetectStyleSize(style);
+                    var daisho = Aozora2Html.DetectStyleSize(style);
                     PushBlockTag(new Helpers.Tag.FontSize(this, int.Parse(Utils.ConvertJapaneseNumber(nest)), daisho), match_buf);
                     indent_stack.Push(new IndentStackItemIndentTypeKey(daisho));
                 }
@@ -1844,7 +1905,7 @@ namespace Aozora
         /// <param name="under_ruby"></param>
         /// <returns></returns>
         //complex ruby wrap up utilities -- don't erase! we will use soon ...
-        public Helpers.Tag.Ruby RearrangeRubyTag(System.Collections.IEnumerable targets, string upper_ruby, string under_ruby)
+        public static Helpers.Tag.Ruby RearrangeRubyTag(System.Collections.IEnumerable targets, string upper_ruby, string under_ruby)
         {
             return Helpers.Tag.Ruby.RearrangeRuby(targets, upper_ruby, under_ruby);
         }
@@ -1900,7 +1961,7 @@ namespace Aozora
                 {
                     var nest = match.Groups[1].Value;
                     var style = match.Groups[2].Value;
-                    return new BufferItemTag(new Helpers.Tag.InlineFontSize(targets, int.Parse(Utils.ConvertJapaneseNumber(nest)), DetectStyleSize(style)));
+                    return new BufferItemTag(new Helpers.Tag.InlineFontSize(targets, int.Parse(Utils.ConvertJapaneseNumber(nest)), Aozora2Html.DetectStyleSize(style)));
                 }
             }
             {
@@ -1917,7 +1978,7 @@ namespace Aozora
                     }
                     else
                     {
-                        return new BufferItemTag(RearrangeRubyTag(targets, "", under));
+                        return new BufferItemTag(Aozora2Html.RearrangeRubyTag(targets, "", under));
                     }
                 }
             }
@@ -1925,14 +1986,14 @@ namespace Aozora
                 var match = PAT_CHUUKI.Match(command);
                 if (match.Success)
                 {
-                    return new BufferItemTag(RearrangeRubyTag(targets, match.Groups[1].Value, ""));
+                    return new BufferItemTag(Aozora2Html.RearrangeRubyTag(targets, match.Groups[1].Value, ""));
                 }
             }
             {
                 var match = PAT_BOUKI.Match(command);
                 if (match.Success)
                 {
-                    return new BufferItemTag(RearrangeRubyTag(targets, GetMultipliedText(match.Groups[1].Value, targets.ToHtml().Length), ""));
+                    return new BufferItemTag(Aozora2Html.RearrangeRubyTag(targets, GetMultipliedText(match.Groups[1].Value, targets.ToHtml().Length), ""));
                 }
             }
             {//kurema:else相当
@@ -2048,7 +2109,7 @@ namespace Aozora
         public void ParseTail()
         {
             //kurema:色々怪しい
-            var @char = ReadChar()?.Char;
+            var @char = ReadChar();
             bool check = true;
             bool escape = true;//kurema:read_accent()は文字列を返すので強引にエスケープしない指示をする。
             IBufferItem[] otherBuffer = Array.Empty<IBufferItem>();

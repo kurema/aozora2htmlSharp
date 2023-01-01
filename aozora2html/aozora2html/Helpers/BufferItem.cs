@@ -28,14 +28,47 @@ namespace Aozora.Helpers
 
         public BufferItemString(string text)
         {
-            Buffer = new StringBuilder(text);
+            Buffer = new TextFragmentStringBuilder(new StringBuilder(text));
         }
 
-        public StringBuilder Buffer { get; }
+        public BufferItemString(ReadOnlyMemory<char> text)
+        {
+            var sb = new StringBuilder();
+            sb.Append(text);
+            Buffer = new TextFragmentStringBuilder(sb);
+        }
+
+        public BufferItemString(ReadOnlySpan<char> text)
+        {
+            var sb = new StringBuilder();
+#if NET7_0_OR_GREATER
+            sb.Append(text);
+#else
+            sb.Append(text.ToString());
+#endif
+            Buffer = new TextFragmentStringBuilder(sb);
+        }
+
+        public TextFragmentStringBuilder Buffer { get; }
 
         public void Append(string value)
         {
             Buffer.Append(value);
+        }
+
+        public void Append(ReadOnlyMemory<char> value)
+        {
+            Buffer.Append(value);
+        }
+
+        public void Append(ReadOnlySpan<char> value)
+        {
+            Buffer.Append(value);
+        }
+
+        public void Append(ITextFragment fragment)
+        {
+            Buffer.Append(fragment);
         }
 
         public int Length => Buffer.Length;
@@ -48,6 +81,11 @@ namespace Aozora.Helpers
         public override string ToString()
         {
             return Buffer.ToString();
+        }
+
+        public ReadOnlyMemory<char> AsMemory()
+        {
+            return Buffer.AsMemory();
         }
     }
 }

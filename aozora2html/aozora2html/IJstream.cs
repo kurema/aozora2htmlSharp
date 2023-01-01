@@ -9,7 +9,8 @@ namespace Aozora
 
         void Close();
         char? PeekChar(int pos);
-        Helpers.ITextFragment? ReadChar();
+        Helpers.ITextFragment? ReadCharAsTextFragment();
+        char? ReadChar();
         ReadOnlyMemory<char>? ReadLine();
         ReadOnlyMemory<char>? ReadTo(char endchar);
         void RunInitialTest();

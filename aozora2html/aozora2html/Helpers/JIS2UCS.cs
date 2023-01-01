@@ -23,14 +23,14 @@ public static partial class YamlValues
         if (entry.Item1 == 0 && entry.Item2 == 0)
         {
             if (entry.Item3 == 0 && entry.Item4 == 0) return null;
-            return $"&#x{entry.Item4.ToString("X2")}{entry.Item3.ToString("X2")};";
+            return $"&#x{entry.Item4:X2}{entry.Item3:X2};";
         }
         if (entry.Item2==0 && entry.Item1 <= 0xF)
         {
-            return $"&#x{entry.Item1.ToString("X")}{entry.Item4.ToString("X2")}{entry.Item3.ToString("X2")};";
+            return $"&#x{entry.Item1:X}{entry.Item4:X2}{entry.Item3:X2};";
         }
         {
-            return $"&#x{entry.Item2.ToString("X2")}{entry.Item1.ToString("X2")};&#x{entry.Item4.ToString("X2")}{entry.Item3.ToString("X2")};";
+            return $"&#x{entry.Item2:X2}{entry.Item1:X2};&#x{entry.Item4:X2}{entry.Item3:X2};";
         }
     }
 
@@ -43,7 +43,7 @@ public static partial class YamlValues
         //kurema:Resourceと同じ仕組みなんだから使えるに決まってるわ。
         try
         {
-            using var s1 = Assembly.GetAssembly(typeof(YamlValues)).GetManifestResourceStream("Aozora.jis2ucs.gz");
+            using var s1 = Assembly.GetAssembly(typeof(YamlValues))?.GetManifestResourceStream("Aozora.jis2ucs.gz");
             if (s1 is null) throw new Exceptions.FailedToLoadJIS2UCSException();
             using var sgz = new System.IO.Compression.GZipStream(s1, System.IO.Compression.CompressionMode.Decompress);
             using var ms = new MemoryStream();

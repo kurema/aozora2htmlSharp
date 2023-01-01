@@ -9,7 +9,7 @@ public interface ITextFragment
 {
     char? Char { get; }
     bool IsEmpty { get; }
-    ReadOnlyMemory<char> Memory { get; }
+    ReadOnlyMemory<char> AsMemory();
     bool TryGetAppended(ITextFragment? other, out ITextFragment? result);
     int Length { get; }
 }
@@ -30,15 +30,15 @@ public class TextFragmentSpan : ITextFragment
     {
     }
 
-    public TextFragmentSpan(ReadOnlyMemory<char> @base, int positionStart, int length)
+    public TextFragmentSpan(ReadOnlyMemory<char> @base, int position, int length)
     {
         Base = @base;
-        Position = positionStart;
-        if (Length < 0) throw new ArgumentOutOfRangeException();
+        Position = position;
+        if (Length < 0) throw new ArgumentOutOfRangeException(nameof(length));
         Length = length;
     }
 
-    public ReadOnlyMemory<char> Memory => Base.Slice(Position, Length);
+    public ReadOnlyMemory<char> AsMemory() => Base.Slice(Position, Length);
 
     public ReadOnlyMemory<char> Base { get; }
 
@@ -83,7 +83,7 @@ public class TextFragmentSpan : ITextFragment
 
     public override string ToString()
     {
-        return Memory.ToString();
+        return AsMemory().ToString();
     }
 }
 
@@ -98,7 +98,7 @@ public class TextFragmentChar : ITextFragment
 
     public bool IsEmpty => false;
 
-    public ReadOnlyMemory<char> Memory => new string(Char!.Value, 1).AsMemory();
+    public ReadOnlyMemory<char> AsMemory() => new string(Char!.Value, 1).AsMemory();
 
     public int Length => 1;
 
@@ -146,13 +146,7 @@ public class TextFragmentStringBuilder : ITextFragment
 
     public bool IsEmpty => Length == 0;
 
-    public ReadOnlyMemory<char> Memory
-    {
-        get
-        {
-            return this.ToString().AsMemory();
-        }
-    }
+    public ReadOnlyMemory<char> AsMemory() => Content.Length == 0 ? Buffer.AsMemory() : this.ToString().AsMemory();
 
     public override string ToString()
     {
@@ -164,11 +158,16 @@ public class TextFragmentStringBuilder : ITextFragment
 
     public void Flush()
     {
-        Content.Append(Buffer.Memory);
+        Content.Append(Buffer.AsMemory());
         Buffer = TextFragmentSpan.Empty;
     }
 
-
+    /// <summary>
+    /// これは必ず失敗します。Append()を使ってください。
+    /// </summary>
+    /// <param name="other"></param>
+    /// <param name="result"></param>
+    /// <returns></returns>
     public bool TryGetAppended(ITextFragment? other, out ITextFragment? result)
     {
         result = null;

@@ -23,11 +23,18 @@ namespace Aozora.Helpers
         }
 
         //method override!
-        public override Helpers.ITextFragment? ReadChar()
+        public override Helpers.ITextFragment? ReadCharAsTextFragment()
         {
-            var c = base.ReadChar();
+            var c = base.ReadCharAsTextFragment();
             //if(_raw_fragment?.TryAppend(c,ref _raw_fragment))
             _raw.Append(c);
+            return c;
+        }
+
+        public override char? ReadChar()
+        {
+            var c = base.ReadChar();
+            if (c is not null) _raw.Append(new string(c.Value, 1));
             return c;
         }
 

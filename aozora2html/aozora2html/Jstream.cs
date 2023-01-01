@@ -77,7 +77,7 @@ namespace Aozora
         //EOFまで到達すると :eof というシンボルを返す
         //
         //TODO: EOFの場合はnilを返すように変更する?
-        public Helpers.ITextFragment? ReadChar()
+        public char? ReadChar()
         {
             var @char = ReadFromFile();
             ReadAny = true;
@@ -106,14 +106,19 @@ namespace Aozora
             }
             else if (@char == -1)
             {
-                current_char= null;
-                return null;
+                current_char = null;
             }
             else
             {
                 current_char = (char)@char;
             }
-            return new Helpers.TextFragmentChar(current_char ?? ' ');
+            return current_char;
+        }
+
+        public Helpers.ITextFragment? ReadCharAsTextFragment()
+        {
+            var @char= ReadChar();
+            return @char is null ? null : new Helpers.TextFragmentChar(@char.Value);
         }
 
         //kurema:あってるかなぁ？
@@ -200,7 +205,7 @@ namespace Aozora
             var buf = new StringBuilder();
             while (true)
             {
-                var @char = ReadChar()?.Char;
+                var @char = ReadCharAsTextFragment()?.Char;
                 if (@char == endchar) return buf.ToString().AsMemory();
                 //kurema:
                 //これは何をやってるのか分からない。

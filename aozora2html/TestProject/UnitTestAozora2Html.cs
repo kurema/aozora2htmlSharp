@@ -31,15 +31,15 @@ public static class UnitTestAozora2Html
         var parser = new Aozora2Html(new Jstream(sr), new OutputDummy(), null, null, null);
 
         Assert.Equal(0, parser.LineNumber);
-        Assert.Equal('a', parser.ReadChar()?.Char);
+        Assert.Equal('a', parser.ReadChar());
         Assert.Equal(1, parser.LineNumber);
-        Assert.Equal('\n', parser.ReadChar()?.Char);
+        Assert.Equal('\n', parser.ReadChar());
         Assert.Equal(1, parser.LineNumber);
-        Assert.Equal('b', parser.ReadChar()?.Char);
+        Assert.Equal('b', parser.ReadChar());
         Assert.Equal(2, parser.LineNumber);
-        Assert.Equal('\n', parser.ReadChar()?.Char);
+        Assert.Equal('\n', parser.ReadChar());
         Assert.Equal(2, parser.LineNumber);
-        Assert.Equal('c', parser.ReadChar()?.Char);
+        Assert.Equal('c', parser.ReadChar());
         Assert.Equal(3, parser.LineNumber);
     }
 
@@ -80,8 +80,8 @@ public static class UnitTestAozora2Html
         using var sr = new System.IO.StringReader("／＼\r\n");
         var parser = new Aozora2Html(new Jstream(sr), new OutputDummy(), null, null, null);
         var @char = parser.ReadChar();
-        Assert.Equal('／', @char?.Char);
-        Assert.Equal(Aozora2Html.KU, @char?.Char);
+        Assert.Equal('／', @char);
+        Assert.Equal(Aozora2Html.KU, @char);
     }
 
     [Fact]
