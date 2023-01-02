@@ -53,8 +53,8 @@ bytes[1] = 0x13;
             var tooAdd = new byte[4];
             tooAdd[0] = Convert.ToByte(string.Concat("A", matches[0].Groups[1].Value.AsSpan(0, 1)), 16);
             tooAdd[1] = Convert.ToByte(matches[0].Groups[1].Value.Substring(1, 2), 16);
-            tooAdd[2] = Convert.ToByte(string.Concat("A", matches[0].Groups[1].Value.AsSpan(3, 1)), 16);
-            tooAdd[3] = Convert.ToByte(string.Concat(matches[0].Groups[1].Value.AsSpan(4, 1), "0"), 16);
+            tooAdd[2] = Convert.ToByte(string.Concat("A", matches[0].Groups[1].Value.AsSpan(0, 1)), 16);
+            tooAdd[3] = Convert.ToByte(matches[0].Groups[1].Value.Substring(3, 2), 16);
             tooLongs.Add((pos, tooAdd));
             bytes[VirtualPosToRealPos(pos)] = 0xFF;
             bytes[VirtualPosToRealPos(pos + 1)] = 0xFF;
@@ -73,11 +73,18 @@ bytes[1] = 0x13;
     for (int i = 1; i < bytes.Length / 2; i++)
     {
         int pos = i * 2;
-        var (posL, entry) = tooLongs[0];
+        int entryToDelete = 0;
+    goback:;
+        var (posL, entry) = tooLongs[entryToDelete];
         for (int j = 0; j < entry.Length; j++)
         {
             if (bytes[RealPosToVirtualPos(pos + j)] != 0)
             {
+                if (tooLongs.Any(a => a.Item2.Length <= j))
+                {
+                    entryToDelete = tooLongs.FindIndex(a => a.Item2.Length <= j);
+                    goto goback;//別にチェックする必要はないはずだけどバグ警戒で。
+                }
                 //Console.Error.WriteLine($"Not suitable. Continue. {pos:X}");
                 goto next;
             }
@@ -97,7 +104,7 @@ bytes[1] = 0x13;
             bytes[VirtualPosToRealPos(pos + j)] = entry[j];
         }
         i += entry.Length / 2 - 1;
-        tooLongs.RemoveAt(0);
+        tooLongs.RemoveAt(entryToDelete);
         if (tooLongs.Count == 0) break;
         next:;
     }
@@ -146,7 +153,7 @@ bytes[1] = 0x13;
             }
             else if (bytes[posRef] == 0xA2)
             {
-                string result = $"{bytes[posRef] & 0xF:X}{bytes[posRef + 1]:X2}{bytes[posRef + 2] & 0xF:X}{bytes[posRef + 3] >> 4:X}";
+                string result = $"{bytes[posRef] & 0xF:X}{bytes[posRef + 1]:X2}{bytes[posRef + 3]:X2}";
                 if (result != matches[0].Groups[1].Value)
                 {
                     Console.Error.WriteLine($"Wrong code {input} {result}");
@@ -177,8 +184,8 @@ partial class Program
     [GeneratedRegex(@"&#x([a-fA-F0-9]+)\;")]
     private static partial Regex RegexUnicode();
 
-    const int BlankStart = 0x50B6;
-    const int BlankEnd = 0x7D94;
+    const int BlankStart = 0x50AE;
+    const int BlankEnd = 0x7D96;
     static int RealPosToVirtualPos(int pos)
     {
         if (pos >= BlankStart) return pos + (BlankEnd - BlankStart);
@@ -187,7 +194,7 @@ partial class Program
 
     static int VirtualPosToRealPos(int pos)
     {
-        if (pos is >= BlankStart and <= BlankEnd)
+        if (pos is >= BlankStart and < BlankEnd)
         {
             throw new ArgumentOutOfRangeException(nameof(pos));
         }

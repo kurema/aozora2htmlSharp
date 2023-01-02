@@ -26,12 +26,12 @@ public static partial class YamlValues
     {
         static int VirtualPosToRealPos(int pos)
         {
-            const int BlankStart = 0x50B6;
-            const int BlankEnd = 0x7D94;
+            const int BlankStart = 0x50AE;
+            const int BlankEnd = 0x7D96;
 
             switch (pos)
             {
-                case >= BlankStart and <= BlankEnd:
+                case >= BlankStart and < BlankEnd:
                     return -1;
                 case >= BlankStart:
                     return pos - (BlankEnd - BlankStart);
@@ -66,9 +66,9 @@ public static partial class YamlValues
             {
                 return $"{resultHeader}{dic[posRef + 1]:X2}{dic[posRef + 2] & 0x0F:X}{dic[posRef + 3] >> 4:X}{resultFooter}" + $"{resultHeader}{dic[posRef + 3] & 0x0F:X}{dic[posRef + 4] & 0x0F:X}{dic[posRef + 5]:X2}{resultFooter}";
             }
-            else if (dic[posRef] == 0xA2)
+            else if ((dic[posRef] & 0xF0) == 0xA0)//kurema:0xA1-0xAFの場合
             {
-                return $"{resultHeader}{dic[posRef] & 0xF:X}{dic[posRef + 1]:X2}{dic[posRef + 2] & 0xF:X}{dic[posRef + 3] >> 4:X}{resultFooter}";
+                return $"{resultHeader}{dic[posRef] & 0xF:X}{dic[posRef + 1]:X2}{dic[posRef + 3]:X2}{resultFooter}";
             }
             else return null;
         }
