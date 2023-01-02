@@ -12,11 +12,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="jis2ucs.gz" />
+    <None Remove="jis2ucs.bin" />
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="jis2ucs.gz" />
+    <EmbeddedResource Include="jis2ucs.bin" />
   </ItemGroup>
 
   <ItemGroup>

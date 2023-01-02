@@ -7,8 +7,8 @@ using System.Text.Json;
 
 byte[] bytes = new byte[2 * 94 * 94 * 2 + 2 - BlankEnd + BlankStart - 16];
 
-bytes[0] = 0xFE;
-bytes[1] = 0xFF;
+bytes[0] = 0x02;
+bytes[1] = 0x13;
 
 {
     using var sr = new StreamReader("jis2ucs.yml");
@@ -141,7 +141,6 @@ bytes[1] = 0xFF;
                 string result2 = $"{bytes[posRef + 3] & 0x0F:X}{bytes[posRef + 4] & 0x0F:X}{bytes[posRef + 5]:X2}";
                 if (result1 != matches[0].Groups[1].Value || result2 != matches[1].Groups[1].Value)
                 {
-                    var span = bytes.AsSpan(posRef);
                     Console.Error.WriteLine($"Wrong code {input} {result1} {result2}");
                 }
             }
@@ -190,7 +189,7 @@ partial class Program
     {
         if (pos is >= BlankStart and <= BlankEnd)
         {
-            throw new ArgumentOutOfRangeException();
+            throw new ArgumentOutOfRangeException(nameof(pos));
         }
         if (pos >= BlankStart) return pos - (BlankEnd - BlankStart);
         else return pos;
