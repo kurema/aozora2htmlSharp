@@ -34,7 +34,7 @@ namespace Aozora.Helpers
             return buffer;
         }
 
-        public override void Parse()
+        public override bool Parse()
         {
             while (true)
             {
@@ -94,12 +94,14 @@ namespace Aozora.Helpers
                 if (first == '\n')
                 {
                     if (encount_accent) warnChannel?.PrintLine(String.Format(Resources.Resource.WarnInvalidAccentBrancket, LineNumber));
-                    throw new Exceptions.TerminateException();
+                    return false;
+                    //throw new Exceptions.TerminateException();
                 }
                 else if (first == ACCENT_END)
                 {
                     closed = true;
-                    throw new Exceptions.TerminateException();
+                    return false;
+                    //throw new Exceptions.TerminateException();
                 }
                 else if (first == RUBY_PREFIX)
                 {
@@ -133,7 +135,8 @@ namespace Aozora.Helpers
             {
                 return GeneralOutputAccent();
             }
-            throw new Exception();//kurema:parse()から脱出する方法がないのでここには来ない。
+            return GeneralOutputAccent();
+            //throw new Exception();//kurema:parse()から脱出する方法がないのでここには来ない。
         }
     }
 }

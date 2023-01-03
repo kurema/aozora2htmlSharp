@@ -30,7 +30,10 @@ public static class Helper
         action?.Invoke(parser);
         try
         {
-            while (true) parser.Parse();
+            while (true)
+            {
+                if (!parser.Parse()) break;
+            }
         }
         catch (Aozora.Exceptions.TerminateException)
         {

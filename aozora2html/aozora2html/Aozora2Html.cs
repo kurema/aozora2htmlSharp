@@ -697,8 +697,9 @@ namespace Aozora
         /// main loop
         /// </summary>
         /// <exception cref="Exceptions.EncountUndefinedConditionException"></exception>
-        public virtual void Parse()
+        public virtual bool Parse()
         {
+            //kurema:例外かreturn false;しかないのでboolを返す意味は特にない。
             while (true)
             {
                 switch (Section)
@@ -714,10 +715,10 @@ namespace Aozora
                         ParseChuuki();
                         break;
                     case SectionKind.body:
-                        ParseBody();
+                        if (!ParseBody()) { return false; };
                         break;
                     case SectionKind.tail:
-                        ParseTail();
+                        if (!ParseTail()) { return false; };
                         break;
                     default:
                         throw new Exceptions.EncountUndefinedConditionException();
@@ -797,7 +798,7 @@ namespace Aozora
         /// 改行コードに当たったら溜め込んだものをgeneral_outputする
         /// </summary>
         /// <exception cref="Exception"></exception>
-        public void ParseBody()
+        public bool ParseBody()
         {
             object? @char = ReadChar();
             @char ??= ":eof";//kurema:C#版では:eofをnullで代用してるが、下では普通に@charがnullになりえるので適当な":eof"で仮置き。
@@ -855,7 +856,8 @@ namespace Aozora
                     {
                         //suddenly finished the file
                         warnChannel.PrintLine(string.Format(Resources.Resource.WarnUnexpectedTerminator, LineNumber));
-                        throw new Exceptions.TerminateException();//kurema:例外で大域脱出したくない…。
+                        return false;
+                        //throw new Exceptions.TerminateException();//kurema:例外で大域脱出したくない…。
                     }
 
                     if (@char is char charChar)
@@ -884,6 +886,7 @@ namespace Aozora
                     }
                     break;
             }
+            return true;
         }
 
         /// <summary>
@@ -2106,7 +2109,7 @@ namespace Aozora
         /// <summary>
         /// parse_bodyのフッタ版
         /// </summary>
-        public void ParseTail()
+        public bool ParseTail()
         {
             //kurema:色々怪しい
             var @char = ReadChar();
@@ -2142,7 +2145,8 @@ namespace Aozora
                 default:
                     if (@char == endchar)
                     {
-                        throw new Exceptions.TerminateException();
+                        return false;
+                        //throw new Exceptions.TerminateException();
                     }
                     break;
             }
@@ -2189,6 +2193,7 @@ namespace Aozora
                     }
                     break;
             }
+            return true;
         }
 
 #if NET7_0_OR_GREATER

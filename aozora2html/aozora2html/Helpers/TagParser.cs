@@ -73,7 +73,8 @@ namespace Aozora.Helpers
             {
                 return GeneralOutputTagParser();
             }
-            throw new Exception();//kurema:parse()から脱出する方法がないのでここには来ない。
+            return GeneralOutputTagParser();
+            //throw new Exception();//kurema:parse()から脱出する方法がないのでここには来ない。
         }
     }
 }
