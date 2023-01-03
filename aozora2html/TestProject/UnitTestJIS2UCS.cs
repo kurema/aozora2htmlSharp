@@ -13,8 +13,8 @@ public static class UnitTestJIS2UCS
         Assert.Null(YamlValues.Jisx0213ToUnicode("2-94-94"));
         Assert.Null(YamlValues.Jisx0213ToUnicode("1-04-92"));
         Assert.Null(YamlValues.Jisx0213ToUnicode("2-16-01"));
-        Assert.Null(YamlValues.Jisx0213ToUnicode("2-16-84"));// kurema:空白期間直前
-        Assert.Null(YamlValues.Jisx0213ToUnicode("2-16-85"));// kurema:空白期間開始
+        Assert.Null(YamlValues.Jisx0213ToUnicode("2-16-78"));// kurema:空白期間直前
+        Assert.Null(YamlValues.Jisx0213ToUnicode("2-16-79"));// kurema:空白期間開始
         Assert.Null(YamlValues.Jisx0213ToUnicode("2-77-94"));// kurema:空白期間終了
         Assert.Equal("&#x3000;", YamlValues.Jisx0213ToUnicode("1-01-01"));
         Assert.Equal("&#x30AB;&#x309A;", YamlValues.Jisx0213ToUnicode("1-05-87"));//kurema:2文字

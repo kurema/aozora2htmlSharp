@@ -26,7 +26,10 @@ public static partial class YamlValues
     {
         static int VirtualPosToRealPos(int pos)
         {
-            const int BlankStart = 0x50AE;
+            //kurema:
+            //デカい空白領域を省略する簡易的な圧縮。
+            //この値はバイナリに埋め込みたいが、設計上微妙。末尾なら8バイト、先頭なら4バイト必要。どちらも美しくない。
+            const int BlankStart = 0x50AA;//kurema:2面16区79点
             const int BlankEnd = 0x7D96;
 
             switch (pos)

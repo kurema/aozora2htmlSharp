@@ -35,19 +35,24 @@ bytes[1] = 0x13;
         if (matches.Length == 2)
         {
             if (matches[0].Groups[1].Value.Length != 4 || matches[1].Groups[1].Value.Length != 4) Console.Error.WriteLine("Unexpected char #1.");
+            //2文字目は309A 0300 0301 02E5 02E9しかない。ただし全部で25回しか出現しない。
+            //つまり3バイトを2バイトにできたとしても25(実質15)バイトしか減らないし、普通の圧縮に片足突っ込んでる。
+            //Console.WriteLine($"{matches[0].Groups[1].Value} {matches[1].Groups[1].Value}");
             var tooAdd = new byte[6];
             tooAdd[0] = Convert.ToByte("A0", 16);
             tooAdd[1] = Convert.ToByte(matches[0].Groups[1].Value[..2], 16);
             tooAdd[2] = Convert.ToByte(string.Concat("A", matches[0].Groups[1].Value.AsSpan(2, 1)), 16);
             tooAdd[3] = Convert.ToByte(string.Concat(matches[0].Groups[1].Value.AsSpan(3, 1), matches[1].Groups[1].Value.AsSpan(0, 1)), 16);
-            tooAdd[4] = Convert.ToByte(string.Concat("A", matches[1].Groups[1].Value.AsSpan(1, 1)), 16);
+            tooAdd[4] = Convert.ToByte(string.Concat("A", matches[1].Groups[1].Value.AsSpan(1, 1)), 16);//余白をA2にした。分かりやすいように
             tooAdd[5] = Convert.ToByte(matches[1].Groups[1].Value.Substring(2, 2), 16);
             tooLongs.Add((pos, tooAdd));
-            bytes[VirtualPosToRealPos(pos)] = 0xFF;
+            bytes[VirtualPosToRealPos(pos)] = 0xFF;//そのままにすると後で空白扱いされてジャンプ先にされてしまう。
             bytes[VirtualPosToRealPos(pos + 1)] = 0xFF;
         }
         else if (matches[0].Groups[1].Value.Length == 5)
         {
+            //数が多いが見たところ特段特徴らしきものはない。
+            //Console.WriteLine(matches[0].Groups[1].Value);
             //ASCIIの01～0Fは全部制御コードなので実際は何の問題もない。
             if (matches[0].Groups[1].Value[0] != '2') Console.Error.WriteLine("Unexpected char #2.");
             var tooAdd = new byte[4];
@@ -74,21 +79,24 @@ bytes[1] = 0x13;
     {
         int pos = i * 2;
         int entryToDelete = 0;
-    goback:;
-        var (posL, entry) = tooLongs[entryToDelete];
-        for (int j = 0; j < entry.Length; j++)
+        int freeSpace;
+        for (freeSpace = 0; freeSpace < 10; freeSpace++)
         {
-            if (bytes[RealPosToVirtualPos(pos + j)] != 0)
-            {
-                if (tooLongs.Any(a => a.Item2.Length <= j))
-                {
-                    entryToDelete = tooLongs.FindIndex(a => a.Item2.Length <= j);
-                    goto goback;//別にチェックする必要はないはずだけどバグ警戒で。
-                }
-                //Console.Error.WriteLine($"Not suitable. Continue. {pos:X}");
-                goto next;
-            }
+            int vpos = RealPosToVirtualPos(pos + freeSpace);
+            if (vpos >= bytes.Length || bytes[vpos] != 0) break;
         }
+        if (freeSpace < 4) continue;
+        if (freeSpace is 4 or 8)
+        {
+            entryToDelete = tooLongs.FindIndex(a => a.Item2.Length == 4);
+            if (entryToDelete < 0) entryToDelete = 0;
+        }
+        else if (freeSpace is 6 or 10)
+        {
+            entryToDelete = tooLongs.FindIndex(a => a.Item2.Length == 6);
+            if (entryToDelete < 0) entryToDelete = 0;
+        }
+        var (posL, entry) = tooLongs[entryToDelete];
         checked
         {
             if ((i >> 8) > (0xFF - 0xB0))
@@ -106,7 +114,6 @@ bytes[1] = 0x13;
         i += entry.Length / 2 - 1;
         tooLongs.RemoveAt(entryToDelete);
         if (tooLongs.Count == 0) break;
-        next:;
     }
     if (tooLongs.Count != 0) Console.Error.WriteLine($"Not enough space. {tooLongs.Count}");
 
@@ -184,8 +191,11 @@ partial class Program
     [GeneratedRegex(@"&#x([a-fA-F0-9]+)\;")]
     private static partial Regex RegexUnicode();
 
-    const int BlankStart = 0x50AE;
+    const int BlankStart = 0x50AA;
     const int BlankEnd = 0x7D96;
+    //const int BlankStart = 0x00;
+    //const int BlankEnd = 0x00;
+
     static int RealPosToVirtualPos(int pos)
     {
         if (pos >= BlankStart) return pos + (BlankEnd - BlankStart);

@@ -30,32 +30,34 @@
 いずれにおいても先頭が`A-E`に該当する文字はありません。
 
 ## アドレス変換
-本来のアドレスが`50B6`から`7D94`までの領域を省略しています。
-これは2面16区85点から2面77区94点までに相当します。
+本来のアドレスが`50AA`から`7D95`までの領域を省略しています。簡単な圧縮です。
+これは2面16区79点から2面77区94点(2面78区01点直前)までに相当します。
 
 実際のアドレスを参照する時は、本来のアドレスが、
 
-* `50B6`から`7D94`までは`00 00`として扱う
-* `7D94`より大きい時は`7D94-50B6=2CDE`分減らす
+* `50AA`から`7D95`までは`00 00`として扱う
+* `7D96`以上では`7D96-50AA=2CEC`分減らす
 
 処理を行ってください。
 
-```csharp
-static int VirtualPosToRealPos(int pos)
-{
-    const int BlankStart = 0x50B6;
-    const int BlankEnd = 0x7D94;
+ファイル構造とプログラムの簡素化の為、この変換情報はファイル自体に含まれていません。
 
-    switch (pos)
-    {
-        case >= BlankStart and <= BlankEnd:
-            return -1;
-        case >= BlankStart:
-            return pos - (BlankEnd - BlankStart);
-        default:
-            return pos;
-    }
-}
+```csharp
+        static int VirtualPosToRealPos(int pos)
+        {
+            const int BlankStart = 0x50AA;//kurema:2面16区79点
+            const int BlankEnd = 0x7D96;//kurema:2面78区01点
+
+            switch (pos)
+            {
+                case >= BlankStart and < BlankEnd:
+                    return -1;
+                case >= BlankStart:
+                    return pos - (BlankEnd - BlankStart);
+                default:
+                    return pos;
+            }
+        }
 ```
 
 ## ポインタ表現
@@ -138,8 +140,8 @@ VirtualPosToRealPos((((dic[pos] - 0xB0) << 8) + dic[pos + 1]) * 2);`
 | jis2ucs.yml | 236,400 | 元々のファイル |
 | (旧)jis2ucs.bin | 70,692 | バイナリ形式 |
 | (旧)jis2ucs.gz | 22,278 | 圧縮後 |
-| jis2ucs.bin | 23,834 | バイナリ形式 |
-| jis2ucs.bin.gz | 22,922 | 圧縮後/実際は使用せず |
+| jis2ucs.bin | 23,830 | バイナリ形式 |
+| jis2ucs.bin.gz | 22,915 | 圧縮後/実際は使用せず |
 
 参考 (C#で該当コードを記述した場合。各Debugビルド)
 
@@ -160,7 +162,7 @@ VirtualPosToRealPos((((dic[pos] - 0xB0) << 8) + dic[pos + 1]) * 2);`
 
 * 単純な走査による実体参照からの逆引き検索が不可能になった。
 * 構造が複雑でプログラミングが難しくなった。
-* UTF-16でもUTF-8でもないので、エディタで文字が確認できなくなった。
+* UTF-16でもUTF-8でもないので、テキストエディタで文字が確認できなくなった。
 * 16進4桁1文字以外の場合はバイナリエディタ上での確認が困難になった。
 * 境界でバグが発生する可能性が高まった。
   * ファイルは全文字テスト済み。ただし空白要素は全てテストしていない。
