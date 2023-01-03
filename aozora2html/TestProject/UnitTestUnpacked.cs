@@ -67,4 +67,29 @@ public static class UnitTestUnpacked
             Assert.False(unpacked > "FFFF");
         }
     }
+
+    [Fact]
+    public static void TestCompare2()
+    {
+        {
+            var unpacked = new Unpacked('亜');
+            var unpackedUs = (ushort)unpacked;
+            Assert.True(unpackedUs > 0x00);
+            Assert.True(unpackedUs >= 0x5555);
+            Assert.True(unpackedUs == 0x889f);
+            Assert.True(unpackedUs < 0xFFFF);
+        }
+        {
+            var unpacked = (ushort)(new Unpacked('0'));
+            Assert.True(unpacked > 0x00);
+            Assert.True(unpacked == 0x30);
+            Assert.True(unpacked <= 0x889f);
+            Assert.True(unpacked < 0xFFFF);
+
+            Assert.False(unpacked < 0x00);
+            Assert.False(unpacked != 0x30);
+            Assert.False(unpacked > 0x889f);
+            Assert.False(unpacked > 0xFFFF);
+        }
+    }
 }

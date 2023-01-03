@@ -2116,6 +2116,7 @@ namespace Aozora
             bool check = true;
             bool escape = true;//kurema:read_accent()は文字列を返すので強引にエスケープしない指示をする。
             IBufferItem[] otherBuffer = Array.Empty<IBufferItem>();
+            //System.Diagnostics.Debug.WriteLine($"{@char} {DateTime.Now.Millisecond}");
             switch (@char)
             {
                 case ACCENT_BEGIN:

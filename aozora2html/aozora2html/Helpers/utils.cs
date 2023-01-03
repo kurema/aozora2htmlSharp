@@ -159,53 +159,54 @@ public static class Utils
     public static IllegalCharCheckResult IllegalCharCheck(char @char)
     {
         var code = new Unpacked(@char);
+        var codeUshort = (ushort)code;
 
-        if ((code == "21") ||
-            (code == "23") ||
-            ((code >= "a1") && (code <= "a5")) ||
-            ((code >= "28") && (code <= "29")) ||
-            (code == "5b") ||
-            (code == "5d") ||
-            (code == "3d") ||
-            (code == "3f") ||
-            (code == "2b") ||
-            ((code >= "7b") && (code <= "7d")))
+        if ((codeUshort == 0x21) ||
+            (codeUshort == 0x23) ||
+            ((codeUshort >= 0xa1) && (codeUshort <= 0xa5)) ||
+            ((codeUshort >= 0x28) && (codeUshort <= 0x29)) ||
+            (codeUshort == 0x5b) ||
+            (codeUshort == 0x5d) ||
+            (codeUshort == 0x3d) ||
+            (codeUshort == 0x3f) ||
+            (codeUshort == 0x2b) ||
+            ((codeUshort >= 0x7b) && (codeUshort <= 0x7d)))
         {
             return IllegalCharCheckResult.onebyte;
         }
 
-        if (code == "81f2")
+        if (codeUshort == 0x81f2)
         {
             return IllegalCharCheckResult.chuki;
         }
 
-        if (((code >= "81ad") && (code <= "81b7")) ||
-            ((code >= "81c0") && (code <= "81c7")) ||
-            ((code >= "81cf") && (code <= "81d9")) ||
-            ((code >= "81e9") && (code <= "81ef")) ||
-            ((code >= "81f8") && (code <= "81fb")) ||
-            ((code >= "8240") && (code <= "824e")) ||
-            ((code >= "8259") && (code <= "825f")) ||
-            ((code >= "827a") && (code <= "8280")) ||
-            ((code >= "829b") && (code <= "829e")) ||
-            ((code >= "82f2") && (code <= "82fc")) ||
-            ((code >= "8397") && (code <= "839e")) ||
-            ((code >= "83b7") && (code <= "83be")) ||
-            ((code >= "83d7") && (code <= "83fc")) ||
-            ((code >= "8461") && (code <= "846f")) ||
-            ((code >= "8492") && (code <= "849e")) ||
-            ((code >= "84bf") && (code <= "84fc")) ||
-            ((code >= "8540") && (code <= "85fc")) ||
-            ((code >= "8640") && (code <= "86fc")) ||
-            ((code >= "8740") && (code <= "87fc")) ||
-            ((code >= "8840") && (code <= "889e")) ||
-            ((code >= "9873") && (code <= "989e")) ||
-            ((code >= "eaa5") && (code <= "eafc")) ||
-            ((code >= "eb40") && (code <= "ebfc")) ||
-            ((code >= "ec40") && (code <= "ecfc")) ||
-            ((code >= "ed40") && (code <= "edfc")) ||
-            ((code >= "ee40") && (code <= "eefc")) ||
-            ((code >= "ef40") && (code <= "effc")))
+        if (((codeUshort >= 0x81ad) && (codeUshort <= 0x81b7)) ||
+            ((codeUshort >= 0x81c0) && (codeUshort <= 0x81c7)) ||
+            ((codeUshort >= 0x81cf) && (codeUshort <= 0x81d9)) ||
+            ((codeUshort >= 0x81e9) && (codeUshort <= 0x81ef)) ||
+            ((codeUshort >= 0x81f8) && (codeUshort <= 0x81fb)) ||
+            ((codeUshort >= 0x8240) && (codeUshort <= 0x824e)) ||
+            ((codeUshort >= 0x8259) && (codeUshort <= 0x825f)) ||
+            ((codeUshort >= 0x827a) && (codeUshort <= 0x8280)) ||
+            ((codeUshort >= 0x829b) && (codeUshort <= 0x829e)) ||
+            ((codeUshort >= 0x82f2) && (codeUshort <= 0x82fc)) ||
+            ((codeUshort >= 0x8397) && (codeUshort <= 0x839e)) ||
+            ((codeUshort >= 0x83b7) && (codeUshort <= 0x83be)) ||
+            ((codeUshort >= 0x83d7) && (codeUshort <= 0x83fc)) ||
+            ((codeUshort >= 0x8461) && (codeUshort <= 0x846f)) ||
+            ((codeUshort >= 0x8492) && (codeUshort <= 0x849e)) ||
+            ((codeUshort >= 0x84bf) && (codeUshort <= 0x84fc)) ||
+            ((codeUshort >= 0x8540) && (codeUshort <= 0x85fc)) ||
+            ((codeUshort >= 0x8640) && (codeUshort <= 0x86fc)) ||
+            ((codeUshort >= 0x8740) && (codeUshort <= 0x87fc)) ||
+            ((codeUshort >= 0x8840) && (codeUshort <= 0x889e)) ||
+            ((codeUshort >= 0x9873) && (codeUshort <= 0x989e)) ||
+            ((codeUshort >= 0xeaa5) && (codeUshort <= 0xeafc)) ||
+            ((codeUshort >= 0xeb40) && (codeUshort <= 0xebfc)) ||
+            ((codeUshort >= 0xec40) && (codeUshort <= 0xecfc)) ||
+            ((codeUshort >= 0xed40) && (codeUshort <= 0xedfc)) ||
+            ((codeUshort >= 0xee40) && (codeUshort <= 0xeefc)) ||
+            ((codeUshort >= 0xef40) && (codeUshort <= 0xeffc)))
         {
             return IllegalCharCheckResult.jis_gaiji;
         }

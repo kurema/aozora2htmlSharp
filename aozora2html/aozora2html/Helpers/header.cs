@@ -41,8 +41,8 @@ namespace Aozora.Helpers
             bool original = true;
             foreach (var ch in text)
             {
-                var code = new Unpacked(ch);
-                if (("00" <= code && code <= "7f") || ("8140" <= code && code <= "8258") || ("839f" <= code && code <= "8491"))
+                var code = (ushort)(new Unpacked(ch));
+                if ((0x00 <= code && code <= 0x7f) || (0x8140 <= code && code <= 0x8258) || (0x839f <= code && code <= 0x8491))
                 {
                     continue;
                 }

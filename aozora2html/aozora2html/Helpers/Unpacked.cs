@@ -16,6 +16,15 @@ namespace Aozora.Helpers
             inArray = Aozora2Html.ShiftJis.GetBytes(new[] { character });
         }
 
+        public static explicit operator ushort(Unpacked unpacked)
+        {
+            var array = unpacked.inArray;
+            if (array.Length == 0) return 0;
+            if (array.Length == 1) return (ushort)array[0];
+            if (array.Length == 2) return (ushort)((array[0] << 8) + array[1]);
+            throw new OverflowException();
+        }
+
 
         #region
         //https://github.com/dotnet/runtime/blob/main/src/libraries/Common/src/System/HexConverter.cs
