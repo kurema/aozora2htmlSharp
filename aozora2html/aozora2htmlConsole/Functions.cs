@@ -20,20 +20,20 @@ public static class Functions
         //kurema:新規。改行コードをCR+LFしか許容しないオプションです。デフォルトはオン。
         var optionCheckReturnCode = new Option<bool>("--check-newline", () => true, Resources.Resource.CheckNewline_Desc) { Arity = new ArgumentArity(0, 1) };
         //kurema:新規。メモリを節約するオプションです。オンの場合は従来通り、オフの場合はファイルを一括で読み込みます。デフォルトはオン。
-        //kurema:試してみたところ、1割程度の速度改善は確認できました。ただしデフォルトを変更する必要があるとは思えません。
-        var optionSaveMemory = new Option<bool>("--save-memory", () => true, Resources.Resource.SaveMemory_Desc) { Arity = new ArgumentArity(0, 1) };
+        //kurema:オフの場合のパフォーマンス改善の効果が確認できなかったので省略しました。
+        //var optionSaveMemory = new Option<bool>("--save-memory", () => true, Resources.Resource.SaveMemory_Desc) { Arity = new ArgumentArity(0, 1) };
         var argumentIn = new Argument<string>(Resources.Resource.TextFile_Title,/* () => null,*/ Resources.Resource.TextFile_Desc);
         var argumentOut = new Argument<FileInfo?>(Resources.Resource.HtmlFile_Title, () => null, Resources.Resource.HtmlFile_Desc).LegalFilePathsOnly();
         //kurema:--error-utf8はC#環境下で余り意味ないと思ったので削除しました。
         //new Option<bool>("--error-utf8","show error messages in UTF-8, not Shift_JIS"),
 
         var rootCommand = new RootCommand(Resources.Resource.Command_Desc) {
-            optionGaiji, optionCss, optionJisx, optionUnicode, optionCheckReturnCode, optionSaveMemory, argumentIn, argumentOut,
+            optionGaiji, optionCss, optionJisx, optionUnicode, optionCheckReturnCode, argumentIn, argumentOut,
         };
 
-        rootCommand.SetHandler((string? gaijiDir, string[] cssFiles, bool useJisx0213, bool useUnicode, bool checkNewline, bool saveMemory, string textFile, FileInfo? htmlFile)
-            => Handle(gaijiDir, cssFiles, useJisx0213, useUnicode, checkNewline, saveMemory, textFile, htmlFile)
-            , optionGaiji, optionCss, optionJisx, optionUnicode, optionCheckReturnCode, optionSaveMemory, argumentIn, argumentOut);
+        rootCommand.SetHandler((string? gaijiDir, string[] cssFiles, bool useJisx0213, bool useUnicode, bool checkNewline, string textFile, FileInfo? htmlFile)
+            => Handle(gaijiDir, cssFiles, useJisx0213, useUnicode, checkNewline, true, textFile, htmlFile)
+            , optionGaiji, optionCss, optionJisx, optionUnicode, optionCheckReturnCode, argumentIn, argumentOut);
 
         return rootCommand;
     }
