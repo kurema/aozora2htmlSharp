@@ -78,6 +78,7 @@ jobs:
         for item in "${platforms[@]}" ; do
           dotnet publish ${{env.ConsolePath}} --configuration Release --self-contained true -p:PublishTrimmed=true -p:PublishSingleFile=true --runtime ${item} --output publish/${item}/ -p:PublishReadyToRun=true
         done
+        dotnet publish ${{env.ConsolePath}} --configuration Release --output publish/dotnet/
         
       working-directory: ${{env.SolutionDirectory}}
       
