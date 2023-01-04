@@ -72,7 +72,7 @@ namespace Aozora
             {
                 _line++;
                 if (StrictReturnCode) throw new Exceptions.UseCRLFException();
-                return new Helpers.TextFragmentSpan(text, position++);
+                return new Helpers.TextFragmentMemory(text, position++, 1);
             }
             if (char1 is Jstream.CR)
             {
@@ -89,7 +89,7 @@ namespace Aozora
                 return new Helpers.TextFragmentChar(Jstream.LF);
             }
 
-            return new Helpers.TextFragmentSpan(text, position++);
+            return new Helpers.TextFragmentMemory(text, position++, 1);
         }
 
         public char? ReadChar()
@@ -172,19 +172,14 @@ namespace Aozora
 
         public void RunInitialTest()
         {
-            for (int i = 0; i < text.Length; i++)
-            {
-                char ch = text.Span[i];
-                if (ch == Jstream.CR)
-                {
-                    if (i + 1 < text.Length && text.Span[i + 1] == Jstream.LF) return;
-                    throw new Exceptions.UseCRLFException();
-                }
-                if (ch == Jstream.LF)
-                {
-                    throw new Exceptions.UseCRLFException();
-                }
-            }
+            //kurema:下手するとファイル全部確認する落ちになる危険なコード
+            //int indexCR = text.Span.IndexOf(Jstream.CR);
+            //int indexLF = text.Span.IndexOf(Jstream.LF);
+            //if (indexCR == -1 && indexLF == -1) return;
+            //if(indexLF!=indexCR) throw new Exceptions.UseCRLFException();
+            int index1 = text.Span.IndexOfAny(Jstream.CR, Jstream.LF);
+            var span = text.Span.Slice(index1);
+            if (span[0] is not Jstream.CR || span.Length == 0 || span[1] is not Jstream.LF) throw new Exceptions.UseCRLFException();
             return;
         }
 

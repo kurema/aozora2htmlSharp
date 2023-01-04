@@ -81,36 +81,38 @@ namespace Aozora
         {
             var @char = ReadFromFile();
             ReadAny = true;
-            if (@char == CR)
+            switch (@char)
             {
-                var char2 = PeekFromFile();
-                if (char2 != LF)
-                {
-                    //kurema:\r[\n以外]
+                case CR:
+                    {
+                        var char2 = PeekFromFile();
+                        if (char2 != LF)
+                        {
+                            //kurema:\r[\n以外]
+                            if (StrictReturnCode) throw new Exceptions.UseCRLFException();
+                        }
+                        else
+                        {
+                            //kurema:\r\n
+                            ReadFromFile();
+                        }
+                        _line++;
+                        current_char = LF;//kurema:現在が仮に\rだとしても、\nとして返します。
+                        break;
+                    }
+
+                case LF:
+                    //kurema:\n
                     if (StrictReturnCode) throw new Exceptions.UseCRLFException();
-                }
-                else
-                {
-                    //kurema:\r\n
-                    ReadFromFile();
-                }
-                _line++;
-                current_char = LF;//kurema:現在が仮に\rだとしても、\nとして返します。
-            }
-            else if (@char == LF)
-            {
-                //kurema:\n
-                if (StrictReturnCode) throw new Exceptions.UseCRLFException();
-                _line++;
-                current_char = LF;
-            }
-            else if (@char == -1)
-            {
-                current_char = null;
-            }
-            else
-            {
-                current_char = (char)@char;
+                    _line++;
+                    current_char = LF;
+                    break;
+                case -1:
+                    current_char = null;
+                    break;
+                default:
+                    current_char = (char)@char;
+                    break;
             }
             return current_char;
         }

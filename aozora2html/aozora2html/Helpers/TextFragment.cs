@@ -5,6 +5,11 @@ using System.Text;
 
 namespace Aozora.Helpers;
 
+//kurema:
+//TextFragmentはJstreamStringで使われます。
+//JstreamStringはパフォーマンス上のメリットが特にないのでお勧めしません。
+//コンソールオプションからも削除しました。
+
 public interface ITextFragment
 {
     char? Char { get; }
@@ -14,23 +19,26 @@ public interface ITextFragment
     int Length { get; }
 }
 
-public class TextFragmentSpan : ITextFragment
+public class TextFragmentMemory : ITextFragment
 {
-    static TextFragmentSpan? _Empty;
-    public static TextFragmentSpan Empty => _Empty ??= new TextFragmentSpan();
+    static TextFragmentMemory? _Empty;
+    public static TextFragmentMemory Empty => _Empty ??= new TextFragmentMemory();
 
-    public TextFragmentSpan()
+    public static TextFragmentMemory FromFirstChar(ReadOnlyMemory<char> @base) => new TextFragmentMemory(@base, 0, 1);
+    public static TextFragmentMemory FromFirstChar(string text) => new TextFragmentMemory(text.AsMemory(), 0, 1);
+
+    public TextFragmentMemory()
     {
         Base = ReadOnlyMemory<char>.Empty;
         Position = 0;
         Length = 0;
     }
 
-    public TextFragmentSpan(ReadOnlyMemory<char> @base, int position) : this(@base, position, 1)
+    public TextFragmentMemory(ReadOnlyMemory<char> @base, int position = 0) : this(@base, position, @base.Length - position)
     {
     }
 
-    public TextFragmentSpan(ReadOnlyMemory<char> @base, int position, int length)
+    public TextFragmentMemory(ReadOnlyMemory<char> @base, int position, int length)
     {
         Base = @base;
         Position = position;
@@ -62,7 +70,7 @@ public class TextFragmentSpan : ITextFragment
             result = other;
             return true;
         }
-        if (other is TextFragmentSpan otherString)
+        if (other is TextFragmentMemory otherString)
         {
             if (!Base.Equals(otherString.Base))
             {
@@ -71,7 +79,7 @@ public class TextFragmentSpan : ITextFragment
             }
             if (Position + Length == otherString.Position)
             {
-                result = new TextFragmentSpan(Base, Position, Length + other.Length);
+                result = new TextFragmentMemory(Base, Position, Length + other.Length);
                 return true;
             }
         }
@@ -128,7 +136,7 @@ public class TextFragmentStringBuilder : ITextFragment
     public TextFragmentStringBuilder(StringBuilder content, ITextFragment? buffer = null)
     {
         Content = content ?? throw new ArgumentNullException(nameof(content));
-        Buffer = buffer ?? TextFragmentSpan.Empty;
+        Buffer = buffer ?? TextFragmentMemory.Empty;
     }
 
     StringBuilder Content { get; }
@@ -159,17 +167,22 @@ public class TextFragmentStringBuilder : ITextFragment
     public void Flush()
     {
         Content.Append(Buffer.AsMemory());
-        Buffer = TextFragmentSpan.Empty;
+        Buffer = TextFragmentMemory.Empty;
     }
 
     /// <summary>
-    /// これは必ず失敗します。Append()を使ってください。
+    /// これは基本的に失敗します。Append()を使ってください。
     /// </summary>
     /// <param name="other"></param>
     /// <param name="result"></param>
     /// <returns></returns>
     public bool TryGetAppended(ITextFragment? other, out ITextFragment? result)
     {
+        if (other is null || other.IsEmpty)
+        {
+            result = this;
+            return true;
+        }
         result = null;
         return false;
     }
@@ -182,7 +195,7 @@ public class TextFragmentStringBuilder : ITextFragment
         }
         if (Buffer.TryGetAppended(other, out var text))
         {
-            Buffer = text ?? TextFragmentSpan.Empty;
+            Buffer = text ?? TextFragmentMemory.Empty;
         }
         else
         {

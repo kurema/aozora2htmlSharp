@@ -8,18 +8,34 @@ public static class UnitTestJstreamString
     [Fact]
     public static void TestNewError()
     {
-        string message = "";
-        try
         {
-            //kurema:こちらでは指定しないとCRLFチェックはしません。
-            var stream = new JstreamString("aaa\nbbb\n", true);
+            string message = "";
+            try
+            {
+                //kurema:こちらでは指定しないとCRLFチェックはしません。
+                var stream = new JstreamString("aaa\nbbb\n", true);
+            }
+            catch (Aozora.Exceptions.UseCRLFException e)
+            {
+                message = e.Message;
+            }
+            //kurema:こちらでは処理を終了しないのでメッセージが変わっています。
+            Assert.Equal("改行コードを、「CR+LF」にあらためてください", message);
         }
-        catch (Aozora.Exceptions.UseCRLFException e)
         {
-            message = e.Message;
+            string message = "";
+            try
+            {
+                //kurema:こちらでは指定しないとCRLFチェックはしません。
+                var stream = new JstreamString("aaa\rbbb\n", true);
+            }
+            catch (Aozora.Exceptions.UseCRLFException e)
+            {
+                message = e.Message;
+            }
+            //kurema:こちらでは処理を終了しないのでメッセージが変わっています。
+            Assert.Equal("改行コードを、「CR+LF」にあらためてください", message);
         }
-        //kurema:こちらでは処理を終了しないのでメッセージが変わっています。
-        Assert.Equal("改行コードを、「CR+LF」にあらためてください", message);
     }
 
     [Fact]

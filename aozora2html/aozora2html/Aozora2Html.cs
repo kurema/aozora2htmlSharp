@@ -587,6 +587,7 @@ namespace Aozora
 
         protected virtual (string, string) ReadToNest(char? endchar)
         {
+            //kurema:テストで見る限りこれが特に遅い。
             return new TagParser(stream, endchar, chuuki_table, images, @out, warnChannel: warnChannel, gaiji_dir: gaiji_dir)
             {
                 UseJisx0213Accent = this.UseJisx0213Accent,
