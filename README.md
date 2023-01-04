@@ -38,12 +38,13 @@ $ aozora2html http://example.jp/foo/bar.zip foo.html
 $ aozora2html foo.txt
 ```
 
-コマンドラインオプションとして`--gaiji-dir`と`--css-files`、`--use-jisx0213`、`--use-unicode`があります。
+コマンドラインオプションとして`--gaiji-dir`と`--css-files`、`--use-jisx0213`、`--use-unicode`、`--check-newline`があります。
 
 * `--gaiji-dir`は外字画像のパスを指定します。
 * `--css-files`はCSSファイルを`,`区切りで指定します。
 * `--use-jisx0213`はJIS X 0213の外字画像を使わず、数値実体参照として表示します。
 * `--use-unicode`はUnicodeのコードポイントが指定されている外字を数値実体参照として表示します。
+* `--check-newline false`は改行コードのチェックを省略します。
 
 可能な限り数値実体参照を使って表示するには、以下のようにオプションを指定します。
 
