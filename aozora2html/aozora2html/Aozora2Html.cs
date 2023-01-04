@@ -1680,6 +1680,9 @@ namespace Aozora
                         }
                         else
                         {
+                            //kurema:
+                            //原文でデバッグのみになっていますが、Releaseビルドで警告が出ないのは扱いづらい気もします。
+                            //https://github.com/aozorahack/aozora2html/blob/33f8cf86fae1c5b3ebfe0ee0f3b8468f74ed2b45/lib/aozora2html.rb#L944
 #if DEBUG
                             warnChannel.PrintLine(string.Format(Resources.Resource.WarnUndefinedCommand, LineNumber, key));
 #endif
