@@ -9,7 +9,7 @@ public class Gaiji : Inline
 {
     public override CharType CharType => CharType.Kanji;
 
-    public static string ConvertJisx0213ToUnicode(string code) => YamlValues.Jisx0213ToUnicode(code) ?? throw new ArgumentOutOfRangeException(nameof(code));
+    public static string ConvertJisx0213ToUnicode(string code) => YamlValues.Jisx0213ToHtmlEntity(code) ?? throw new ArgumentOutOfRangeException(nameof(code));
 }
 
 /// <summary>

@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Reflection.Emit;
 using System.Text;
 using System.Text.RegularExpressions;
 
@@ -11,18 +12,80 @@ namespace Aozora.Helpers;
 
 public static partial class YamlValues
 {
-    public static string? Jisx0213ToUnicode(string code)
+    public static string? Jisx0213ToHtmlEntity(string code)
     {
         var codes = code.Split('-').Select(a => int.TryParse(a, out int b) ? b : -1).ToArray();
-        return Jisx0213ToUnicode(codes);
+        return Jisx0213ToHtmlEntity(codes);
     }
 
-    public static string? Jisx0213ToUnicode(int men, int ku, int ten)
+    public static string? Jisx0213ToHtmlEntity(int men, int ku, int ten)
     {
-        return Jisx0213ToUnicode(new int[] { men, ku, ten });
+        return Jisx0213ToHtmlEntity(new int[] { men, ku, ten });
     }
 
-    private static string? Jisx0213ToUnicode(int[] codes)
+    private static string? Jisx0213ToHtmlEntity(int[] codes)
+    {
+        const string resultHeader = "&#x";
+        const string resultFooter = ";";
+
+        return Jisx0213ToUnicodeGeneral(codes, new Func<ReadOnlyMemory<byte>, string>[]
+        {
+            r =>$"{resultHeader}{r.Span[0]:X2}{r.Span[1]:X2}{resultFooter}",
+            r =>
+            {
+                var span=r.Span;
+                return $"{resultHeader}{span[1]:X2}{span[2] & 0x0F:X}{span[3] >> 4:X}{resultFooter}" + $"{resultHeader}{span[3] & 0x0F:X}{span[4] & 0x0F:X}{span[5]:X2}{resultFooter}";
+            },
+            r=>
+            {
+                var span=r.Span;
+                return $"{resultHeader}{span[0] & 0xF:X}{span[1]:X2}{span[3]:X2}{resultFooter}";
+            }
+        });
+    }
+
+    public static string? Jisx0213ToString(string code)
+    {
+        var codes = code.Split('-').Select(a => int.TryParse(a, out int b) ? b : -1).ToArray();
+        return Jisx0213ToString(codes);
+    }
+
+
+    public static string? Jisx0213ToString(int men, int ku, int ten)
+    {
+        return Jisx0213ToString(new[] { men, ku, ten });
+    }
+
+    private static string? Jisx0213ToString(int[] codes)
+    {
+        int[]? codePoints = Jisx0213ToUnicodeGeneral(codes, new Func<ReadOnlyMemory<byte>, int[]?>[]
+        {
+            r =>new[]{ (r.Span[0] << 8)+r.Span[1] },
+            r =>
+            {
+                var span=r.Span;
+                return new[]
+                {
+                    (span[1] << 8)+((span[2] & 0x0F) << 4)+(span[3] >> 4),
+                    ((span[3] & 0xF) << 12) +((span[4] & 0xF) << 8) + span[5],
+                };
+            },
+            r=>
+            {
+                var span=r.Span;
+                return new[]{((span[0] & 0xF) << 16)+(span[1] << 8) + span[3], };
+            }
+        }); ;
+        if (codePoints is null or { Length: 0 }) return null;
+        var sb = new StringBuilder();
+        foreach (var cp in codePoints)
+        {
+            sb.Append(char.ConvertFromUtf32(cp));
+        }
+        return sb.ToString();
+    }
+
+    private static T? Jisx0213ToUnicodeGeneral<T>(int[] codes, Func<ReadOnlyMemory<byte>, T>[] funcs)
     {
         static int VirtualPosToRealPos(int pos)
         {
@@ -32,62 +95,62 @@ public static partial class YamlValues
             const int BlankStart = 0x50AA;//kurema:2面16区79点
             const int BlankEnd = 0x7D96;
 
-            switch (pos)
+            return pos switch
             {
-                case >= BlankStart and < BlankEnd:
-                    return -1;
-                case >= BlankStart:
-                    return pos - (BlankEnd - BlankStart);
-                default:
-                    return pos;
-            }
+                >= BlankStart and < BlankEnd => -1,
+                >= BlankStart => pos - (BlankEnd - BlankStart),
+                _ => pos,
+            };
         }
 
-        if (codes.Length < 3) return null;
-        if (!(codes[0] is 1 or 2) || !(codes[1] is > 0 and <= 94) || !(codes[2] is > 0 and <= 94)) return null;
+        if (codes.Length < 3) return default;
+        if (!(codes[0] is 1 or 2) || !(codes[1] is > 0 and <= 94) || !(codes[2] is > 0 and <= 94)) return default;
         var dic = Jisx0213ToUnicodeBytes;
-        if (dic is null) return null;
+        if (dic is null) return default;
 
         int pos = (((codes[0] - 1) * 94 + (codes[1] - 1)) * 94 + codes[2]) * 2;//kurema:ここで-2を加えると2バイト節約できる。その代わりこの領域をヘッダにした。
         pos = VirtualPosToRealPos(pos);
-        if (pos < 0) return null;
-        if (pos >= dic.Count) return null;
+        if (pos < 0) return default;
+        if (pos >= dic.Value.Length) return default;
 
-        const string resultHeader = "&#x";
-        const string resultFooter = ";";
 
-        if (dic[pos] is >= 0xA0 and <= 0xAF || (dic[pos] == 0x00 && dic[pos + 1] == 0x00))
+        var slice1 = dic.Value.Slice(pos);
+        var span1 = slice1.Span;
+
+        //kurema:自分が作ったファイルなのでLengthチェックなど要らぬ。
+        if (span1[0] is >= 0xA0 and <= 0xAF || (span1[0] == 0x00 && span1[1] == 0x00))
         {
-            return null;
+            return default;
         }
-        else if (dic[pos] is >= 0xA0 and <= 0xEF)
+        else if (span1[0] is >= 0xA0 and <= 0xEF)
         {
-            int posRef = (((dic[pos] - 0xB0) << 8) + dic[pos + 1]) * 2;
+            int posRef = (((span1[0] - 0xB0) << 8) + span1[1]) * 2;
             posRef = VirtualPosToRealPos(posRef);
-            if (posRef < 0) return null;
-            if (dic[posRef] == 0xA0)
+            if (posRef < 0) return default;
+            var slice2 = dic.Value.Slice(posRef);
+            if (slice2.Span[0] == 0xA0)
             {
-                return $"{resultHeader}{dic[posRef + 1]:X2}{dic[posRef + 2] & 0x0F:X}{dic[posRef + 3] >> 4:X}{resultFooter}" + $"{resultHeader}{dic[posRef + 3] & 0x0F:X}{dic[posRef + 4] & 0x0F:X}{dic[posRef + 5]:X2}{resultFooter}";
+                return funcs[1](slice2);
+
             }
-            else if ((dic[posRef] & 0xF0) == 0xA0)//kurema:0xA1-0xAFの場合
+            else if ((slice2.Span[0] & 0xF0) == 0xA0)//kurema:0xA1-0xAFの場合
             {
-                return $"{resultHeader}{dic[posRef] & 0xF:X}{dic[posRef + 1]:X2}{dic[posRef + 3]:X2}{resultFooter}";
+                return funcs[2](slice2);
             }
-            else return null;
+            else return default;
         }
         else
         {
-            return $"{resultHeader}{dic[pos]:X2}{dic[pos + 1]:X2}{resultFooter}";
+            return funcs[0](slice1);
+            //return $"{resultHeader}{span1[0]:X2}{span1[1]:X2}{resultFooter}";
         }
     }
 
-    private static ReadOnlyCollection<byte>? _Jisx0213ToUnicodeBytes;
-    public static ReadOnlyCollection<byte>? Jisx0213ToUnicodeBytes { get { return _Jisx0213ToUnicodeBytes ??= LoadJisx0213ToUnicodeBytes(); } }
+    private static ReadOnlyMemory<byte>? _Jisx0213ToUnicodeBytes;
+    public static ReadOnlyMemory<byte>? Jisx0213ToUnicodeBytes { get { return _Jisx0213ToUnicodeBytes ??= LoadJisx0213ToUnicodeBytes(); } }
 
-    private static ReadOnlyCollection<byte>? LoadJisx0213ToUnicodeBytes()
+    private static ReadOnlyMemory<byte>? LoadJisx0213ToUnicodeBytes()
     {
-        //kurema:これは単一ファイル構成でも使えるのか？
-        //kurema:Resourceと同じ仕組みなんだから使えるに決まってるわ。
         try
         {
             using var s1 = Assembly.GetAssembly(typeof(YamlValues))?.GetManifestResourceStream("Aozora.jis2ucs.bin");
@@ -95,7 +158,7 @@ public static partial class YamlValues
             var result = new byte[s1.Length];
             s1.Seek(0, SeekOrigin.Begin);
             s1.Read(result, 0, (int)s1.Length);
-            return new ReadOnlyCollection<byte>(result);
+            return result.AsMemory();
         }
         catch
         {
