@@ -61,3 +61,5 @@ $ aozora2html --use-jisx0213 --use-unicode foo.txt
 
 ## License
 MIT
+
+CC0にすることも考えましたが、依存ライブラリの関係でどちらにせよ著作権表記の省略はできません。
