@@ -56,7 +56,8 @@ $ aozora2html --use-jisx0213 --use-unicode foo.txt
 | レポジトリ | 概要 |
 | -- | -- |
 | [aozorahack/aozora2html](https://github.com/aozorahack/aozora2html) | Rubyで実装されたオリジナル。 |
-| [kurema/AozoraGaijiChukiXml](https://github.com/kurema/AozoraGaijiChukiXml) | [青空文庫・外字注記辞書【第八版】](https://www.aozora.gr.jp/gaiji_chuki/)のXML形式 |
+| [kurema/AozoraGaijiChukiXml](https://github.com/kurema/AozoraGaijiChukiXml) | [青空文庫・外字注記辞書【第八版】](https://www.aozora.gr.jp/gaiji_chuki/)のXML形式。 |
+| [kurema/JISX0213Table](https://github.com/kurema/JISX0213Table) | 派生レポジトリ。本プロジェクト用JIS X 0213テーブルを別レポジトリに分離したもの。ただしライブラリの分割はしない。 |
 
 ## License
 MIT
