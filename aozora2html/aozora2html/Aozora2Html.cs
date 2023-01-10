@@ -825,7 +825,8 @@ namespace Aozora
                     break;
                 default:
                     //kurema:TEIHON_MARK[0]は定数じゃないので普通に条件分岐で。
-                    if ((char?)@char == TEIHON_MARK[0])
+                    //kurema:2023/01/10 - ここは":eof"の場合普通にstringが来るのにキャストをしていた。
+                    if (@char as char? == TEIHON_MARK[0])
                     {
                         if (buffer.Count == 0) EndingCheck();
                     }
