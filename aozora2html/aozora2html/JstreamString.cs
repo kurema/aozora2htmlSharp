@@ -38,7 +38,7 @@ namespace Aozora
             get
             {
                 if (ReadAny == false) return 0;
-                else if (current_char == Jstream.LF) return _line;
+                //else if (current_char == Jstream.LF) return _line;
                 else return _line + 1;
             }
         }
