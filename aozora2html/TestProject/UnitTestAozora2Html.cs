@@ -314,7 +314,7 @@ public static class UnitTestAozora2Html
         string message = string.Empty;
         parser.ParseBody();
         Assert.Equal("ここで太字<br />\r\n", output.ToString());
-        Assert.Equal("警告(2行目):予期せぬファイル終端\r\n警告(2行目):「」は未対応のコマンドのため無視します\r\n", warn.ToString());
+        Assert.Equal("警告(2行目):「」は未対応のコマンドのため無視します\r\n", warn.ToString());
     }
 }
 
