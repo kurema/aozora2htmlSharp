@@ -494,6 +494,7 @@ namespace Aozora
 			try
 			{
 				Parse();
+				//if (!Parse()) { warnChannel.PrintLine(string.Format(Resources.Resource.WarnUnexpectedTerminator, LineNumber)); }
 			}
 			catch (Exceptions.AozoraException e)
 			{
@@ -2154,7 +2155,7 @@ namespace Aozora
 					//新たなバグや非互換を産んでないか心配。
 					if (@char == endchar || @char == null)
 					{
-						warnChannel.PrintLine(string.Format(Resources.Resource.WarnUnexpectedTerminator, LineNumber));
+						//warnChannel.PrintLine(string.Format(Resources.Resource.WarnUnexpectedTerminator, LineNumber));
 						return false;
 						//throw new Exceptions.TerminateException();
 					}
