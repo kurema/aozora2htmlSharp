@@ -302,5 +302,19 @@ public static class UnitTestAozora2Html
         }
         Assert.Equal("<div class=\"futoji\">\r\nテスト。<br />\r\n</div>\r\n", output.ToString());
     }
+
+    //kurema: 閉じてないコマンドで無限ループが発生していたので追加したテスト。
+    [Fact]
+    public static void TestInvalidCommand()
+    {
+        using var sr = new System.IO.StringReader("［＃ここで太字\r\n");
+        var output = new OutputString();
+		var warn = new OutputString();
+		var parser = new Aozora2Html(new Jstream(sr), output, warn, null, null);
+        string message = string.Empty;
+        parser.ParseBody();
+        Assert.Equal("ここで太字<br />\r\n", output.ToString());
+        Assert.Equal("警告(2行目):予期せぬファイル終端\r\n警告(2行目):「」は未対応のコマンドのため無視します\r\n", warn.ToString());
+    }
 }
 
