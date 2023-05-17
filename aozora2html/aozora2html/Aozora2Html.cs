@@ -1723,6 +1723,9 @@ namespace Aozora
 			}
 			else
 			{
+				//kurema:
+				//非対応コマンドを閉じるとき、処理が停止してしまう問題がある。style_stack.IsEmptyで条件分岐する事も可能だが、それも良くない。
+				//非対応コマンドなのか確認する手もある。ExecInlineStartCommand()参照。しかしメンテナンス性含めて良くないし煩雑。
 				throw new Exceptions.InvalidNestingException(encount, style_stack.LastCommand() ?? "");
 			}
 		}
