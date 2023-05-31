@@ -153,7 +153,7 @@ public static partial class YamlValues
 		get
 		{
 			if (_Jisx0213ReverseDictionary is not null) return _Jisx0213ReverseDictionary;
-			//非効率な逆辞書作成。しかも空白が連続する前提。
+			//kurema:非効率な逆辞書作成。しかも空白が途中にはない前提。ただし実際に空白は途中にないし、当環境でデバッグ実行でも20ミリ秒程度なので無視出来る。
 			var dic = new Dictionary<string, (int, int, int)>();
 			for (int m = 1; m <= 2; m++)
 			{
