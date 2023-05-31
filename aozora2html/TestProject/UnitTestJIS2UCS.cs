@@ -44,4 +44,13 @@ public static class UnitTestJIS2UCS
         Assert.Equal("\u6B9B", YamlValues.Jisx0213ToString("2-78-01")); // kurema:空白期間直後
         Assert.Equal(char.ConvertFromUtf32(0x2A6B2), YamlValues.Jisx0213ToString("2-94-86")); // kurema:最終
     }
+
+    [Fact]
+    public static void TestReverse()
+    {
+        var rev = YamlValues.Jisx0213ReverseDictionary;
+        Assert.Equal((1, 2, 56), rev["〘"]);
+		Assert.Equal((1, 1, 58), rev["【"]);
+		Assert.Equal((1, 5, 84), rev["ヴ"]);
+	}
 }
