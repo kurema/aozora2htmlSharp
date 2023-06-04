@@ -59,7 +59,7 @@ namespace Aozora
 		private static partial Regex _PAT_EDITOR_GEN();
 		public static Regex PAT_EDITOR => _PAT_EDITOR ??= _PAT_EDITOR_GEN();
 #else
-        public static Regex PAT_EDITOR => _PAT_EDITOR ??= new Regex(@"(校訂|編|編集)$", RegexOptions.Compiled);
+		public static Regex PAT_EDITOR => _PAT_EDITOR ??= new Regex(@"(校訂|編|編集)$", RegexOptions.Compiled);
 #endif
 
 		private static Regex? _PAT_HENYAKU = null;
@@ -68,7 +68,7 @@ namespace Aozora
 		private static partial Regex _PAT_HENYAKU_GEN();
 		public static Regex PAT_HENYAKU => _PAT_HENYAKU ??= _PAT_HENYAKU_GEN();
 #else
-        public static Regex PAT_HENYAKU => _PAT_HENYAKU ??= new Regex(@"編訳$", RegexOptions.Compiled);
+		public static Regex PAT_HENYAKU => _PAT_HENYAKU ??= new Regex(@"編訳$", RegexOptions.Compiled);
 #endif
 
 		private static Regex? _PAT_TRANSLATOR = null;
@@ -77,7 +77,7 @@ namespace Aozora
 		private static partial Regex _PAT_TRANSLATOR_GEN();
 		public static Regex PAT_TRANSLATOR => _PAT_TRANSLATOR ??= _PAT_TRANSLATOR_GEN();
 #else
-        public static Regex PAT_TRANSLATOR => _PAT_TRANSLATOR ??= new Regex(@"訳$", RegexOptions.Compiled);
+		public static Regex PAT_TRANSLATOR => _PAT_TRANSLATOR ??= new Regex(@"訳$", RegexOptions.Compiled);
 #endif
 
 		public const char RUBY_PREFIX = '｜';
@@ -87,7 +87,7 @@ namespace Aozora
 		private static partial Regex _PAT_RUBY_GEN();
 		public static Regex PAT_RUBY => _PAT_RUBY ??= _PAT_RUBY_GEN();
 #else
-        public static Regex PAT_RUBY => _PAT_RUBY ??= new Regex(@"《.*?》", RegexOptions.Compiled);
+		public static Regex PAT_RUBY => _PAT_RUBY ??= new Regex(@"《.*?》", RegexOptions.Compiled);
 #endif
 
 		private static Regex? _PAT_DIRECTION = null;
@@ -96,7 +96,7 @@ namespace Aozora
 		private static partial Regex _PAT_DIRECTION_GEN();
 		public static Regex PAT_DIRECTION => _PAT_DIRECTION ??= _PAT_DIRECTION_GEN();
 #else
-        public static Regex PAT_DIRECTION => _PAT_DIRECTION ??= new Regex(@"(右|左|上|下)に(.*)", RegexOptions.Compiled);
+		public static Regex PAT_DIRECTION => _PAT_DIRECTION ??= new Regex(@"(右|左|上|下)に(.*)", RegexOptions.Compiled);
 #endif
 
 		private static Regex? _PAT_REF = null;
@@ -105,7 +105,7 @@ namespace Aozora
 		private static partial Regex _PAT_REF_GEN();
 		public static Regex PAT_REF => _PAT_REF ??= _PAT_REF_GEN();
 #else
-        public static Regex PAT_REF => _PAT_REF ??= new Regex(@"^「.+」", RegexOptions.Compiled);
+		public static Regex PAT_REF => _PAT_REF ??= new Regex(@"^「.+」", RegexOptions.Compiled);
 #endif
 
 		public const string CHUUKI_COMMAND = "注記付き";
@@ -152,7 +152,7 @@ namespace Aozora
 		private static partial Regex _PAT_REST_NOTES_GEN();
 		public static Regex PAT_REST_NOTES => _PAT_REST_NOTES ??= _PAT_REST_NOTES_GEN();
 #else
-        public static Regex PAT_REST_NOTES => _PAT_REST_NOTES ??= new Regex(@"(左|下)に「(.*)」の(ルビ|注記|傍記)", RegexOptions.Compiled);
+		public static Regex PAT_REST_NOTES => _PAT_REST_NOTES ??= new Regex(@"(左|下)に「(.*)」の(ルビ|注記|傍記)", RegexOptions.Compiled);
 #endif
 
 		private static Regex? _PAT_KUTEN = null;
@@ -161,7 +161,7 @@ namespace Aozora
 		private static partial Regex _PAT_KUTEN_GEN();
 		public static Regex PAT_KUTEN => _PAT_KUTEN ??= _PAT_KUTEN_GEN();
 #else
-        public static Regex PAT_KUTEN => _PAT_KUTEN ??= new Regex(@"「※」[は|の]", RegexOptions.Compiled);
+		public static Regex PAT_KUTEN => _PAT_KUTEN ??= new Regex(@"「※」[は|の]", RegexOptions.Compiled);
 #endif
 
 		private static Regex? _PAT_KUTEN_DUAL = null;
@@ -170,7 +170,7 @@ namespace Aozora
 		private static partial Regex _PAT_KUTEN_DUAL_GEN();
 		public static Regex PAT_KUTEN_DUAL => _PAT_KUTEN_DUAL ??= _PAT_KUTEN_DUAL_GEN();
 #else
-        public static Regex PAT_KUTEN_DUAL => _PAT_KUTEN_DUAL ??= new Regex(@"※.*※", RegexOptions.Compiled);
+		public static Regex PAT_KUTEN_DUAL => _PAT_KUTEN_DUAL ??= new Regex(@"※.*※", RegexOptions.Compiled);
 #endif
 
 		private static Regex? _PAT_GAIJI = null;
@@ -179,7 +179,7 @@ namespace Aozora
 		private static partial Regex _PAT_GAIJI_GEN();
 		public static Regex PAT_GAIJI => _PAT_GAIJI ??= _PAT_GAIJI_GEN();
 #else
-        public static Regex PAT_GAIJI => _PAT_GAIJI ??= new Regex(@"(?:＃)(.*)(?:、)(.*)", RegexOptions.Compiled);
+		public static Regex PAT_GAIJI => _PAT_GAIJI ??= new Regex(@"(?:＃)(.*)(?:、)(.*)", RegexOptions.Compiled);
 #endif
 
 		private static Regex? _PAT_KAERITEN = null;
@@ -188,7 +188,7 @@ namespace Aozora
 		private static partial Regex _PAT_KAERITEN_GEN();
 		public static Regex PAT_KAERITEN => _PAT_KAERITEN ??= _PAT_KAERITEN_GEN();
 #else
-        public static Regex PAT_KAERITEN => _PAT_KAERITEN ??= new Regex(@"^([一二三四五六七八九十レ上中下甲乙丙丁天地人]+)$", RegexOptions.Compiled);
+		public static Regex PAT_KAERITEN => _PAT_KAERITEN ??= new Regex(@"^([一二三四五六七八九十レ上中下甲乙丙丁天地人]+)$", RegexOptions.Compiled);
 #endif
 
 		private static Regex? _PAT_OKURIGANA = null;
@@ -197,7 +197,7 @@ namespace Aozora
 		private static partial Regex _PAT_OKURIGANA_GEN();
 		public static Regex PAT_OKURIGANA => _PAT_OKURIGANA ??= _PAT_OKURIGANA_GEN();
 #else
-        public static Regex PAT_OKURIGANA => _PAT_OKURIGANA ??= new Regex(@"^（(.+)）$", RegexOptions.Compiled);
+		public static Regex PAT_OKURIGANA => _PAT_OKURIGANA ??= new Regex(@"^（(.+)）$", RegexOptions.Compiled);
 #endif
 
 		private static Regex? _PAT_REMOVE_OKURIGANA = null;
@@ -206,7 +206,7 @@ namespace Aozora
 		private static partial Regex _PAT_REMOVE_OKURIGANA_GEN();
 		public static Regex PAT_REMOVE_OKURIGANA => _PAT_REMOVE_OKURIGANA ??= _PAT_REMOVE_OKURIGANA_GEN();
 #else
-        public static Regex PAT_REMOVE_OKURIGANA => _PAT_REMOVE_OKURIGANA ??= new Regex(@"[（）]", RegexOptions.Compiled);
+		public static Regex PAT_REMOVE_OKURIGANA => _PAT_REMOVE_OKURIGANA ??= new Regex(@"[（）]", RegexOptions.Compiled);
 #endif
 
 		private static Regex? _PAT_CHITSUKI = null;
@@ -215,7 +215,7 @@ namespace Aozora
 		private static partial Regex _PAT_CHITSUKI_GEN();
 		public static Regex PAT_CHITSUKI => _PAT_CHITSUKI ??= _PAT_CHITSUKI_GEN();
 #else
-        public static Regex PAT_CHITSUKI => _PAT_CHITSUKI ??= new Regex(@"(地付き|字上げ)(終わり)*$", RegexOptions.Compiled);
+		public static Regex PAT_CHITSUKI => _PAT_CHITSUKI ??= new Regex(@"(地付き|字上げ)(終わり)*$", RegexOptions.Compiled);
 #endif
 
 		private static Regex? _PAT_ORIKAESHI_JISAGE = null;
@@ -224,7 +224,7 @@ namespace Aozora
 		private static partial Regex _PAT_ORIKAESHI_JISAGE_GEN();
 		public static Regex PAT_ORIKAESHI_JISAGE => _PAT_ORIKAESHI_JISAGE ??= _PAT_ORIKAESHI_JISAGE_GEN();
 #else
-        public static Regex PAT_ORIKAESHI_JISAGE => _PAT_ORIKAESHI_JISAGE ??= new Regex(@"折り返して(\d*)字下げ", RegexOptions.Compiled);
+		public static Regex PAT_ORIKAESHI_JISAGE => _PAT_ORIKAESHI_JISAGE ??= new Regex(@"折り返して(\d*)字下げ", RegexOptions.Compiled);
 #endif
 
 		private static Regex? _PAT_ORIKAESHI_JISAGE2 = null;
@@ -233,7 +233,7 @@ namespace Aozora
 		private static partial Regex _PAT_ORIKAESHI_JISAGE2_GEN();
 		public static Regex PAT_ORIKAESHI_JISAGE2 => _PAT_ORIKAESHI_JISAGE2 ??= _PAT_ORIKAESHI_JISAGE2_GEN();
 #else
-        public static Regex PAT_ORIKAESHI_JISAGE2 => _PAT_ORIKAESHI_JISAGE2 ??= new Regex(@"(\d*)字下げ、折り返して(\d*)字下げ", RegexOptions.Compiled);
+		public static Regex PAT_ORIKAESHI_JISAGE2 => _PAT_ORIKAESHI_JISAGE2 ??= new Regex(@"(\d*)字下げ、折り返して(\d*)字下げ", RegexOptions.Compiled);
 #endif
 
 		private static Regex? _PAT_JI_LEN = null;
@@ -242,7 +242,7 @@ namespace Aozora
 		private static partial Regex _PAT_JI_LEN_GEN();
 		public static Regex PAT_JI_LEN => _PAT_JI_LEN ??= _PAT_JI_LEN_GEN();
 #else
-        public static Regex PAT_JI_LEN => _PAT_JI_LEN ??= new Regex(@"([0-9]+)字", RegexOptions.Compiled);
+		public static Regex PAT_JI_LEN => _PAT_JI_LEN ??= new Regex(@"([0-9]+)字", RegexOptions.Compiled);
 #endif
 
 		private static Regex? _PAT_INLINE_RUBY = null;
@@ -251,7 +251,7 @@ namespace Aozora
 		private static partial Regex _PAT_INLINE_RUBY_GEN();
 		public static Regex PAT_INLINE_RUBY => _PAT_INLINE_RUBY ??= _PAT_INLINE_RUBY_GEN();
 #else
-        public static Regex PAT_INLINE_RUBY => _PAT_INLINE_RUBY ??= new Regex(@"「(.*)」の注記付き", RegexOptions.Compiled);
+		public static Regex PAT_INLINE_RUBY => _PAT_INLINE_RUBY ??= new Regex(@"「(.*)」の注記付き", RegexOptions.Compiled);
 #endif
 
 		private static Regex? _PAT_IMAGE = null;
@@ -260,8 +260,18 @@ namespace Aozora
 		private static partial Regex _PAT_IMAGE_GEN();
 		public static Regex PAT_IMAGE => _PAT_IMAGE ??= _PAT_IMAGE_GEN();
 #else
-        public static Regex PAT_IMAGE => _PAT_IMAGE ??= new Regex(@"(.*)（(fig.+\.png)(、横([0-9]+)×縦([0-9]+))*）入る", RegexOptions.Compiled);
+		public static Regex PAT_IMAGE => _PAT_IMAGE ??= new Regex(@"(.*)（(fig.+\.png)(、横([0-9]+)×縦([0-9]+))*）入る", RegexOptions.Compiled);
 #endif
+
+		private static Regex? _PAT_IMAGE_GENERAL = null;
+#if NET7_0_OR_GREATER
+		[GeneratedRegex(@"(.*)（(.+\.[a-zA-Z0-9]{3,4})(、横([0-9]+)×縦([0-9]+))*）入る")]
+		private static partial Regex _PAT_IMAGE_GENERAL_GEN();
+		public static Regex PAT_IMAGE_GENERAL => _PAT_IMAGE_GENERAL ??= _PAT_IMAGE_GENERAL_GEN();
+#else
+		public static Regex PAT_IMAGE_GENERAL => _PAT_IMAGE_GENERAL ??= new Regex(@"(.*)（(.+\.[a-zA-Z0-9]{3,4})(、横([0-9]+)×縦([0-9]+))*）入る", RegexOptions.Compiled);
+#endif
+
 
 		private static Regex? _PAT_FRONTREF = null;
 #if NET7_0_OR_GREATER
@@ -269,7 +279,7 @@ namespace Aozora
 		private static partial Regex _PAT_FRONTREF_GEN();
 		public static Regex PAT_FRONTREF => _PAT_FRONTREF ??= _PAT_FRONTREF_GEN();
 #else
-        public static Regex PAT_FRONTREF => _PAT_FRONTREF ??= new Regex(@"「([^「」]*(?:「.+」)*[^「」]*)」[にはの](「.+」の)*(.+)", RegexOptions.Compiled);
+		public static Regex PAT_FRONTREF => _PAT_FRONTREF ??= new Regex(@"「([^「」]*(?:「.+」)*[^「」]*)」[にはの](「.+」の)*(.+)", RegexOptions.Compiled);
 #endif
 
 		//private static Regex? _PAT_FRONTREF2 = null;
@@ -280,7 +290,7 @@ namespace Aozora
 		private static partial Regex _PAT_RUBY_DIR_GEN();
 		public static Regex PAT_RUBY_DIR => _PAT_RUBY_DIR ??= _PAT_RUBY_DIR_GEN();
 #else
-        public static Regex PAT_RUBY_DIR => _PAT_RUBY_DIR ??= new Regex(@"(左|下)に「([^」]*)」の(ルビ|注記)", RegexOptions.Compiled);
+		public static Regex PAT_RUBY_DIR => _PAT_RUBY_DIR ??= new Regex(@"(左|下)に「([^」]*)」の(ルビ|注記)", RegexOptions.Compiled);
 #endif
 
 		private static Regex? _PAT_CHUUKI = null;
@@ -289,7 +299,7 @@ namespace Aozora
 		private static partial Regex _PAT_CHUUKI_GEN();
 		public static Regex PAT_CHUUKI => _PAT_CHUUKI ??= _PAT_CHUUKI_GEN();
 #else
-        public static Regex PAT_CHUUKI => _PAT_CHUUKI ??= new Regex(@"「(.+?)」の注記", RegexOptions.Compiled);
+		public static Regex PAT_CHUUKI => _PAT_CHUUKI ??= new Regex(@"「(.+?)」の注記", RegexOptions.Compiled);
 #endif
 
 		private static Regex? _PAT_BOUKI = null;
@@ -298,7 +308,7 @@ namespace Aozora
 		private static partial Regex _PAT_BOUKI_GEN();
 		public static Regex PAT_BOUKI => _PAT_BOUKI ??= _PAT_BOUKI_GEN();
 #else
-        public static Regex PAT_BOUKI => _PAT_BOUKI ??= new Regex(@"「(.)」の傍記", RegexOptions.Compiled);
+		public static Regex PAT_BOUKI => _PAT_BOUKI ??= new Regex(@"「(.)」の傍記", RegexOptions.Compiled);
 #endif
 
 		private static Regex? _PAT_CHARSIZE = null;
@@ -307,7 +317,7 @@ namespace Aozora
 		private static partial Regex _PAT_CHARSIZE_GEN();
 		public static Regex PAT_CHARSIZE => _PAT_CHARSIZE ??= _PAT_CHARSIZE_GEN();
 #else
-        public static Regex PAT_CHARSIZE => _PAT_CHARSIZE ??= new Regex(@"(.*)段階(..)な文字", RegexOptions.Compiled);
+		public static Regex PAT_CHARSIZE => _PAT_CHARSIZE ??= new Regex(@"(.*)段階(..)な文字", RegexOptions.Compiled);
 #endif
 
 		private static Regex? _REGEX_HIRAGANA = null;
@@ -316,7 +326,7 @@ namespace Aozora
 		private static partial Regex _REGEX_HIRAGANA_GEN();
 		public static Regex REGEX_HIRAGANA => _REGEX_HIRAGANA ??= _REGEX_HIRAGANA_GEN();
 #else
-        public static Regex REGEX_HIRAGANA => _REGEX_HIRAGANA ??= new Regex("[ぁ-んゝゞ]", RegexOptions.Compiled);
+		public static Regex REGEX_HIRAGANA => _REGEX_HIRAGANA ??= new Regex("[ぁ-んゝゞ]", RegexOptions.Compiled);
 #endif
 
 		private static Regex? _REGEX_KATAKANA = null;
@@ -325,7 +335,7 @@ namespace Aozora
 		private static partial Regex _REGEX_KATAKANA_GEN();
 		public static Regex REGEX_KATAKANA => _REGEX_KATAKANA ??= _REGEX_KATAKANA_GEN();
 #else
-        public static Regex REGEX_KATAKANA => _REGEX_KATAKANA ??= new Regex("[ァ-ンーヽヾヴ]", RegexOptions.Compiled);
+		public static Regex REGEX_KATAKANA => _REGEX_KATAKANA ??= new Regex("[ァ-ンーヽヾヴ]", RegexOptions.Compiled);
 #endif
 
 		private static Regex? _REGEX_ZENKAKU = null;
@@ -334,7 +344,7 @@ namespace Aozora
 		private static partial Regex _REGEX_ZENKAKU_GEN();
 		public static Regex REGEX_ZENKAKU => _REGEX_ZENKAKU ??= _REGEX_ZENKAKU_GEN();
 #else
-        public static Regex REGEX_ZENKAKU => _REGEX_ZENKAKU ??= new Regex("[０-９Ａ-Ｚａ-ｚΑ-Ωα-ωА-Яа-я−＆’，．]", RegexOptions.Compiled);
+		public static Regex REGEX_ZENKAKU => _REGEX_ZENKAKU ??= new Regex("[０-９Ａ-Ｚａ-ｚΑ-Ωα-ωА-Яа-я−＆’，．]", RegexOptions.Compiled);
 #endif
 
 		private static Regex? _REGEX_HANKAKU = null;
@@ -343,7 +353,7 @@ namespace Aozora
 		private static partial Regex _REGEX_HANKAKU_GEN();
 		public static Regex REGEX_HANKAKU => _REGEX_HANKAKU ??= _REGEX_HANKAKU_GEN();
 #else
-        public static Regex REGEX_HANKAKU => _REGEX_HANKAKU ??= new Regex(@"[A-Za-z0-9#\-\&'\,]", RegexOptions.Compiled);
+		public static Regex REGEX_HANKAKU => _REGEX_HANKAKU ??= new Regex(@"[A-Za-z0-9#\-\&'\,]", RegexOptions.Compiled);
 #endif
 
 		private static Regex? _REGEX_KANJI = null;
@@ -354,11 +364,11 @@ namespace Aozora
 		private static partial Regex _REGEX_KANJI_GEN();
 		public static Regex REGEX_KANJI => _REGEX_KANJI ??= _REGEX_KANJI_GEN();
 #else
-        //kurema:https://dobon.net/vb/dotnet/string/ishiragana.html
-        //public static Regex REGEX_KANJI => _REGEX_KANJI ??= new Regex("[亜-熙々※仝〆〇ヶ]");//kurema:これは流石にUnicodeでは怪しい。
-        public static Regex REGEX_KANJI => _REGEX_KANJI ??= new Regex(
-            @"[々※仝〆〇ヶ\p{IsCJKUnifiedIdeographs}\p{IsCJKCompatibilityIdeographs}\p{IsCJKUnifiedIdeographsExtensionA}]|" +
-            @"[\uD840-\uD869][\uDC00-\uDFFF]|\uD869[\uDC00-\uDEDF]", RegexOptions.Compiled);//kurema:JIS文字だけならここまでは必要ない。
+		//kurema:https://dobon.net/vb/dotnet/string/ishiragana.html
+		//public static Regex REGEX_KANJI => _REGEX_KANJI ??= new Regex("[亜-熙々※仝〆〇ヶ]");//kurema:これは流石にUnicodeでは怪しい。
+		public static Regex REGEX_KANJI => _REGEX_KANJI ??= new Regex(
+			@"[々※仝〆〇ヶ\p{IsCJKUnifiedIdeographs}\p{IsCJKCompatibilityIdeographs}\p{IsCJKUnifiedIdeographsExtensionA}]|" +
+			@"[\uD840-\uD869][\uDC00-\uDFFF]|\uD869[\uDC00-\uDEDF]", RegexOptions.Compiled);//kurema:JIS文字だけならここまでは必要ない。
 #endif
 
 		public const string DYNAMIC_CONTENTS = "<div id=\"card\">\r\n<hr />\r\n<br />\r\n<a href=\"JavaScript:goLibCard();\" id=\"goAZLibCard\">●図書カード</a><script type=\"text/javascript\" src=\"../../contents.js\"></script>\r\n<script type=\"text/javascript\" src=\"../../golibcard.js\"></script>\r\n</div>";
@@ -449,6 +459,17 @@ namespace Aozora
 		protected string gaiji_dir;
 		protected string[] css_files;
 
+		public struct ExtendedOptions
+		{
+			public ExtendedOptions()
+			{
+			}
+
+			public bool UseGeneralImage { get; set; } = false;
+		}
+
+		public ExtendedOptions ExtendedOption { get; set; } = new();
+
 		public Aozora2Html(IJstream input, IOutput output, IOutput? warnChannel = null, string? gaiji_dir = null, string[]? css_files = null)
 		{
 			stream = input;
@@ -528,7 +549,7 @@ namespace Aozora
 #if NET7_0_OR_GREATER
 				PAT_KutenToPng_CODE_GEN()
 #else
-                new Regex(@"([12])-(\d{1,2})-(\d{1,2})")
+				new Regex(@"([12])-(\d{1,2})-(\d{1,2})")
 #endif
 				.Match(desc);
 			if (matched.Success && desc != NON_0213_GAIJI && !PAT_KUTEN_DUAL.IsMatch(desc))
@@ -779,7 +800,7 @@ namespace Aozora
 #if NET7_0_OR_GREATER
 			if (!PAT_ParseChuuki_GEN().IsMatch(@string.Value.Span)) return;
 #else
-            if (!Regex.IsMatch(@string.ToString(), @"^-+$")) return;
+			if (!Regex.IsMatch(@string.ToString(), @"^-+$")) return;
 #endif
 
 			switch (Section)
@@ -1232,7 +1253,7 @@ namespace Aozora
 #if NET7_0_OR_GREATER
 				PAT_DispatchGaiji_UNICODE_GEN().Match(command);
 #else
-                Regex.Match(command, @"U\+([0-9A-F]{4,5})");
+				Regex.Match(command, @"U\+([0-9A-F]{4,5})");
 #endif
 			if (matched.Success && UseUnicodeEmbedGaiji)
 			{
@@ -1299,11 +1320,22 @@ namespace Aozora
 #if NET7_0_OR_GREATER
 			else if (PAT_DispatchAozoraCommand_FIG_GEN().IsMatch(command))
 #else
-            else if (Regex.IsMatch(command, @"fig(\d)+_(\d)+\.png", RegexOptions.Compiled))
+			else if (Regex.IsMatch(command, @"fig(\d)+_(\d)+\.png", RegexOptions.Compiled))
 #endif
 			{
 				return GetReturnValue(ExecImgCommand(command, raw));
-			}//avoid to try complex ruby -- escape to notes
+			}
+			/*
+			 * kurema:
+			 * 現状ではfit\d+_\d+という特殊な画像ファイル名のみしかサポートされていない(青空文庫内部の規約？)。
+			 * 今後オプションを追加して状況によっては汎用的な画像ファイル名をサポートすることも考慮すべき？
+			 * またpngに限るべきでもなさそう。
+			 * */
+			else if (ExtendedOption.UseGeneralImage && command.Contains("入る"))
+			{
+				return GetReturnValue(ExecImgCommandGeneral(command, raw));
+			}
+			//avoid to try complex ruby -- escape to notes
 			else if (PAT_REST_NOTES.IsMatch(command))
 			{
 				return GetReturnValue(ApplyRestNotes(command));
@@ -1320,7 +1352,7 @@ namespace Aozora
 #if NET7_0_OR_GREATER
 			else if (PAT_DispatchAozoraCommand_1782_GEN().IsMatch(command))
 #else
-            else if (Regex.IsMatch(command, @"1-7-8[2345]"))//kurema:正規表現を二度実行するのは微妙。
+			else if (Regex.IsMatch(command, @"1-7-8[2345]"))//kurema:正規表現を二度実行するのは微妙。
 #endif
 			{
 				return GetReturnValue(ApplyDakutenKatakana(command));
@@ -1386,7 +1418,7 @@ namespace Aozora
 #if NET7_0_OR_GREATER
 				PAT_GetJisageWidth_GEN()
 #else
-                new Regex(@$"(\d*)(?:{JISAGE_COMMAND})")
+				new Regex(@$"(\d*)(?:{JISAGE_COMMAND})")
 #endif
 				.Match(Utils.ConvertJapaneseNumber(command));
 			if (!matched.Success || matched.Groups.Count < 1) return null;
@@ -1677,7 +1709,7 @@ namespace Aozora
 						//found = [class, tag]
 						if (@class is not null)
 						{
-							style_stack.Push(command, $"</{tag}>");		
+							style_stack.Push(command, $"</{tag}>");
 
 							PushChars($"<{tag} class=\"{filter.Invoke(@class)}\">");
 							return true;
@@ -1688,7 +1720,7 @@ namespace Aozora
 							//原文でデバッグのみになっていますが、Releaseビルドで警告が出ないのは扱いづらい気もします。
 							//https://github.com/aozorahack/aozora2html/blob/33f8cf86fae1c5b3ebfe0ee0f3b8468f74ed2b45/lib/aozora2html.rb#L944
 #if DEBUG
-							warnChannel.PrintLine(string.Format(Resources.Resource.WarnUndefinedCommand, LineNumber,key));
+							warnChannel.PrintLine(string.Format(Resources.Resource.WarnUndefinedCommand, LineNumber, key));
 #endif
 							return false;
 						}
@@ -1742,7 +1774,7 @@ namespace Aozora
 #if NET7_0_OR_GREATER
 				PAT_ExecBlockStartCommand_FROM_OPEN_MARK_GEN()
 #else
-                new Regex($"^{OPEN_MARK}")
+				new Regex($"^{OPEN_MARK}")
 #endif
 				.Replace(command, "");
 			var match_buf = new StringBuilder();
@@ -1814,7 +1846,7 @@ namespace Aozora
 #if NET7_0_OR_GREATER
 				PAT_ExecBlockEndCommand_FROM_CLOSE_MARK_GEN()
 #else
-                new Regex($@"^{CLOSE_MARK}")
+				new Regex($@"^{CLOSE_MARK}")
 #endif
 				.Replace(command, "");
 			IIndentStackItem? matched = null;
@@ -1840,6 +1872,25 @@ namespace Aozora
 		public Helpers.Tag.Tag ExecImgCommand(string command, string raw)
 		{
 			var matched = PAT_IMAGE.Match(raw);
+			if (matched.Success)
+			{
+				var alt = matched.Groups[1].Value;
+				var src = matched.Groups[2].Value;
+				var width = matched.Groups[4].Value;
+				var height = matched.Groups[5].Value;
+
+				string css_class = alt.Contains(PHOTO_COMMAND) ? "photo" : "illustration";
+				return new Helpers.Tag.Img(src, css_class, alt, width, height);
+			}
+			else
+			{
+				return ApplyRestNotes(command);
+			}
+		}
+
+		public Helpers.Tag.Tag ExecImgCommandGeneral(string command, string raw)
+		{
+			var matched = PAT_IMAGE_GENERAL.Match(raw);
 			if (matched.Success)
 			{
 				var alt = matched.Groups[1].Value;
@@ -2060,7 +2111,7 @@ namespace Aozora
 #if NET7_0_OR_GREATER
 				PAT_ApplyDakutenKatakana_1782_GEN().Match(command);
 #else
-                Regex.Match(command, "1-7-8([2345])");
+				Regex.Match(command, "1-7-8([2345])");
 #endif
 			if (!match.Success) return null;
 			var n = int.Parse(match.Groups[1].Value);
@@ -2235,7 +2286,7 @@ namespace Aozora
 #if NET7_0_OR_GREATER
 			if (PAT_TailOutput_GEN().IsMatch(@string))
 #else
-            if (Regex.IsMatch(@string, @"(<br />$|</p>$|</h\d>$|<div.*>$|</div>$|^<[^>]*>$)"))
+			if (Regex.IsMatch(@string, @"(<br />$|</p>$|</h\d>$|<div.*>$|</div>$|^<[^>]*>$)"))
 #endif
 			{
 				@out.Print(@string);
@@ -2322,7 +2373,7 @@ namespace Aozora
 #if NET7_0_OR_GREATER
 			return PAT_EscapeSpecialChars_GEN().Replace(text, a => EscapeSpecialChars(a.Value[0]));
 #else
-            return Regex.Replace(text, @"[&"" <>]", a => EscapeSpecialChars(a.Value[0]));
+			return Regex.Replace(text, @"[&"" <>]", a => EscapeSpecialChars(a.Value[0]));
 #endif
 		}
 
