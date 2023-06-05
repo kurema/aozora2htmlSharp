@@ -371,7 +371,7 @@ namespace Aozora
 			@"[\uD840-\uD869][\uDC00-\uDFFF]|\uD869[\uDC00-\uDEDF]", RegexOptions.Compiled);//kurema:JIS文字だけならここまでは必要ない。
 #endif
 
-		public const string DYNAMIC_CONTENTS = "<div id=\"card\">\r\n<hr />\r\n<br />\r\n<a href=\"JavaScript:goLibCard();\" id=\"goAZLibCard\">●図書カード</a><script type=\"text/javascript\" src=\"../../contents.js\"></script>\r\n<script type=\"text/javascript\" src=\"../../golibcard.js\"></script>\r\n</div>";
+		//public const string DYNAMIC_CONTENTS = "<div id=\"card\">\r\n<hr />\r\n<br />\r\n<a href=\"JavaScript:goLibCard();\" id=\"goAZLibCard\">●図書カード</a><script type=\"text/javascript\" src=\"../../contents.js\"></script>\r\n<script type=\"text/javascript\" src=\"../../golibcard.js\"></script>\r\n</div>";
 
 		// KUNOJI = ["18e518f5"].pack("h*")
 		// utf8 ["fecbf8fecbcb"].pack("h*")
@@ -466,9 +466,12 @@ namespace Aozora
 			}
 
 			public bool UseGeneralImage { get; set; } = false;
+			public bool WarnUnknownCommand { get; set; } = false;
 		}
 
 		public ExtendedOptions ExtendedOption { get; set; } = new();
+
+		public Helpers.ITemplate Template { get; set; } = new TemplateAozora();
 
 		public Aozora2Html(IJstream input, IOutput output, IOutput? warnChannel = null, string? gaiji_dir = null, string[]? css_files = null)
 		{
@@ -622,12 +625,12 @@ namespace Aozora
 		{
 			PrintHyoki();
 			DynamicContents();
-			@out.Print("</body>\r\n</html>\r\n");
+			@out.Print(Template?.Footer ?? TemplateAozora.FOOTER);
 		}
 
 		protected void DynamicContents()
 		{
-			@out.Print(DYNAMIC_CONTENTS);
+			@out.Print(Template?.DynamicContents ?? TemplateAozora.DYNAMIC_CONTENTS);
 		}
 
 		protected void Close()
@@ -777,7 +780,7 @@ namespace Aozora
 			{
 				//空行がくれば、そこでヘッダー終了とみなす
 				Section = SectionKind.head_end;
-				@out.Print(header.ToHtml(jQueryPath));
+				@out.Print(header.ToHtml(jQueryPath, Template));
 			}
 			else
 			{
@@ -1717,10 +1720,12 @@ namespace Aozora
 						else
 						{
 							//kurema:
-							//原文でデバッグのみになっていますが、Releaseビルドで警告が出ないのは扱いづらい気もします。
+							//原文でデバッグのみになっています。Releaseビルドでオプション指定で出ます。
 							//https://github.com/aozorahack/aozora2html/blob/33f8cf86fae1c5b3ebfe0ee0f3b8468f74ed2b45/lib/aozora2html.rb#L944
 #if DEBUG
 							warnChannel.PrintLine(string.Format(Resources.Resource.WarnUndefinedCommand, LineNumber, key));
+#else
+							if(ExtendedOption.WarnUnknownCommand) warnChannel.PrintLine(string.Format(Resources.Resource.WarnUndefinedCommand, LineNumber, key));
 #endif
 							return false;
 						}
@@ -2277,7 +2282,7 @@ namespace Aozora
 			buffer = new TextBuffer();
 			@string = @string.Replace("info@aozora.gr.jp", "<a href=\"mailto: info@aozora.gr.jp\">info@aozora.gr.jp</a>");
 			{
-				var aozora = "青空文庫（http://www.aozora.gr.jp/）";
+				const string aozora = "青空文庫（http://www.aozora.gr.jp/）";
 				//kurema:
 				//rubyの$&は最期にマッチした正規表現
 				//https://docs.ruby-lang.org/ja/latest/method/Kernel/v/=26.html
