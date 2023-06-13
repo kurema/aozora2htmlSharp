@@ -146,15 +146,15 @@ public static partial class YamlValues
 		}
 	}
 
-	static ReadOnlyDictionary<string, (int, int, int)>? _Jisx0213ReverseDictionary = null;
+	static ReadOnlyDictionary<string, (int men, int ku, int ten)>? _Jisx0213ReverseDictionary = null;
 
-	public static ReadOnlyDictionary<string, (int, int, int)> Jisx0213ReverseDictionary
+	public static ReadOnlyDictionary<string, (int men, int ku, int ten)> Jisx0213ReverseDictionary
 	{
 		get
 		{
 			if (_Jisx0213ReverseDictionary is not null) return _Jisx0213ReverseDictionary;
 			//kurema:非効率な逆辞書作成。しかも空白が途中にはない前提。ただし実際に空白は途中にないし、当環境でデバッグ実行でも20ミリ秒程度なので無視出来る。
-			var dic = new Dictionary<string, (int, int, int)>();
+			var dic = new Dictionary<string, (int men, int ku, int ten)>();
 			for (int m = 1; m <= 2; m++)
 			{
 				for (int k = 1; k <= 94; k++)
