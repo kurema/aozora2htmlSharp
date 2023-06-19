@@ -46,7 +46,7 @@ public static partial class YamlValues
 
 	public static string? Jisx0213NumberToFormated((int men, int ku, int ten) tuple) => Jisx0213NumberToFormated(tuple.men, tuple.ku, tuple.ten);
 
-	public static string? Jisx0213NumberToFormated(int men, int ku, int ten) => $"{men}面{ku}区{ten}点";
+	public static string? Jisx0213NumberToFormated(int men, int ku, int ten) => $"第{men+2}水準{men}面{ku}区{ten}点";
 
 
 	public static string? Jisx0213ToString(string code)
