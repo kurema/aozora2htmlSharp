@@ -390,6 +390,10 @@ namespace Aozora
 		private static Encoding? _ShiftJis;
 		public static Encoding ShiftJis => _ShiftJis ??= CodePagesEncodingProvider.Instance.GetEncoding("shift-jis", new EncoderReplacementFallback("〓"), new DecoderReplacementFallback("〓")) ?? throw new NullReferenceException();
 
+		private static Encoding? _ShiftJisExceptionFallback;
+		public static Encoding ShiftJisExceptionFallback => _ShiftJisExceptionFallback ??= CodePagesEncodingProvider.Instance.GetEncoding("shift-jis", EncoderFallback.ExceptionFallback, DecoderFallback.ExceptionFallback) ?? throw new NullReferenceException();
+
+
 		//kurema:以下はconvert_indent_type();がそのままToString();を返すので変更しないでください。
 		public enum IndentTypeKey
 		{

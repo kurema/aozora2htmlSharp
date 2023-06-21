@@ -144,7 +144,7 @@ Stoped processing</value>
     <comment>@MutedRule(PunctuationTail)</comment>
   </data>
   <data name="WarnJisGaiji" xml:space="preserve">
-    <value>Warning (line {0}): JIS external character "{1}" is used</value>
+    <value>Warning (line {0}): A JIS external character "{1}" is used</value>
   </data>
   <data name="DontCrlfInStyle" xml:space="preserve">
     <value>A line break occurred in the {0}. Use block notation for elements that straddle line breaks</value>
@@ -181,5 +181,8 @@ Stoped processing</value>
   </data>
   <data name="FailedToLoadJIS2UCS" xml:space="preserve">
     <value>Failed to load JIS X 0213 table. Is embedded resource supported?</value>
+  </data>
+  <data name="WarnNonJis" xml:space="preserve">
+    <value>Warning (line {0}): A non-JIS character "{1}" is used</value>
   </data>
 </root>

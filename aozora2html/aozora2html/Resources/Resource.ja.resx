@@ -181,4 +181,7 @@
   <data name="FailedToLoadJIS2UCS" xml:space="preserve">
     <value>JIS X 0213テーブルの読み込みに失敗しました。埋め込みリソースはサポートされていますか？</value>
   </data>
+  <data name="WarnNonJis" xml:space="preserve">
+    <value>警告({0}行目):非JIS文字「{1}」が使われています</value>
+  </data>
 </root>

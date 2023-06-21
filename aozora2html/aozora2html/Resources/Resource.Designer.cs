@@ -215,11 +215,20 @@ namespace Aozora.Resources {
         }
         
         /// <summary>
-        ///   Warning (line {0}): JIS external character &quot;{1}&quot; is used に類似しているローカライズされた文字列を検索します。
+        ///   Warning (line {0}): A JIS external character &quot;{1}&quot; is used に類似しているローカライズされた文字列を検索します。
         /// </summary>
         public static string WarnJisGaiji {
             get {
                 return ResourceManager.GetString("WarnJisGaiji", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Warning (line {0}): A non-JIS character &quot;{1}&quot; is used に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string WarnNonJis {
+            get {
+                return ResourceManager.GetString("WarnNonJis", resourceCulture);
             }
         }
         

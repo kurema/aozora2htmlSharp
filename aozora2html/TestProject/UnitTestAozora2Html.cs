@@ -108,7 +108,17 @@ public static class UnitTestAozora2Html
         Assert.Equal("警告(123行目):JIS外字「①」が使われています\r\n", output.ToString());
     }
 
-    [Fact]
+
+	[Fact]
+	public static void TestIllegalCharCheckUnicode()
+	{
+		var output = new OutputString();
+		Utils.IllegalCharCheck('圳', 123, output);
+		Assert.Equal("警告(123行目):非JIS文字「圳」が使われています\r\n", output.ToString());
+	}
+
+
+	[Fact]
     public static void TestIllegalCharCheckOk()
     {
         var output = new OutputString();

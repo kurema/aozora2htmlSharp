@@ -42,9 +42,14 @@ public static class UnitTestUnpacked
             var unpacked = new Unpacked('０');
             Assert.True(unpacked.InArray[0] is 0x82 && unpacked.InArray[1] is 0x4f);
         }
-    }
+		{
+			var unpacked = new Unpacked('圳');
+			Assert.True(unpacked.EncodeExceptionThrown);
+		}
 
-    [Fact]
+	}
+
+	[Fact]
     public static void TestCompare()
     {
         {
