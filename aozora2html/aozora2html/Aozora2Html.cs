@@ -471,6 +471,7 @@ namespace Aozora
 
 			public bool UseGeneralImage { get; set; } = false;
 			public bool WarnUnknownCommand { get; set; } = false;
+			public bool NoIllegalCharCheckInCommand { get; set; } = false;
 		}
 
 		public ExtendedOptions ExtendedOption { get; set; } = new();
@@ -610,7 +611,8 @@ namespace Aozora
 			{
 				UseJisx0213Accent = this.UseJisx0213Accent,
 				UseJisx0214EmbedGaiji = this.UseJisx0214EmbedGaiji,
-				UseUnicodeEmbedGaiji = this.UseUnicodeEmbedGaiji
+				UseUnicodeEmbedGaiji = this.UseUnicodeEmbedGaiji,
+				ExtendedOption = this.ExtendedOption,
 			}.ProcessAccent();
 		}
 
@@ -621,7 +623,8 @@ namespace Aozora
 			{
 				UseJisx0213Accent = this.UseJisx0213Accent,
 				UseJisx0214EmbedGaiji = this.UseJisx0214EmbedGaiji,
-				UseUnicodeEmbedGaiji = this.UseUnicodeEmbedGaiji
+				UseUnicodeEmbedGaiji = this.UseUnicodeEmbedGaiji,
+				ExtendedOption = this.ExtendedOption,
 			}.ProcessTag();
 		}
 
@@ -2187,6 +2190,13 @@ namespace Aozora
 			bool escape = true;//kurema:read_accent()は文字列を返すので強引にエスケープしない指示をする。
 			IBufferItem[] otherBuffer = Array.Empty<IBufferItem>();
 			//System.Diagnostics.Debug.WriteLine($"{@char} {DateTime.Now.Millisecond}");
+
+			//kurema:
+			//コマンド内は外字チェックをしない。
+			//外字でU+の"+"に反応するのを防止できるが、コマンド内でShift-JIS外字が使われていた場合保存が出来ない欠点もある。
+
+			if ((endchar == COMMAND_END) && ExtendedOption.NoIllegalCharCheckInCommand) check = false;
+
 			switch (@char)
 			{
 				case ACCENT_BEGIN:
